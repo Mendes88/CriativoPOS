@@ -3,10 +3,12 @@ package pt.criativo.pos;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.ValueCallback;
@@ -55,11 +57,13 @@ public class MainActivity extends Activity {
         btBridge = new BluetoothBridge(this, webView);
         webView.addJavascriptInterface(btBridge, "AndroidBT");
 
+        // WebChromeClient com suporte a file picker
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView wv,
                     ValueCallback<Uri[]> filePathCallback,
                     FileChooserParams fileChooserParams) {
+                // Cancela callback anterior se existir
                 if (fileUploadCallback != null) {
                     fileUploadCallback.onReceiveValue(null);
                     fileUploadCallback = null;
@@ -78,6 +82,16 @@ public class MainActivity extends Activity {
 
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("file:///android_asset/index.html");
+
+        // Pedir permissão de escrita para Android 6-9 (não necessária no Android 10+)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(
+                    new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    100);
+            }
+        }
     }
 
     @Override
@@ -98,7 +112,9 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public void onBackPressed() { }
+    public void onBackPressed() {
+        // Bloqueia o botão back — mantém o POS aberto
+    }
 
     @Override
     protected void onDestroy() {
