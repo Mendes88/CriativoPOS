@@ -119,6 +119,36 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 }
 @media(max-width:640px){#app{border-radius:0;max-height:100vh;height:100vh;}}
 
+/* ── RESPONSIVE — ecrãs pequenos ───────────────────────── */
+@media(max-width:540px){
+  /* Topbar: esconder brand, nav com scroll horizontal */
+  .brand{display:none;}
+  #tb{padding:0 6px;gap:3px;}
+  #nav-tabs{overflow-x:auto;flex-shrink:1;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  #nav-tabs::-webkit-scrollbar{display:none;}
+  .nb{padding:5px 7px;font-size:10px;white-space:nowrap;}
+  .logout-btn{padding:4px 7px;font-size:10px;}
+
+  /* POS: painel de pedido debaixo do menu */
+  #vpos{flex-direction:column !important;}
+  #menu-panel{flex:1;min-height:0;overflow:hidden;}
+  #order-panel{width:100% !important;max-height:45vh;border-left:none;border-top:1px solid #e0e0e0;}
+
+  /* Gestão: painel esquerdo cai para cima do direito */
+  #vgest{flex-direction:column !important;}
+  #gest-left{width:100% !important;max-height:200px;border-right:none;border-bottom:1px solid #e0e0e0;}
+  #gest-right{flex:1;min-height:0;}
+
+  /* Config: campos mais largos */
+  .cfg-inner{padding:10px;}
+}
+
+@media(max-width:420px){
+  .nb{padding:4px 6px;font-size:10px;}
+  #order-panel{max-height:40vh;}
+  #gest-left{max-height:160px;}
+}
+
 /* ── TOPBAR ─────────────────────────────────────────────── */
 #tb{display:none;align-items:center;padding:0 10px;height:50px;position:relative;z-index:10;background:#fff;
   border-bottom:1px solid #e0e0e0;gap:5px;flex-shrink:0;}
@@ -1210,6 +1240,8 @@ let CU=null,loginUID=null,pinBuf="";
 let posCat="Entradas",gestCat="Entradas";
 let order=[],payMethod="d",ordCnt=10,nifOpen=false;
 let modMode=null,modData={},detailItems=true,uidCnt=1,docType='talao',orderNum=1,levantamentos=[],splitPessoas=0;
+// Carregar preferência de listagem individual (predefinição: Sim)
+(function(){ var d=localStorage.getItem('crpos_detail'); if(d==='0') detailItems=false; })();
 let config={appHeight:0,defaultDocType:'talao',postoName:'',restName:'Restaurante',nif:'123 456 789',phone:'232 123 456',address:'Viseu, Portugal',footerMsg:'Obrigado pela visita!',footerMsg2:'',logo:null,timeout:15,printerType:'none',printerIP:'192.168.1.100',printerPort:'9100',printerWidth:80,mbwayPhone:''};
 let btDevice=null,btChar=null;
 let relTab="resumo",artSort="revenue",selDate=today(),dateMode="today",customFrom="",customTo="";
@@ -1465,7 +1497,10 @@ function switchView(v){
   }
   const nb=document.getElementById("nb-"+v);
   if(nb)nb.className="nb on";
-  if(v==="gest"){renderCatList();renderItemList();}
+  if(v==="gest"){
+    if(!gestCat && CATS.length) gestCat = CATS[0];
+    renderCatList();renderItemList();
+  }
   if(v==="caixa")renderCaixa();
   if(v==="rel")renderRel();
   if(v==="util")renderUtil();
@@ -1738,7 +1773,6 @@ function openPayModal(){
   document.getElementById("nif-hint").textContent="";
   document.getElementById("nif-input").className="";
   if(nifOpen)toggleNIF();
-  if(detailItems)toggleDetail();
   setPayMethod("d");
   document.getElementById("pay-overlay").classList.add("open");
 }
@@ -1783,6 +1817,7 @@ function toggleNIF(){
 
 function toggleDetail(){
   detailItems=!detailItems;
+  localStorage.setItem('crpos_detail', detailItems ? '1' : '0');
   const tog=document.getElementById("detail-toggle");
   const pill=document.getElementById("detail-pill");
   if(detailItems){
@@ -1983,30 +2018,58 @@ function printConfirmation(s){
       return '<tr><td colspan="2" style="padding:1px 8px 6px 16px;font-size:12px;color:#185FA5;">📝 '+n+'</td></tr>';
     }).join('');
 
-    // TALÃO — artigo | preço a negrito | quantidade em destaque
-    var qty  = i.q > 1 && !itemNotes.length ? i.q : 1;
-    var lineTotal = qty > 1 ? EUR(qty*i.p) : EUR(i.p);
-    itensListTalao +=
-      '<tr style="border-bottom:1px dotted #e0e0e0;">'+
-        '<td style="padding:5px 6px;font-size:12px;font-weight:600;">'+i.n+'</td>'+
-        '<td style="padding:5px 4px;font-size:10px;font-weight:400;color:#888;text-align:right;white-space:nowrap;">('+lineTotal+')</td>'+
-        '<td style="padding:5px 6px;font-size:13px;font-weight:900;text-align:right;white-space:nowrap;color:#1a1a1a;">×'+qty+'</td>'+
-      '</tr>'+notesHtml;
+    var isIndividual = (s.detail !== false);
 
-    // RECIBO — com preços
-    var reciboName = i.n;
-    var reciboPrice, reciboSub = '';
-    if(i.q > 1 && !itemNotes.length){
-      reciboName += ' <span style="font-size:11px;color:#888;">×'+i.q+'</span>';
-      reciboSub   = '<tr><td colspan="2" style="padding:0 8px 4px 16px;font-size:10px;color:#aaa;">'+i.q+' × '+EUR(i.p)+'</td></tr>';
-      reciboPrice = EUR(i.q*i.p);
+    // TALÃO
+    if(isIndividual){
+      // Listagem individual: uma linha por unidade
+      var reps = i.q || 1;
+      for(var k=0;k<reps;k++){
+        itensListTalao +=
+          '<tr style="border-bottom:1px dotted #e0e0e0;">'+
+            '<td style="padding:5px 6px;font-size:12px;font-weight:600;">'+i.n+'</td>'+
+            '<td style="padding:5px 4px;font-size:10px;font-weight:400;color:#888;text-align:right;white-space:nowrap;">('+EUR(i.p)+')</td>'+
+            '<td style="padding:5px 6px;font-size:13px;font-weight:900;text-align:right;white-space:nowrap;color:#1a1a1a;">×1</td>'+
+          '</tr>'+(k===0?notesHtml:'');
+      }
     } else {
-      reciboPrice = EUR(i.p);
+      // Agrupado
+      var qty  = i.q > 1 && !itemNotes.length ? i.q : 1;
+      var lineTotal = qty > 1 ? EUR(qty*i.p) : EUR(i.p);
+      itensListTalao +=
+        '<tr style="border-bottom:1px dotted #e0e0e0;">'+
+          '<td style="padding:5px 6px;font-size:12px;font-weight:600;">'+i.n+'</td>'+
+          '<td style="padding:5px 4px;font-size:10px;font-weight:400;color:#888;text-align:right;white-space:nowrap;">('+lineTotal+')</td>'+
+          '<td style="padding:5px 6px;font-size:13px;font-weight:900;text-align:right;white-space:nowrap;color:#1a1a1a;">×'+qty+'</td>'+
+        '</tr>'+notesHtml;
     }
-    itensListRecibo +=
-      '<tr><td style="padding:5px 8px;font-size:13px;">'+reciboName+'</td>'+
-          '<td style="padding:5px 8px;font-size:13px;text-align:right;">'+reciboPrice+'</td></tr>'+
-      reciboSub + notesHtml;
+
+    // RECIBO
+    if(isIndividual){
+      // Listagem individual: uma linha por unidade
+      var reps2 = i.q || 1;
+      for(var m=0;m<reps2;m++){
+        itensListRecibo +=
+          '<tr><td style="padding:5px 8px;font-size:13px;">'+i.n+'</td>'+
+              '<td style="padding:5px 8px;font-size:13px;text-align:right;">'+EUR(i.p)+'</td></tr>'+
+          (m===0?notesHtml:'');
+      }
+    } else {
+      // Agrupado
+      var reciboName = i.n;
+      var reciboPrice, reciboSub = '';
+      if(i.q > 1 && !itemNotes.length){
+        reciboName += ' <span style="font-size:11px;color:#888;">×'+i.q+'</span>';
+        reciboSub   = '<tr><td colspan="2" style="padding:0 8px 4px 16px;font-size:10px;color:#aaa;">'+i.q+' × '+EUR(i.p)+'</td></tr>';
+        reciboPrice = EUR(i.q*i.p);
+      } else {
+        reciboPrice = EUR(i.p);
+      }
+      itensListRecibo +=
+        '<tr><td style="padding:5px 8px;font-size:13px;">'+reciboName+'</td>'+
+            '<td style="padding:5px 8px;font-size:13px;text-align:right;">'+reciboPrice+'</td></tr>'+
+        reciboSub + notesHtml;
+    }
   });
 
   var isTalao  = !s.nif && s.docType !== "recibo";
@@ -2101,8 +2164,8 @@ function printConfirmation(s){
     '</body></html>';
 
   if(canPrintDirect()){
-    printDirect(buildConfirmESC(s)).then(function(ok){if(!ok)printFallback(html,400,600);});
-  } else { printFallback(html,400,600); }
+    printDirect(buildConfirmESC(s)).then(function(ok){if(!ok)showReceipt(s);});
+  } else { showReceipt(s); }
 }
 
 
@@ -2136,9 +2199,16 @@ function doPrint(){
     trocoLine+
     '<footer>'+footer+'</footer>'+
     '</body></html>';
-  const w=window.open("","_blank","width=380,height=520");
-  if(w){w.document.write(html);w.document.close();setTimeout(function(){w.print();},300);}
-  else alert("Ativa pop-ups para imprimir.");
+  if(canPrintDirect()){
+    printDirect(buildConfirmESC(s)).then(function(ok){
+      if(!ok) showToast('⚠️ Erro ao imprimir via impressora');
+    });
+  } else {
+    // Sem impressora directa — abre diálogo PDF/partilhar do sistema
+    const w=window.open('','_blank','width=380,height=520');
+    if(w){w.document.write(html);w.document.close();setTimeout(function(){w.print();},300);}
+    else { window.print(); }
+  }
 }
 
 
