@@ -77,12 +77,12 @@ public class BluetoothBridge {
             connectedName = device.getName() != null ? device.getName() : address;
             connected     = true;
             Log.d(TAG, "Ligado a: " + connectedName);
-            notify("btConnected", connectedName);
+            emitEvent("btConnected", connectedName);
             return true;
         } catch (Exception e) {
             Log.e(TAG, "connect: " + e.getMessage());
             connected = false;
-            notify("btError", e.getMessage());
+            emitEvent("btError", e.getMessage());
             return false;
         }
     }
@@ -103,7 +103,7 @@ public class BluetoothBridge {
         } catch (Exception e) {
             Log.e(TAG, "print: " + e.getMessage());
             connected = false;
-            notify("btError", e.getMessage());
+            emitEvent("btError", e.getMessage());
             return false;
         }
     }
@@ -130,7 +130,7 @@ public class BluetoothBridge {
                                 if (os != null) { os.write(data); os.flush(); }
                             }
                             toast("✓ Guardado em Downloads: " + filename);
-                            notify("fileSaved", filename);
+                            BluetoothBridge.this.emitEvent("fileSaved", filename);
                         } else {
                             toast("⚠️ Erro ao guardar ficheiro");
                         }
@@ -145,12 +145,12 @@ public class BluetoothBridge {
                         fos.flush();
                         fos.close();
                         toast("✓ Guardado em Downloads: " + filename);
-                        notify("fileSaved", filename);
+                        BluetoothBridge.this.emitEvent("fileSaved", filename);
                     }
                 } catch (Exception e) {
                     Log.e(TAG, "saveFile: " + e.getMessage());
                     toast("⚠️ Erro: " + e.getMessage());
-                    notify("fileError", e.getMessage() != null ? e.getMessage() : "erro");
+                    BluetoothBridge.this.emitEvent("fileError", e.getMessage() != null ? e.getMessage() : "erro");
                 }
             }
         }).start();
@@ -187,7 +187,7 @@ public class BluetoothBridge {
     @JavascriptInterface
     public String getConnectedName() { return connectedName; }
 
-    private void notify(final String event, final String data) {
+    private void emitEvent(final String event, final String data) {
         webView.post(new Runnable() {
             @Override public void run() {
                 webView.evaluateJavascript(
