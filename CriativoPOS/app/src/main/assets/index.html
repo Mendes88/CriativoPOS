@@ -2205,9 +2205,9 @@ function doPrint(){
     });
   } else {
     // Sem impressora directa — abre diálogo PDF/partilhar do sistema
-    const w=window.open('','_blank','width=380,height=520');
-    if(w){w.document.write(html);w.document.close();setTimeout(function(){w.print();},300);}
-    else { window.print(); }
+    const ww=window.open('','_blank','width=380,height=520');
+    if(ww){ww.document.write(html);ww.document.close();setTimeout(function(){ww.print();},300);}
+    else { showInlineReport(html,'Talão / Recibo'); }
   }
 }
 
@@ -2793,10 +2793,10 @@ function printFecho(){
 
   if(canPrintDirect()){
     printDirect(buildFechoESC()).then(function(ok){
-      if(!ok) printFallback(html, 860, 700);
+      if(!ok) printFallback(html, 860, 700, 'Fecho de Turno');
     });
   } else {
-    printFallback(html, 860, 700);
+    printFallback(html, 860, 700, 'Fecho de Turno');
   }
 }
 
@@ -3024,8 +3024,8 @@ function printRelatorio(){
     '<style>'+printCSS()+'</style></head><body>'+body+'</body></html>';
 
   if(canPrintDirect()){
-    printDirect(buildRelatorioESC()).then(function(ok){if(!ok)printFallback(html,winW,700);});
-  } else { printFallback(html,winW,700); }
+    printDirect(buildRelatorioESC()).then(function(ok){if(!ok)printFallback(html,winW,700,'Relatório');});
+  } else { printFallback(html,winW,700,'Relatório'); }
 }
 
 
@@ -3225,8 +3225,14 @@ function renderConsolidado(){
 }
 
 function printConsolidado(){
-  // TODO: implement print
-  window.print();
+  var el=document.getElementById('vrel');
+  if(!el) return;
+  var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Consolidado</title>'+
+    '<style>body{font-family:Arial,sans-serif;padding:20px;font-size:13px;}@media print{body{padding:0;}}</style>'+
+    '</head><body>'+el.innerHTML+'</body></html>';
+  var win=window.open('','_blank','width=860,height=700');
+  if(win){win.document.write(html);win.document.close();setTimeout(function(){win.print();},350);}
+  else{showInlineReport(html,'Consolidado');}
 }
 
 function renderRel(){
@@ -3426,8 +3432,9 @@ footer{margin-top:18px;text-align:center;font-size:9px;color:#aaa;border-top:.5p
 <tr class="tr-tot"><td></td><td>TOTAL</td><td style="text-align:right;">${tqty}</td><td style="text-align:right;">—</td><td style="text-align:right;color:#7A3B0A;">${EUR(tot)}</td><td style="text-align:right;">100%</td><td></td></tr>
 </tbody></table>
 <footer>Criativo POS · Relatório por Artigo · ${per} · ${(CU?CU.nome:'—')||"—"} · ${dFmt(today())} ${hora}</footer></body></html>`;
-  const w=window.open("","_blank","width=860,height=640");
-  if(w){w.document.write(html);w.document.close();setTimeout(()=>w.print(),350);}
+  const win=window.open("","_blank","width=860,height=640");
+  if(win){win.document.write(html);win.document.close();setTimeout(()=>win.print(),350);}
+  else{showInlineReport(html,'Relatório por Artigo');}
 }
 
 // ═══ UTILIZADORES ═══════════════════════════════════════
@@ -3681,8 +3688,8 @@ function printLevantamento(lev,saldoAntes){
     '<footer>Documento interno · '+config.restName+'</footer>'+
     '</body></html>';
   if(canPrintDirect()){
-    printDirect(buildLevantamentoESC(lev,saldoAntes)).then(function(ok){if(!ok)printFallback(html,400,500);});
-  } else { printFallback(html,400,500); }
+    printDirect(buildLevantamentoESC(lev,saldoAntes)).then(function(ok){if(!ok)printFallback(html,400,500,'Levantamento');});
+  } else { printFallback(html,400,500,'Levantamento'); }
 }
 
 
@@ -3774,10 +3781,30 @@ function canPrintDirect(){
   return false;
 }
 
-function printFallback(html,w,h){
+function showInlineReport(html, title){
+  var ex=document.getElementById('inline-rpt-ov');
+  if(ex) ex.remove();
+  var ov=document.createElement('div');
+  ov.id='inline-rpt-ov';
+  ov.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;background:#f5f5f5;display:flex;flex-direction:column;';
+  ov.innerHTML=
+    '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#1a1a1a;color:#fff;flex-shrink:0;">'+
+      '<button onclick="document.getElementById(\'inline-rpt-ov\').remove()" style="background:#555;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;">✕ Fechar</button>'+
+      '<span style="flex:1;font-size:14px;font-weight:600;">'+(title||'Relatório')+'</span>'+
+      '<button onclick="document.getElementById(\'rpt-fr\').contentWindow.print()" style="background:#185FA5;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;">🖨️ Imprimir</button>'+
+    '</div>'+
+    '<iframe id="rpt-fr" style="flex:1;border:none;width:100%;background:#fff;"></iframe>';
+  document.body.appendChild(ov);
+  var fr=document.getElementById('rpt-fr');
+  fr.contentDocument.open();
+  fr.contentDocument.write(html);
+  fr.contentDocument.close();
+}
+
+function printFallback(html,w,h,title){
   var win=window.open('','_blank','width='+(w||400)+',height='+(h||600));
   if(win){win.document.write(html);win.document.close();setTimeout(function(){win.print();},350);}
-  else alert('Ativa os pop-ups para imprimir.');
+  else{showInlineReport(html,title);}
 }
 
 function buildConfirmESC(s){
@@ -4754,8 +4781,9 @@ function printDivide(){
     '<div class="sep"></div>'+
     cfgFooter()+
     '</body></html>';
-  const w=window.open("","_blank","width=360,height=480");
-  if(w){w.document.write(html);w.document.close();setTimeout(function(){w.print();},300);}
+  const ww=window.open("","_blank","width=360,height=480");
+  if(ww){ww.document.write(html);ww.document.close();setTimeout(function(){ww.print();},300);}
+  else{showInlineReport(html,'Dividir Conta');}
   closeModal();
 }
 
@@ -5558,7 +5586,7 @@ function printMBWaySlip(total){
     '</div>'+
     '<div class="sep"></div>'+
     '</body></html>';
-  printFallback(html, config.printerWidth===58?340:400, 400);
+  printFallback(html, config.printerWidth===58?340:400, 400, 'MB Way');
 }
 
 function showMBWayQR(total){
