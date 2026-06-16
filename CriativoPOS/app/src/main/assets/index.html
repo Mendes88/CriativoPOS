@@ -1233,7 +1233,7 @@ let users=[
 let nuid=10;
 
 // ═══ UTILS ═══════════════════════════════════════════════
-const EUR=n=>"€"+n.toFixed(2);
+const EUR=n=>"€"+n.toFixed(2).replace(".",",");
 const PML=m=>({d:"Numerário",c:"Cartão",m:"MB Way"}[m]||m);
 const PTG=m=>({d:"tag-d",c:"tag-c",m:"tag-m"}[m]||"tag-d");
 const CC=c=>COLORS[CATS.indexOf(c)%COLORS.length];
@@ -1960,6 +1960,7 @@ function showReceipt(s){
       ${renderItems(s.items, s.detail)}
     </div>
     <hr style="border:none;border-top:1px dashed #ccc;margin:5px 0;">
+    <div style="text-align:right;font-size:11px;color:#999;margin-bottom:3px;">${s.items.reduce(function(a,i){return a+(i.q||1);},0)} artigo${s.items.reduce(function(a,i){return a+(i.q||1);},0)!==1?'s':''}</div>
     <div style="display:flex;justify-content:space-between;font-weight:600;font-size:13px;margin-bottom:4px;">
       <span>TOTAL</span><span style="color:#854F0B;">${EUR(s.total)}</span>
     </div>
@@ -2037,9 +2038,9 @@ function printConfirmation(s){
       for(var k=0;k<reps;k++){
         itensListTalao +=
           '<tr style="border-bottom:1px dotted #e0e0e0;">'+
-            '<td style="padding:5px 6px;font-size:12px;font-weight:600;">'+i.n+'</td>'+
-            '<td style="padding:5px 4px;font-size:10px;font-weight:400;color:#888;text-align:right;white-space:nowrap;">('+EUR(i.p)+')</td>'+
-            '<td style="padding:5px 6px;font-size:13px;font-weight:900;text-align:right;white-space:nowrap;color:#1a1a1a;">×1</td>'+
+            '<td style="padding:5px 6px;font-size:14px;font-weight:600;">'+i.n+'</td>'+
+            '<td style="padding:5px 4px;font-size:12px;font-weight:400;color:#888;text-align:right;white-space:nowrap;">('+EUR(i.p)+')</td>'+
+            '<td style="padding:5px 6px;font-size:14px;font-weight:900;text-align:right;white-space:nowrap;color:#1a1a1a;">×1</td>'+
           '</tr>'+(k===0?notesHtml:'');
       }
     } else {
@@ -2048,9 +2049,9 @@ function printConfirmation(s){
       var lineTotal = qty > 1 ? EUR(qty*i.p) : EUR(i.p);
       itensListTalao +=
         '<tr style="border-bottom:1px dotted #e0e0e0;">'+
-          '<td style="padding:5px 6px;font-size:12px;font-weight:600;">'+i.n+'</td>'+
-          '<td style="padding:5px 4px;font-size:10px;font-weight:400;color:#888;text-align:right;white-space:nowrap;">('+lineTotal+')</td>'+
-          '<td style="padding:5px 6px;font-size:13px;font-weight:900;text-align:right;white-space:nowrap;color:#1a1a1a;">×'+qty+'</td>'+
+          '<td style="padding:5px 6px;font-size:14px;font-weight:600;">'+i.n+'</td>'+
+          '<td style="padding:5px 4px;font-size:12px;font-weight:400;color:#888;text-align:right;white-space:nowrap;">('+lineTotal+')</td>'+
+          '<td style="padding:5px 6px;font-size:14px;font-weight:900;text-align:right;white-space:nowrap;color:#1a1a1a;">×'+qty+'</td>'+
         '</tr>'+notesHtml;
     }
 
@@ -2060,8 +2061,8 @@ function printConfirmation(s){
       var reps2 = i.q || 1;
       for(var m=0;m<reps2;m++){
         itensListRecibo +=
-          '<tr><td style="padding:5px 8px;font-size:13px;">'+i.n+'</td>'+
-              '<td style="padding:5px 8px;font-size:13px;text-align:right;">'+EUR(i.p)+'</td></tr>'+
+          '<tr><td style="padding:5px 8px;font-size:14px;">'+i.n+'</td>'+
+              '<td style="padding:5px 8px;font-size:14px;text-align:right;">'+EUR(i.p)+'</td></tr>'+
           (m===0?notesHtml:'');
       }
     } else {
@@ -2076,14 +2077,18 @@ function printConfirmation(s){
         reciboPrice = EUR(i.p);
       }
       itensListRecibo +=
-        '<tr><td style="padding:5px 8px;font-size:13px;">'+reciboName+'</td>'+
-            '<td style="padding:5px 8px;font-size:13px;text-align:right;">'+reciboPrice+'</td></tr>'+
+        '<tr><td style="padding:5px 8px;font-size:14px;">'+reciboName+'</td>'+
+            '<td style="padding:5px 8px;font-size:14px;text-align:right;">'+reciboPrice+'</td></tr>'+
         reciboSub + notesHtml;
     }
   });
 
   var isTalao  = !s.nif && s.docType !== "recibo";
   var itemsTable = '<table>'+(isTalao ? itensListTalao : itensListRecibo)+'</table>';
+
+  // Calcular total de artigos (soma das quantidades)
+  var totalQty = s.items.reduce(function(acc, i){ return acc + (i.q||1); }, 0);
+  var totalArtigosHtml = '<div style="text-align:right;font-size:12px;color:#666;padding:2px 6px 6px;">'+totalQty+' artigo'+(totalQty!==1?'s':'')+'</div>';
 
   const ticketHtml=
     cfgHeader()+
@@ -2095,6 +2100,7 @@ function printConfirmation(s){
         '<div class="c"><span class="pago">✓ PAGO</span></div>'+
         '<div class="sep"></div>'+
         itemsTable+
+        totalArtigosHtml+
         '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 8px 4px;border-top:2px solid #1a1a1a;margin-top:4px;">'+
           '<span style="font-size:15px;font-weight:700;">TOTAL</span>'+
           '<span style="font-size:18px;font-weight:900;">'+EUR(s.total)+'</span>'+
@@ -2105,6 +2111,7 @@ function printConfirmation(s){
       : '<div class="c leve">'+(s.docType==="recibo"?"Recibo de Pagamento":"TALÃO DE VENDA")+'</div>'+
         '<div class="sep"></div>'+
         itemsTable+
+        totalArtigosHtml+
         '<div class="total-line"><span>TOTAL</span><span>'+EUR(s.total)+'</span></div>'+
         '<div class="row"><span>Pagamento</span><span>'+PML(s.met)+'</span></div>'+
         (s.met==='d'&&s.troco>0?'<div class="row"><span>Troco</span><span>'+EUR(s.troco)+'</span></div>':'')+
@@ -3729,12 +3736,8 @@ function printLevantamento(lev,saldoAntes){
 // ESC/POS ENGINE
 // ═══════════════════════════════════════════════════════════
 function escNorm(str){
-  var map={'á':'a','à':'a','â':'a','ã':'a','Á':'A','À':'A','Â':'A','Ã':'A',
-    'é':'e','è':'e','ê':'e','É':'E','È':'E','Ê':'E',
-    'í':'i','ì':'i','î':'i','Í':'I','Ì':'I',
-    'ó':'o','ò':'o','ô':'o','õ':'o','Ó':'O','Ò':'O','Ô':'O','Õ':'O',
-    'ú':'u','ù':'u','û':'u','ü':'u','Ú':'U','Ù':'U','Û':'U',
-    'ç':'c','Ç':'C','ñ':'n','€':'EUR'};
+  // PC860: mantém maioria dos chars, converte apenas € e caracteres sem mapeamento
+  var map={'€':'Eur'};
   var r='';for(var i=0;i<str.length;i++)r+=map[str[i]]||str[i];return r;
 }
 
@@ -3909,9 +3912,9 @@ function buildConfirmESC(s){
     s.items.forEach(function(i){
       var itemNotes = i.notes&&i.notes.length ? i.notes : (i.note ? [i.note] : []);
       if(i.q > 1 && !itemNotes.length){
-        esc.row((i.n+' X'+i.q).substring(0,esc.cols-10), EUR(i.q*i.p));
+        esc.row((i.n+' X'+i.q).substring(0,esc.cols-9), EUR(i.q*i.p));
       } else {
-        esc.row(i.n.substring(0,esc.cols-10),EUR(i.p));
+        esc.row(i.n.substring(0,esc.cols-9),EUR(i.p));
         itemNotes.forEach(function(n){ esc.textLine('  > '+escNorm(n)); });
       }
     });
@@ -3919,12 +3922,14 @@ function buildConfirmESC(s){
     s.items.forEach(function(i){
       var itemNotes = i.notes&&i.notes.length ? i.notes : (i.note ? [i.note] : []);
       for(var k=0;k<i.q;k++){
-        esc.row(i.n.substring(0,esc.cols-6),EUR(i.p));
+        esc.row(i.n.substring(0,esc.cols-9),EUR(i.p));
         if(k===0) itemNotes.forEach(function(n){ esc.textLine('  > '+escNorm(n)); });
       }
     });
   }
   esc.sep();
+  var _qty=s.items.reduce(function(a,i){return a+(i.q||1);},0);
+  esc.align('r').textLine(_qty+(_qty===1?' artigo':' artigos')).align('l');
   esc.row('TOTAL',EUR(s.total),true);
   esc.row('Pagamento',PML(s.met));
   if(s.met==='d'&&s.troco>0)esc.row('Troco',EUR(s.troco));
@@ -4552,7 +4557,7 @@ function importAll(input){
 
 // ═══ CONFIG HEADER HELPER ════════════════════════════════
 function cfgHeader(){
-  const logo=config.logo?'<div style="text-align:center;margin-bottom:4px;"><img src="'+config.logo+'" style="max-width:120px;max-height:50px;"></div>':'';
+  const logo=config.logo?'<div style="text-align:center;margin-bottom:6px;"><img src="'+config.logo+'" style="width:90%;max-height:80px;object-fit:contain;display:block;margin:0 auto;"></div>':'';
   return logo+
     '<div class="c b" style="font-size:13px;">'+config.restName+'</div>'+
     '<div class="c" style="font-size:9px;color:#555;">NIF '+config.nif+' · Tel: '+config.phone+'</div>'+
