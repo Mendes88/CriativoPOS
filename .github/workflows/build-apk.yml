@@ -20,7 +20,7 @@ jobs:
           cd CriativoPOS
           chmod +x gradlew
           ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file=$(pwd)/criativo-pos.keystore \
+            -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/criativo-pos.keystore \
             -Pandroid.injected.signing.store.password=Criativo2024! \
             -Pandroid.injected.signing.key.alias=criativo-pos \
             -Pandroid.injected.signing.key.password=Criativo2024! \
