@@ -2164,7 +2164,27 @@ function printConfirmation(s){
     '</body></html>';
 
   if(canPrintDirect()){
-    printDirect(buildConfirmESC(s)).then(function(ok){if(!ok)showReceipt(s);});
+    var mainEsc = buildConfirmESC(s);
+    // Tentar logo se configurado
+    if(config.logo){
+      var maxDots = config.printerWidth===58 ? 384 : 512;
+      logoToESC(config.logo, maxDots).then(function(logoData){
+        var finalEsc = mainEsc;
+        if(logoData){
+          var le = new ESCBuilder();
+          le.init().align('c').bitmap(logoData.pixels, logoData.widthBytes, logoData.height).lf().align('l');
+          // Juntar logo + receipt (skip ESC @ do mainEsc)
+          var lb = le.toUint8Array();
+          var mb = mainEsc.toUint8Array().slice(2); // skip ESC @
+          var combined = new Uint8Array(lb.length + mb.length);
+          combined.set(lb, 0); combined.set(mb, lb.length);
+          finalEsc = { toUint8Array: function(){ return combined; } };
+        }
+        printDirect(finalEsc).then(function(ok){ if(!ok) showReceipt(s); });
+      });
+    } else {
+      printDirect(mainEsc).then(function(ok){ if(!ok) showReceipt(s); });
+    }
   } else { showReceipt(s); }
 }
 
@@ -3735,8 +3755,55 @@ ESCBuilder.prototype={
     if(bold)this.bold(0);
     return this;
   },
-  toUint8Array:function(){return new Uint8Array(this.buf);}
+  toUint8Array:function(){return new Uint8Array(this.buf);},
+  bitmap:function(pixels, widthBytes, height){
+    // GS v 0 — raster bit-image
+    this.push(0x1D,0x76,0x30,0x00);
+    this.push(widthBytes&0xFF,(widthBytes>>8)&0xFF);
+    this.push(height&0xFF,(height>>8)&0xFF);
+    for(var i=0;i<pixels.length;i++) this.buf.push(pixels[i]);
+    return this;
+  }
 };
+
+// Converte logo base64 para bitmap ESC/POS (1-bit por pixel)
+async function logoToESC(base64, maxDots){
+  return new Promise(function(resolve){
+    if(!base64){ resolve(null); return; }
+    var img=new Image();
+    img.onload=function(){
+      var scale=Math.min(1, (maxDots||384)/img.width);
+      var w=Math.floor(img.width*scale);
+      var h=Math.floor(img.height*scale);
+      var cv=document.createElement('canvas');
+      cv.width=w; cv.height=h;
+      var ctx=cv.getContext('2d');
+      ctx.fillStyle='#ffffff';
+      ctx.fillRect(0,0,w,h);
+      ctx.drawImage(img,0,0,w,h);
+      var data=ctx.getImageData(0,0,w,h).data;
+      var wb=Math.ceil(w/8);
+      var pixels=[];
+      for(var y=0;y<h;y++){
+        for(var xb=0;xb<wb;xb++){
+          var byte=0;
+          for(var bit=0;bit<8;bit++){
+            var x=xb*8+bit;
+            if(x<w){
+              var idx=(y*w+x)*4;
+              var lum=0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2];
+              if(lum<128) byte|=(0x80>>bit);
+            }
+          }
+          pixels.push(byte);
+        }
+      }
+      resolve({pixels:pixels, widthBytes:wb, height:h});
+    };
+    img.onerror=function(){ resolve(null); };
+    img.src=base64;
+  });
+}
 
 async function printDirect(esc){
   var data = esc.toUint8Array ? esc.toUint8Array() : esc;
@@ -4234,7 +4301,7 @@ showToast('⚠️ Bluetooth não disponível neste dispositivo');
   // APK: show paired device picker
   if(window.CrativoBT.isCapacitor()){
     try{
-      var devices = window.CrativoBT.listPaired();
+      var devices = await window.CrativoBT.listPaired();
       if(!devices.length){
         alert('Nenhuma impressora emparelhada.\nEmparelha a impressora nas Definições do Android primeiro.');
         return;
@@ -5565,6 +5632,30 @@ var postoImports = []; // imported posto data for consolidation
 function printMBWaySlip(total){
   var phone = (config.mbwayPhone||"").trim();
   var fmt   = phone.replace(/\D/g,"").replace(/(\d{3})(\d{3})(\d{3})/,"$1 $2 $3");
+
+  if(canPrintDirect()){
+    // ESC/POS directo via impressora
+    var esc=new ESCBuilder();
+    esc.init();
+    esc.centerBold(config.restName||'');
+    if(config.address) esc.center(config.address);
+    esc.sep();
+    esc.centerBold('PAGAMENTO MB WAY');
+    esc.sep();
+    esc.center('Envie para o numero:');
+    esc.lf();
+    esc.align('c').bold(1).size(2,2).textLine(fmt||'N/D').size(1,1).bold(0).align('l');
+    esc.lf();
+    esc.center('Valor a pagar:');
+    esc.align('c').size(2,2).textLine(EUR(total)).size(1,1).align('l');
+    esc.sep();
+    if(config.footerMsg) esc.center(config.footerMsg);
+    esc.lf(4).cut();
+    printDirect(esc);
+    return;
+  }
+
+  // Fallback HTML (sem impressora directa)
   var html  =
     '<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8">'+
     '<title>MB Way</title>'+
