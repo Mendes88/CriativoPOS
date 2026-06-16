@@ -71,8 +71,21 @@ public class BluetoothBridge {
             if (adapter == null) return false;
             BluetoothDevice device = adapter.getRemoteDevice(address);
             adapter.cancelDiscovery();
-            socket = device.createRfcommSocketToServiceRecord(SPP_UUID);
-            socket.connect();
+
+            // Tentativa 1 — SPP via SDP (normal)
+            try {
+                socket = device.createRfcommSocketToServiceRecord(SPP_UUID);
+                socket.connect();
+            } catch (Exception e1) {
+                Log.w(TAG, "SPP falhou, a tentar canal directo: " + e1.getMessage());
+                // Tentativa 2 — RFCOMM canal 1 directo (fallback para a maioria das impressoras)
+                try { socket.close(); } catch (Exception ignored) {}
+                java.lang.reflect.Method m = device.getClass()
+                    .getMethod("createRfcommSocket", new Class[]{int.class});
+                socket = (BluetoothSocket) m.invoke(device, 1);
+                socket.connect();
+            }
+
             outputStream  = socket.getOutputStream();
             connectedName = device.getName() != null ? device.getName() : address;
             connected     = true;
@@ -82,7 +95,7 @@ public class BluetoothBridge {
         } catch (Exception e) {
             Log.e(TAG, "connect: " + e.getMessage());
             connected = false;
-            emitEvent("btError", e.getMessage());
+            emitEvent("btError", e.getMessage() != null ? e.getMessage() : "Erro ao ligar");
             return false;
         }
     }
