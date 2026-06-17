@@ -18,6 +18,95 @@
 html,body{width:100%;height:100%;background:#252525;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
 body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 
+
+/* ── LOGIN ─────────────────────────────────────────────── */
+#login-screen{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:#252525;
+  z-index:9999;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:16px;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+.ls-title{font-size:28px;font-weight:700;color:#FAEEDA;}
+.ls-sub{font-size:13px;color:#c4956a;margin-top:-8px;}
+.ls-hint{font-size:11px;color:#aaa;background:rgba(255,255,255,.07);
+  padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.1);}
+/* USER CARDS */
+#user-grid{
+  display:flex;flex-wrap:wrap;gap:12px;
+  justify-content:center;max-width:480px;
+  min-height:80px;
+}
+.ucard{
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  padding:16px 20px;border-radius:14px;min-width:100px;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.08);
+  color:#FAEEDA;font-family:inherit;
+  cursor:pointer;-webkit-appearance:none;appearance:none;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+  touch-action:manipulation;
+  font-size:13px;
+}
+.ucard:active{background:rgba(255,255,255,.2);}
+.uav{
+  width:56px;height:56px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:700;color:#fff;
+}
+.ucard-name{font-weight:600;font-size:13px;text-align:center;}
+.ucard-role{font-size:10px;color:#c4956a;text-align:center;}
+/* PIN PAD */
+#pin-wrap{
+  display:none;flex-direction:column;
+  align-items:center;gap:14px;width:270px;
+}
+.pin-who{display:flex;align-items:center;gap:10px;}
+.pin-who-av{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#fff;
+}
+.pin-who-name{font-size:15px;font-weight:600;color:#FAEEDA;}
+.pin-dots{display:flex;gap:12px;}
+.pdot{
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid #c4956a;background:transparent;
+  transition:background .15s;
+}
+.pdot.filled{background:#EF9F27;border-color:#EF9F27;}
+.pdot.err{background:#e74c3c;border-color:#e74c3c;}
+#pin-msg{font-size:13px;color:#e74c3c;min-height:18px;text-align:center;}
+.numpad{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:10px;width:240px;
+}
+.pnb{
+  height:64px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.1);
+  color:#FAEEDA;font-size:22px;font-weight:600;
+  cursor:pointer;font-family:inherit;
+  -webkit-appearance:none;appearance:none;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+  touch-action:manipulation;
+  display:flex;align-items:center;justify-content:center;
+}
+.pnb:active{background:rgba(239,159,39,.4);}
+.pnb.ghost{pointer-events:none;background:transparent;border-color:transparent;}
+.pnb.back{font-size:20px;}
+.pin-back{
+  font-size:12px;color:#c4956a;
+  background:transparent;border:none;
+  cursor:pointer;padding:6px 14px;border-radius:8px;
+  font-family:inherit;-webkit-appearance:none;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+  touch-action:manipulation;
+}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.shake{animation:shake .35s ease;}
 /* ============================================================
    MÓDULO ESC/POS — Criativo POS
    Compatível com: POS-8360L, EP-800, qualquer ESC/POS térmico
@@ -446,7 +535,6 @@ function imprimirTalao(dados, callback){
   });
 }
 
-
 // ── 6. EXEMPLO DE USO ────────────────────────────────────────
 /*
 
@@ -478,95 +566,6 @@ function imprimirTalao(dados, callback){
   });
 
 */  
-/* ── LOGIN ─────────────────────────────────────────────── */
-#login-screen{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  background:#252525;
-  z-index:9999;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  gap:16px;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-}
-.ls-title{font-size:28px;font-weight:700;color:#FAEEDA;}
-.ls-sub{font-size:13px;color:#c4956a;margin-top:-8px;}
-.ls-hint{font-size:11px;color:#aaa;background:rgba(255,255,255,.07);
-  padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.1);}
-/* USER CARDS */
-#user-grid{
-  display:flex;flex-wrap:wrap;gap:12px;
-  justify-content:center;max-width:480px;
-  min-height:80px;
-}
-.ucard{
-  display:flex;flex-direction:column;align-items:center;gap:7px;
-  padding:16px 20px;border-radius:14px;min-width:100px;
-  border:1px solid rgba(255,255,255,.15);
-  background:rgba(255,255,255,.08);
-  color:#FAEEDA;font-family:inherit;
-  cursor:pointer;-webkit-appearance:none;appearance:none;
-  -webkit-tap-highlight-color:rgba(0,0,0,0);
-  touch-action:manipulation;
-  font-size:13px;
-}
-.ucard:active{background:rgba(255,255,255,.2);}
-.uav{
-  width:56px;height:56px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:18px;font-weight:700;color:#fff;
-}
-.ucard-name{font-weight:600;font-size:13px;text-align:center;}
-.ucard-role{font-size:10px;color:#c4956a;text-align:center;}
-/* PIN PAD */
-#pin-wrap{
-  display:none;flex-direction:column;
-  align-items:center;gap:14px;width:270px;
-}
-.pin-who{display:flex;align-items:center;gap:10px;}
-.pin-who-av{
-  width:40px;height:40px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;color:#fff;
-}
-.pin-who-name{font-size:15px;font-weight:600;color:#FAEEDA;}
-.pin-dots{display:flex;gap:12px;}
-.pdot{
-  width:16px;height:16px;border-radius:50%;
-  border:2px solid #c4956a;background:transparent;
-  transition:background .15s;
-}
-.pdot.filled{background:#EF9F27;border-color:#EF9F27;}
-.pdot.err{background:#e74c3c;border-color:#e74c3c;}
-#pin-msg{font-size:13px;color:#e74c3c;min-height:18px;text-align:center;}
-.numpad{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:10px;width:240px;
-}
-.pnb{
-  height:64px;border-radius:12px;
-  border:1px solid rgba(255,255,255,.2);
-  background:rgba(255,255,255,.1);
-  color:#FAEEDA;font-size:22px;font-weight:600;
-  cursor:pointer;font-family:inherit;
-  -webkit-appearance:none;appearance:none;
-  -webkit-tap-highlight-color:rgba(0,0,0,0);
-  touch-action:manipulation;
-  display:flex;align-items:center;justify-content:center;
-}
-.pnb:active{background:rgba(239,159,39,.4);}
-.pnb.ghost{pointer-events:none;background:transparent;border-color:transparent;}
-.pnb.back{font-size:20px;}
-.pin-back{
-  font-size:12px;color:#c4956a;
-  background:transparent;border:none;
-  cursor:pointer;padding:6px 14px;border-radius:8px;
-  font-family:inherit;-webkit-appearance:none;
-  -webkit-tap-highlight-color:rgba(0,0,0,0);
-  touch-action:manipulation;
-}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
-.shake{animation:shake .35s ease;}
-
 /* ── APP SHELL ─────────────────────────────────────────── */
 #app{
   width:100%;max-width:960px;
