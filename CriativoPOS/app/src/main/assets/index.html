@@ -3927,23 +3927,38 @@ function buildConfirmESC(s){
     esc.align('l');
     esc.sep();
     // Artigos: nome bold esq | (preco) centro sem bold | xQty bold dir
-    s.items.forEach(function(i){
-      var itemNotes = i.notes&&i.notes.length ? i.notes : (i.note ? [i.note] : []);
-      var qty = i.q||1;
-      var qtyStr = 'x'+qty;
-      var precoStr = '('+EUR(i.q>1?i.p*i.q:i.p)+')';
+    // s.detail===false → agrupado (1 linha por artigo, qty no nome)
+    // s.detail===true  → individual (1 linha por unidade)
+    function escArtigoLinha(nome, precoUnit, qty){
+      var qtyStr  = 'x'+qty;
+      var precoStr = '('+EUR(precoUnit)+')';
       var maxNome = Math.floor(esc.cols*0.45);
-      var nome = escNorm(i.n).substring(0, maxNome);
-      var meio = esc.cols - nome.length - qtyStr.length;
-      var leftPad = Math.floor((meio - precoStr.length) / 2);
-      var rightPad = meio - precoStr.length - leftPad;
-      if(leftPad < 1) leftPad = 1;
-      if(rightPad < 1) rightPad = 1;
-      esc.bold(1).text(nome).bold(0);
-      esc.text(' '.repeat(leftPad) + precoStr + ' '.repeat(rightPad));
+      var nomeStr = escNorm(nome).substring(0, maxNome);
+      var meio    = esc.cols - nomeStr.length - qtyStr.length;
+      var lPad    = Math.max(1, Math.floor((meio - precoStr.length) / 2));
+      var rPad    = Math.max(1, meio - precoStr.length - lPad);
+      esc.bold(1).text(nomeStr).bold(0);
+      esc.text(' '.repeat(lPad) + precoStr + ' '.repeat(rPad));
       esc.bold(1).textLine(qtyStr).bold(0);
-      if(itemNotes.length) itemNotes.forEach(function(n){ esc.textLine('  > '+escNorm(n)); });
-    });
+    }
+    if(s.detail===false){
+      // AGRUPADO — 1 linha por artigo com qty total
+      s.items.forEach(function(i){
+        var itemNotes = i.notes&&i.notes.length ? i.notes : (i.note ? [i.note] : []);
+        escArtigoLinha(i.n, i.q>1 ? i.p*i.q : i.p, i.q||1);
+        itemNotes.forEach(function(n){ esc.textLine('  > '+escNorm(n)); });
+      });
+    } else {
+      // INDIVIDUAL — 1 linha por unidade
+      s.items.forEach(function(i){
+        var itemNotes = i.notes&&i.notes.length ? i.notes : (i.note ? [i.note] : []);
+        var qty = i.q||1;
+        for(var k=0; k<qty; k++){
+          escArtigoLinha(i.n, i.p, 1);
+          if(k===0) itemNotes.forEach(function(n){ esc.textLine('  > '+escNorm(n)); });
+        }
+      });
+    }
     // Total de artigos e TOTAL
     var _qty=s.items.reduce(function(a,i){return a+(i.q||1);},0);
     esc.textLine('='.repeat(esc.cols));
