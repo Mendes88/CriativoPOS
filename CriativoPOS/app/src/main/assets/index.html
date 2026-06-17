@@ -145,8 +145,20 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 
 @media(max-width:420px){
   .nb{padding:4px 6px;font-size:10px;}
-  #order-panel{max-height:40vh;}
+  #order-panel{max-height:38vh;}
   #gest-left{max-height:160px;}
+  /* Telemóvel: artigos em 2 colunas */
+  #items-grid{grid-template-columns:repeat(2,1fr);gap:6px;}
+  /* Telemóvel: order-panel ocupa menos altura para dar espaço ao menu */
+  #vpos{flex-direction:column !important;}
+  #menu-panel{flex:1;min-height:0;}
+}
+
+/* Telemóvel muito estreito (<380px) — 2 colunas mais compactas */
+@media(max-width:380px){
+  #items-grid{grid-template-columns:repeat(2,1fr);gap:4px;}
+  #order-panel{max-height:35vh;}
+  .nb{padding:3px 5px;font-size:9px;}
 }
 
 /* ── TOPBAR ─────────────────────────────────────────────── */
