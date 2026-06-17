@@ -3897,12 +3897,15 @@ function buildConfirmESC(s){
   var esc=new ESCBuilder();esc.init();
   // ── TALÃO PRÉ-PAGAMENTO ──────────────────────────────────────────────────
   if(!s.nif && s.docType !== "recibo"){
-    // Cabeçalho: nome em fundo invertido (preto)
-    esc.push(0x1D,0x42,0x01); // GS B 1 — invert ON
-    esc.align('c').bold(1).textLine(' '+escNorm(config.restName)+' ').bold(0);
-    esc.push(0x1D,0x42,0x00); // GS B 0 — invert OFF
+    // Cabeçalho: nome em fundo invertido (só se preenchido)
+    if(config.restName){
+      esc.push(0x1D,0x42,0x01);
+      esc.align('c').bold(1).textLine(' '+escNorm(config.restName)+' ').bold(0);
+      esc.push(0x1D,0x42,0x00);
+    }
     if(config.address) esc.center(escNorm(config.address));
     if(config.nif) esc.center('NIF '+config.nif);
+    if(config.phone) esc.center('Tel: '+config.phone);
     esc.lf(1);
     // Data e hora centradas
     esc.center(s.date+' '+s.time);
