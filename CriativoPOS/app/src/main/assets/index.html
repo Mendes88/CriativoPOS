@@ -3895,18 +3895,72 @@ function printFallback(html,w,h,title){
 
 function buildConfirmESC(s){
   var esc=new ESCBuilder();esc.init();
+  // ── TALÃO PRÉ-PAGAMENTO ──────────────────────────────────────────────────
+  if(!s.nif && s.docType !== "recibo"){
+    // Cabeçalho: nome em fundo invertido (preto)
+    esc.push(0x1D,0x42,0x01); // GS B 1 — invert ON
+    esc.align('c').bold(1).textLine(' '+escNorm(config.restName)+' ').bold(0);
+    esc.push(0x1D,0x42,0x00); // GS B 0 — invert OFF
+    if(config.address) esc.center(escNorm(config.address));
+    if(config.nif) esc.center('NIF '+config.nif);
+    esc.lf(1);
+    // Data e hora centradas
+    esc.center(s.date+' '+s.time);
+    esc.sep();
+    // Número do pedido grande
+    esc.align('c').size(4,4).textLine('#'+String(s.orderNum||s.id).padStart(4,'0')).size(1,1).align('l');
+    // PAGO invertido
+    esc.push(0x1D,0x42,0x01);
+    esc.align('c').bold(1).textLine(' v PAGO ').bold(0);
+    esc.push(0x1D,0x42,0x00);
+    esc.align('l');
+    esc.sep();
+    // Artigos em bold com preço alinhado
+    s.items.forEach(function(i){
+      var itemNotes = i.notes&&i.notes.length ? i.notes : (i.note ? [i.note] : []);
+      var qty = i.q||1;
+      if(qty > 1 && !itemNotes.length){
+        esc.bold(1).row((i.n+' x'+qty).substring(0,esc.cols-10), EUR(i.q*i.p)).bold(0);
+      } else {
+        for(var k=0;k<qty;k++){
+          esc.bold(1).row(i.n.substring(0,esc.cols-10), EUR(i.p)).bold(0);
+          if(k===0) itemNotes.forEach(function(n){ esc.textLine('  > '+escNorm(n)); });
+        }
+      }
+    });
+    // Total de artigos e TOTAL
+    var _qty=s.items.reduce(function(a,i){return a+(i.q||1);},0);
+    esc.textLine('='.repeat(esc.cols));
+    esc.align('r').textLine(_qty+(_qty===1?' artigo':' artigos')).align('l');
+    esc.bold(1).row('TOTAL',EUR(s.total)).bold(0);
+    esc.textLine('='.repeat(esc.cols));
+    esc.row('Pagamento',PML(s.met));
+    if(s.met==='d'&&s.troco>0) esc.row('Troco',EUR(s.troco));
+    if(s.met==='m'&&config.mbwayPhone){
+      esc.sep();
+      esc.center('MB Way');
+      esc.center(config.mbwayPhone.replace(/\D/g,'').replace(/(\d{3})(\d{3})(\d{3})/,'$1 $2 $3'));
+      esc.center(EUR(s.total));
+    }
+    if(s.split>1){
+      esc.sep();
+      esc.centerBold('DIVIDIDO: '+s.split+' PESSOAS');
+      esc.align('c').size(2,2).textLine(EUR(s.total/s.split)+' p.p.').size(1,1).align('l');
+    }
+    esc.sep();
+    esc.center(config.footerMsg||'Obrigado pela visita!');
+    if(config.footerMsg2) esc.center(config.footerMsg2);
+    esc.lf(3).cut();
+    return esc;
+  }
+  // ── RECIBO / FATURA ──────────────────────────────────────────────────────
   esc.centerBold(config.restName);
   esc.center(config.address);
   esc.center('NIF '+config.nif);
   esc.sep();
   esc.centerBold(s.nif?'FATURA SIMPLIFICADA':(s.docType==="recibo"?'RECIBO':'TALAO DE RECOLHA'));
   esc.sep();
-  if(!s.nif && s.docType !== "recibo"){
-    esc.align('c').size(4,4).textLine('#'+String(s.orderNum||s.id).padStart(4,'0')).size(1,1).align('l');
-    esc.centerBold('[ PAGO ]');
-  } else {
-    esc.center('Doc. #'+String(s.orderNum||s.id).padStart(4,'0'));
-  }
+  esc.center('Doc. #'+String(s.orderNum||s.id).padStart(4,'0'));
   esc.sep();
   if(s.detail===false){
     s.items.forEach(function(i){
