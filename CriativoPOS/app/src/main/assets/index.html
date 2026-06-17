@@ -2038,9 +2038,9 @@ function printConfirmation(s){
       for(var k=0;k<reps;k++){
         itensListTalao +=
           '<tr style="border-bottom:1px dotted #e0e0e0;">'+
-            '<td style="padding:5px 6px;font-size:14px;font-weight:600;">'+i.n+'</td>'+
-            '<td style="padding:5px 4px;font-size:12px;font-weight:400;color:#888;text-align:right;white-space:nowrap;">('+EUR(i.p)+')</td>'+
-            '<td style="padding:5px 6px;font-size:14px;font-weight:900;text-align:right;white-space:nowrap;color:#1a1a1a;">×1</td>'+
+            '<td style="padding:5px 6px;font-size:16px;font-weight:700;">'+i.n+'</td>'+
+            '<td style="padding:5px 4px;font-size:14px;font-weight:400;color:#888;text-align:center;white-space:nowrap;">('+EUR(i.p)+')</td>'+
+            '<td style="padding:5px 6px;font-size:16px;font-weight:700;text-align:right;white-space:nowrap;color:#1a1a1a;">×1</td>'+
           '</tr>'+(k===0?notesHtml:'');
       }
     } else {
@@ -2049,9 +2049,9 @@ function printConfirmation(s){
       var lineTotal = qty > 1 ? EUR(qty*i.p) : EUR(i.p);
       itensListTalao +=
         '<tr style="border-bottom:1px dotted #e0e0e0;">'+
-          '<td style="padding:5px 6px;font-size:14px;font-weight:600;">'+i.n+'</td>'+
-          '<td style="padding:5px 4px;font-size:12px;font-weight:400;color:#888;text-align:right;white-space:nowrap;">('+lineTotal+')</td>'+
-          '<td style="padding:5px 6px;font-size:14px;font-weight:900;text-align:right;white-space:nowrap;color:#1a1a1a;">×'+qty+'</td>'+
+          '<td style="padding:5px 6px;font-size:16px;font-weight:700;">'+i.n+'</td>'+
+          '<td style="padding:5px 4px;font-size:14px;font-weight:400;color:#888;text-align:center;white-space:nowrap;">('+lineTotal+')</td>'+
+          '<td style="padding:5px 6px;font-size:16px;font-weight:700;text-align:right;white-space:nowrap;color:#1a1a1a;">×'+qty+'</td>'+
         '</tr>'+notesHtml;
     }
 
@@ -3918,18 +3918,25 @@ function buildConfirmESC(s){
     esc.push(0x1D,0x42,0x00);
     esc.align('l');
     esc.sep();
-    // Artigos em bold com preço alinhado
+    // Artigos: nome bold esq | (preco) centro sem bold | xQty bold dir
     s.items.forEach(function(i){
       var itemNotes = i.notes&&i.notes.length ? i.notes : (i.note ? [i.note] : []);
       var qty = i.q||1;
-      if(qty > 1 && !itemNotes.length){
-        esc.bold(1).row((i.n+' x'+qty).substring(0,esc.cols-10), EUR(i.q*i.p)).bold(0);
-      } else {
-        for(var k=0;k<qty;k++){
-          esc.bold(1).row(i.n.substring(0,esc.cols-10), EUR(i.p)).bold(0);
-          if(k===0) itemNotes.forEach(function(n){ esc.textLine('  > '+escNorm(n)); });
-        }
-      }
+      var qtyStr = 'x'+qty;
+      var precoStr = '('+EUR(i.q>1?i.p*i.q:i.p)+')';
+      // Calcular espaços: nome|...preco...|qty
+      var maxNome = Math.floor(esc.cols*0.45);
+      var nome = escNorm(i.n).substring(0, maxNome);
+      var meio = esc.cols - nome.length - qtyStr.length;
+      var leftPad = Math.floor((meio - precoStr.length) / 2);
+      var rightPad = meio - precoStr.length - leftPad;
+      if(leftPad < 1) leftPad = 1;
+      if(rightPad < 1) rightPad = 1;
+      var linha = nome + ' '.repeat(leftPad) + precoStr + ' '.repeat(rightPad) + qtyStr;
+      esc.bold(1).text(nome).bold(0);
+      esc.text(' '.repeat(leftPad) + precoStr + ' '.repeat(rightPad));
+      esc.bold(1).textLine(qtyStr).bold(0);
+      if(itemNotes.length) itemNotes.forEach(function(n){ esc.textLine('  > '+escNorm(n)); });
     });
     // Total de artigos e TOTAL
     var _qty=s.items.reduce(function(a,i){return a+(i.q||1);},0);
