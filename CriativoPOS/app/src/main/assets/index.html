@@ -3277,9 +3277,17 @@ function renderConsolidado(){
 function printConsolidado(){
   var el=document.getElementById('vrel');
   if(!el) return;
+  var postoHdr='';
+  if(config.postoName||config.restName){
+    postoHdr='<div style="text-align:center;padding:10px 0 8px;border-bottom:2px solid #854F0B;margin-bottom:14px;">'+
+      (config.postoName?'<div style="font-size:16px;font-weight:700;color:#854F0B;">'+config.postoName+'</div>':'')+
+      (config.restName?'<div style="font-size:13px;color:#555;">'+config.restName+'</div>':'')+
+      ((config.nif||config.phone)?'<div style="font-size:12px;color:#888;">'+(config.nif?'NIF '+config.nif:'')+(config.nif&&config.phone?' · ':'')+(config.phone?'Tel: '+config.phone:'')+'</div>':'')+
+    '</div>';
+  }
   var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Consolidado</title>'+
     '<style>body{font-family:Arial,sans-serif;padding:20px;font-size:13px;}@media print{body{padding:0;}}</style>'+
-    '</head><body>'+el.innerHTML+'</body></html>';
+    '</head><body>'+postoHdr+el.innerHTML+'</body></html>';
   var win=window.open('','_blank','width=860,height=700');
   if(win){win.document.write(html);win.document.close();setTimeout(function(){win.print();},350);}
   else{showInlineReport(html,'Consolidado');}
@@ -4076,8 +4084,10 @@ function buildConfirmESC(s){
 function buildLevantamentoESC(lev,saldoAntes){
   var esc=new ESCBuilder();esc.init();
   esc.centerBold('LEVANTAMENTO DE CAIXA');
-  esc.center(config.restName);
-  esc.center('NIF '+config.nif);
+  if(config.postoName) esc.centerBold(escNorm(config.postoName));
+  if(config.restName)  esc.center(escNorm(config.restName));
+  if(config.nif)       esc.center('NIF '+config.nif);
+  if(config.phone)     esc.center('Tel: '+config.phone);
   esc.sep();
   esc.row('Data',dFmt(lev.date)+' '+lev.hora);
   esc.row('Operador',lev.user||'--');
@@ -4155,7 +4165,10 @@ function buildRelatorioESC(){
   var arts=Object.values(imap).sort(function(a,b){return b.rev-a.rev;});
   var esc=new ESCBuilder();esc.init();
   esc.centerBold('RELATORIO DE VENDAS');
-  esc.center(config.restName);
+  if(config.postoName) esc.centerBold(escNorm(config.postoName));
+  if(config.restName)  esc.center(escNorm(config.restName));
+  if(config.nif)       esc.center('NIF '+config.nif);
+  if(config.phone)     esc.center('Tel: '+config.phone);
   esc.sep();
   esc.center('Periodo: '+per);
   esc.center('Emitido: '+dFmt(today())+' '+hora);
@@ -4656,10 +4669,11 @@ function importAll(input){
 // ═══ CONFIG HEADER HELPER ════════════════════════════════
 function cfgHeader(){
   const logo=config.logo?'<div style="text-align:center;margin-bottom:6px;"><img src="'+config.logo+'" style="width:90%;max-height:80px;object-fit:contain;display:block;margin:0 auto;"></div>':'';
-  return logo+
-    '<div class="c b" style="font-size:13px;">'+config.restName+'</div>'+
-    '<div class="c" style="font-size:9px;color:#555;">NIF '+config.nif+' · Tel: '+config.phone+'</div>'+
-    '<div class="c" style="font-size:9px;color:#555;">'+config.address+'</div>';
+  const posto=config.postoName?'<div class="c b" style="font-size:14px;color:#854F0B;">'+config.postoName+'</div>':'';
+  return logo+posto+
+    (config.restName?'<div class="c b" style="font-size:13px;">'+config.restName+'</div>':'')+
+    ((config.nif||config.phone)?'<div class="c" style="font-size:9px;color:#555;">'+(config.nif?'NIF '+config.nif:'')+(config.nif&&config.phone?' · ':'')+(config.phone?'Tel: '+config.phone:'')+'</div>':'')+
+    (config.address?'<div class="c" style="font-size:9px;color:#555;">'+config.address+'</div>':'');
 }
 function cfgFooter(){
   return '<footer>'+config.footerMsg+(config.footerMsg2?'<br>'+config.footerMsg2:'')+'</footer>';
