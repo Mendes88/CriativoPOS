@@ -18,6 +18,466 @@
 html,body{width:100%;height:100%;background:#252525;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
 body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 
+/* ============================================================
+   MÓDULO ESC/POS — Criativo POS
+   Compatível com: POS-8360L, EP-800, qualquer ESC/POS térmico
+   Interface: CrativoBT (Android BT SPP) ou AndroidBT directo
+   Sem dependências externas. Vanilla JS puro.
+   ============================================================ */
+
+// ── 1. UTILITÁRIOS BASE ─────────────────────────────────────
+
+/**
+ * Normaliza texto para o codepage PC860 (Português).
+ * Só converte o símbolo € → Eur. Mantém acentos nativos do PC860.
+ */
+function escNorm(str){
+  var map = { '€': 'Eur' };
+  var r = '';
+  for(var i = 0; i < str.length; i++) r += map[str[i]] || str[i];
+  return r;
+}
+
+/**
+ * Formata um número como moeda: 11.5 → "11,50"
+ */
+function escEUR(n){
+  return n.toFixed(2).replace('.', ',');
+}
+
+/**
+ * Devolve o número de colunas consoante a largura configurada.
+ * 58mm → 32 cols | 80mm → 48 cols
+ */
+function escCols(){
+  var w = (window.config && config.printerWidth) ? config.printerWidth : 80;
+  return w === 58 ? 32 : 48;
+}
+
+
+// ── 2. ESCBUILDER — construtor de bytes ESC/POS ─────────────
+
+/**
+ * Constrói um buffer de bytes ESC/POS com API fluente.
+ * Uso: new ESCBuilder().init().centerBold('Olá').lf(3).cut()
+ */
+function ESCBuilder(cols){
+  this.cols = cols || escCols();
+  this.buf  = [];
+}
+
+ESCBuilder.prototype = {
+
+  /** Adiciona bytes ao buffer */
+  push: function(){
+    for(var i = 0; i < arguments.length; i++) this.buf.push(arguments[i]);
+    return this;
+  },
+
+  /** ESC @ — reset + codepage PC860 (Português) + espaçamento mínimo */
+  init: function(){
+    return this.push(
+      0x1B, 0x40,       // ESC @  — reset
+      0x1B, 0x74, 0x06, // ESC t 6 — PC860 Português
+      0x1B, 0x33, 0x00  // ESC 3 0 — line spacing mínimo
+    );
+  },
+
+  /** Line feed (n vezes) */
+  lf: function(n){
+    for(var i = 0; i < (n || 1); i++) this.buf.push(0x0A);
+    return this;
+  },
+
+  /** GS V 0 — corte completo do papel */
+  cut: function(){ return this.push(0x1D, 0x56, 0x00); },
+
+  /** Avanço de papel (n linhas) antes de cortar */
+  feed: function(n){ return this.lf(n || 3); },
+
+  /** ESC a — alinhamento: 'l'=esq, 'c'=centro, 'r'=dir */
+  align: function(a){
+    var v = { l: 0, c: 1, r: 2 }[a] || 0;
+    return this.push(0x1B, 0x61, v);
+  },
+
+  /** ESC E — negrito on/off */
+  bold: function(on){ return this.push(0x1B, 0x45, on ? 1 : 0); },
+
+  /** GS ! — tamanho do texto (w e h de 1 a 8) */
+  size: function(w, h){
+    return this.push(0x1D, 0x21, (((h - 1) & 7) << 4) | ((w - 1) & 7));
+  },
+
+  /** GS B — texto invertido (fundo preto, letra branca) on/off */
+  invert: function(on){ return this.push(0x1D, 0x42, on ? 1 : 0); },
+
+  /** Linha separadora de traços */
+  sep: function(){ return this.textLine('-'.repeat(this.cols)); },
+
+  /** Linha separadora de iguais */
+  sepEq: function(){ return this.textLine('='.repeat(this.cols)); },
+
+  /** Escreve texto (normalizado) sem newline */
+  text: function(str){
+    str = escNorm(String(str));
+    for(var i = 0; i < str.length; i++){
+      var c = str.charCodeAt(i);
+      this.buf.push(c < 256 ? c : 63); // chars fora do range → '?'
+    }
+    return this;
+  },
+
+  /** Escreve texto + newline */
+  textLine: function(str){ return this.text(str).lf(); },
+
+  /** Texto centrado */
+  center: function(str){ return this.align('c').textLine(str).align('l'); },
+
+  /** Texto centrado + negrito */
+  centerBold: function(str){
+    return this.align('c').bold(1).textLine(str).bold(0).align('l');
+  },
+
+  /** Texto centrado + invertido (fundo preto) */
+  centerInvert: function(str){
+    return this.align('c').invert(1).bold(1).textLine(' ' + str + ' ').bold(0).invert(0).align('l');
+  },
+
+  /**
+   * Linha com texto à esquerda e direita, espaço entre eles.
+   * row('Artigo', '11,50€') → "Artigo          11,50Eur"
+   */
+  row: function(left, right, bold){
+    var l = escNorm(String(left));
+    var r = escNorm(String(right));
+    var sp = this.cols - l.length - r.length;
+    if(sp < 1) sp = 1;
+    if(bold) this.bold(1);
+    this.textLine(l + ' '.repeat(sp) + r);
+    if(bold) this.bold(0);
+    return this;
+  },
+
+  /**
+   * GS v 0 — imprime bitmap raster 1-bit.
+   * @param {number[]} pixels — array de bytes (1 byte = 8 pixels horizontais)
+   * @param {number}   widthBytes — largura em bytes (ceil(larguraPx / 8))
+   * @param {number}   height     — altura em pixels
+   */
+  bitmap: function(pixels, widthBytes, height){
+    this.push(0x1D, 0x76, 0x30, 0x00);
+    this.push(widthBytes & 0xFF, (widthBytes >> 8) & 0xFF);
+    this.push(height & 0xFF, (height >> 8) & 0xFF);
+    for(var i = 0; i < pixels.length; i++) this.buf.push(pixels[i]);
+    return this;
+  },
+
+  /** Devolve Uint8Array com todos os bytes */
+  toUint8Array: function(){ return new Uint8Array(this.buf); }
+};
+
+
+// ── 3. LOGO: CARREGAR, GUARDAR E CONVERTER ──────────────────
+
+/**
+ * Liga um <input type="file"> ao sistema de logo.
+ * Uso: bindLogoInput(document.getElementById('logo-input'), afterLoad)
+ *
+ * @param {HTMLInputElement} inputEl — elemento input[type=file]
+ * @param {Function}         cb      — callback(base64) após carregar
+ */
+function bindLogoInput(inputEl, cb){
+  inputEl.addEventListener('change', function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      var b64 = ev.target.result; // data:image/png;base64,...
+      try{ localStorage.setItem('criativo_logo', b64); } catch(ex){}
+      if(cb) cb(b64);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Carrega o logo guardado no localStorage.
+ * @returns {string|null} base64 data URL ou null
+ */
+function loadLogoFromStorage(){
+  try{ return localStorage.getItem('criativo_logo'); } catch(e){ return null; }
+}
+
+/**
+ * Remove o logo do localStorage.
+ */
+function clearLogo(){
+  try{ localStorage.removeItem('criativo_logo'); } catch(e){}
+}
+
+/**
+ * Converte uma imagem base64 (PNG/JPG) para bitmap ESC/POS 1-bit.
+ * Usa Canvas API — funciona em WebView Android 5+.
+ *
+ * @param {string}   base64  — data URL completo (data:image/png;base64,...)
+ * @param {number}   maxDots — largura máxima em pontos (384 para 58mm, 512 para 80mm)
+ * @returns {Promise<{pixels, widthBytes, height}|null>}
+ */
+function logoToESC(base64, maxDots){
+  return new Promise(function(resolve){
+    if(!base64){ resolve(null); return; }
+
+    var img = new Image();
+
+    img.onload = function(){
+      // Escalar mantendo proporção
+      var scale    = Math.min(1, (maxDots || 384) / img.width);
+      var w        = Math.floor(img.width  * scale);
+      var h        = Math.floor(img.height * scale);
+      var wb       = Math.ceil(w / 8); // widthBytes
+
+      // Desenhar no canvas com fundo branco
+      var cv  = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      var ctx = cv.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+
+      // Converter para 1-bit por pixel (luminância < 128 → ponto preto)
+      var data   = ctx.getImageData(0, 0, w, h).data;
+      var pixels = [];
+
+      for(var y = 0; y < h; y++){
+        for(var xb = 0; xb < wb; xb++){
+          var byte = 0;
+          for(var bit = 0; bit < 8; bit++){
+            var x = xb * 8 + bit;
+            if(x < w){
+              var i   = (y * w + x) * 4;
+              var lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+              if(lum < 128) byte |= (0x80 >> bit);
+            }
+          }
+          pixels.push(byte);
+        }
+      }
+
+      resolve({ pixels: pixels, widthBytes: wb, height: h });
+    };
+
+    img.onerror = function(){ resolve(null); };
+    img.src = base64;
+  });
+}
+
+
+// ── 4. FUNÇÃO PRINCIPAL: gerarTalao(dados) ───────────────────
+
+/**
+ * Gera o ESCBuilder com o talão completo.
+ *
+ * @param {Object} dados
+ *   logoData   — resultado de logoToESC() ou null
+ *   evento     — nome do evento/festival
+ *   entidade   — sub-título (ex: "ARDFT")
+ *   local      — localidade (ex: "Viseu")
+ *   nif        — NIF (ex: "123 456 789")
+ *   telefone   — telefone (ex: "232 123 456")
+ *   numero     — número do talão (ex: 5)
+ *   itens      — [{nome, preco, qtd}]
+ *   total      — total numérico
+ *   metodo     — método de pagamento (ex: "Numerário")
+ *   split      — número de pessoas para dividir (opcional)
+ *   footerMsg  — mensagem de rodapé (opcional)
+ *   footerMsg2 — segunda linha de rodapé (opcional)
+ *
+ * @returns {ESCBuilder}
+ */
+function gerarTalao(dados){
+  var cols = escCols();
+  var esc  = new ESCBuilder(cols);
+  esc.init();
+
+  // ── LOGO ──────────────────────────────────────────────────
+  if(dados.logoData){
+    esc.align('c')
+       .bitmap(dados.logoData.pixels, dados.logoData.widthBytes, dados.logoData.height)
+       .lf(1)
+       .align('l');
+  }
+
+  // ── CABEÇALHO: nome em fundo invertido ───────────────────
+  var nomeEvento = dados.evento || dados.entidade || 'FESTIVAL';
+  esc.centerInvert(nomeEvento);
+
+  if(dados.entidade && dados.evento && dados.entidade !== dados.evento){
+    esc.center(dados.entidade);
+  }
+  if(dados.local)     esc.center(dados.local);
+  if(dados.nif)       esc.center('NIF: ' + dados.nif);
+  if(dados.telefone)  esc.center('Tel: ' + dados.telefone);
+
+  esc.sep();
+
+  // ── NÚMERO DO TALÃO ───────────────────────────────────────
+  var num = String(dados.numero || 1).padStart(4, '0');
+  esc.align('c').size(4, 4).textLine('#' + num).size(1, 1).align('l');
+
+  // ── ESTADO PAGO invertido ─────────────────────────────────
+  esc.centerInvert('v PAGO');
+  esc.lf(1);
+  esc.sep();
+
+  // ── LISTA DE ITENS (negrito, preço alinhado à direita) ───
+  var totalQty = 0;
+  dados.itens.forEach(function(item){
+    var qty   = item.qtd || item.q || 1;
+    totalQty += qty;
+    var preco = escEUR(item.preco || item.p || 0);
+    var nome  = String(item.nome || item.n || '');
+
+    if(qty > 1){
+      // Agrupado: "Nome x2               22,00"
+      var label = nome.substring(0, cols - 10) + ' x' + qty;
+      esc.bold(1).row(label, preco + 'Eur').bold(0);
+    } else {
+      // Individual
+      esc.bold(1).row(nome.substring(0, cols - 10), preco + 'Eur').bold(0);
+    }
+  });
+
+  // ── TOTAL ─────────────────────────────────────────────────
+  esc.sepEq();
+  esc.align('r').textLine(totalQty + (totalQty === 1 ? ' artigo' : ' artigos')).align('l');
+  esc.bold(1).row('TOTAL', escEUR(dados.total) + 'Eur').bold(0);
+  esc.sepEq();
+
+  // ── PAGAMENTO ─────────────────────────────────────────────
+  esc.row('Pagamento', dados.metodo || '');
+
+  // ── DIVISÃO (opcional) ────────────────────────────────────
+  if(dados.split && dados.split > 1){
+    esc.sep();
+    esc.centerBold('DIVIDIDO: ' + dados.split + ' PESSOAS');
+    esc.align('c')
+       .size(2, 2)
+       .textLine(escEUR(dados.total / dados.split) + 'Eur p.p.')
+       .size(1, 1)
+       .align('l');
+  }
+
+  // ── RODAPÉ ────────────────────────────────────────────────
+  esc.sep();
+  esc.center(dados.footerMsg  || 'Talaō unico - ' + (dados.metodo || ''));
+  if(dados.footerMsg2){
+    esc.center(dados.footerMsg2);
+  } else {
+    esc.center('O talao sera recolhido na entrega');
+  }
+
+  // ── AVANÇO E CORTE ────────────────────────────────────────
+  esc.lf(4).cut();
+
+  return esc;
+}
+
+
+// ── 5. FUNÇÃO DE IMPRESSÃO: imprimirTalao(dados) ─────────────
+
+/**
+ * Gera e envia o talão para a impressora.
+ * Suporta: BT SPP via CrativoBT, AndroidBT directo, ou fallback visual.
+ *
+ * @param {Object}   dados    — mesmo objecto que gerarTalao()
+ * @param {Function} callback — opcional: callback(sucesso: boolean)
+ */
+function imprimirTalao(dados, callback){
+  var maxDots = (window.config && config.printerWidth === 58) ? 384 : 512;
+  var logoB64 = dados.logoBase64 || (window.config && config.logo) || loadLogoFromStorage();
+
+  // Converter logo (async) e depois imprimir
+  logoToESC(logoB64, maxDots).then(function(logoData){
+    dados.logoData = logoData; // injectar no dados para gerarTalao
+    var esc  = gerarTalao(dados);
+    var data = esc.toUint8Array();
+
+    // ── Tentar CrativoBT (interface nativa da app) ──────────
+    if(window.CrativoBT){
+      if(CrativoBT.isConnected && CrativoBT.isConnected()){
+        CrativoBT.write(data)
+          .then(function(){ if(callback) callback(true); })
+          .catch(function(e){
+            console.error('CrativoBT.write error:', e);
+            if(callback) callback(false);
+          });
+        return;
+      }
+      if(CrativoBT.isUSBConnected && CrativoBT.isUSBConnected()){
+        CrativoBT.writeUSB(data)
+          .then(function(){ if(callback) callback(true); })
+          .catch(function(e){
+            console.error('CrativoBT USB error:', e);
+            if(callback) callback(false);
+          });
+        return;
+      }
+    }
+
+    // ── Fallback: AndroidBT directo (JavascriptInterface legado) ─
+    if(window.AndroidBT && AndroidBT.enviar){
+      // Converter Uint8Array para string de bytes
+      var str = '';
+      for(var i = 0; i < data.length; i++) str += String.fromCharCode(data[i]);
+      try{
+        AndroidBT.enviar(str);
+        if(callback) callback(true);
+      } catch(e){
+        console.error('AndroidBT error:', e);
+        if(callback) callback(false);
+      }
+      return;
+    }
+
+    // ── Nenhuma impressora disponível ───────────────────────
+    console.warn('imprimirTalao: nenhuma impressora ligada');
+    if(callback) callback(false);
+  });
+}
+
+
+// ── 6. EXEMPLO DE USO ────────────────────────────────────────
+/*
+
+  // Ligar o input de logo ao sistema:
+  bindLogoInput(document.getElementById('logo-input'), function(b64){
+    if(window.config) config.logo = b64;
+    document.getElementById('logo-preview').src = b64;
+  });
+
+  // Imprimir um talão:
+  imprimirTalao({
+    evento:     'Festival do Leitugas',
+    entidade:   'ARDFT',
+    local:      'Viseu',
+    nif:        '123 456 789',
+    telefone:   '232 123 456',
+    numero:     5,
+    itens: [
+      { nome: 'Costeleta de Porco', preco: 11.00, qtd: 1 },
+      { nome: 'Entrecosto',         preco: 13.00, qtd: 1 },
+      { nome: 'Bife do Lombo',      preco: 18.00, qtd: 1 }
+    ],
+    total:      42.00,
+    metodo:     'Numerário',
+    footerMsg:  'Talão único • Numerário',
+    footerMsg2: 'O talão será recolhido na entrega'
+  }, function(ok){
+    console.log(ok ? 'Impresso!' : 'Falhou — impressora desligada?');
+  });
+
+*/  
 /* ── LOGIN ─────────────────────────────────────────────── */
 #login-screen{
   position:fixed;top:0;left:0;width:100%;height:100%;
