@@ -2683,6 +2683,7 @@ function showFecho(){
     <div style="text-align:center;padding-bottom:11px;border-bottom:1px solid #eee;">
       <div style="font-size:15px;font-weight:600;">🔒 Fecho de Caixa</div>
       <div style="font-size:12px;color:#666;margin-top:2px;">${dFmt(today())} · ${hora} · ${(CU?CU.nome:'—')}</div>
+      ${(config.postoName||config.restName)?'<div style="font-size:11px;font-weight:600;color:#854F0B;margin-top:3px;">🏪 '+(config.postoName||config.restName)+'</div>':''}
     </div>
     <div class="fecho-sec">
       <div class="fecho-sec-title">Caixa</div>
@@ -3638,6 +3639,7 @@ function showLevantamento(){
   modMode="levantamento";modData={};
   mb.innerHTML=
     '<div class="modal-title">💼 Levantamento de Caixa</div>'+
+    ((config.postoName||config.restName)?'<div style="text-align:center;font-size:11px;font-weight:600;color:#854F0B;margin-bottom:8px;">🏪 '+(config.postoName||config.restName)+'</div>':'')+
     '<div style="background:#e3f2fd;border-radius:8px;padding:11px 13px;border:1px solid #90caf9;">'+
       '<div style="font-size:12px;color:#1565c0;margin-bottom:3px;">Saldo atual em caixa</div>'+
       '<div style="font-size:22px;font-weight:700;color:#1a1a1a;">'+EUR(saldo)+'</div>'+
@@ -4076,8 +4078,9 @@ function buildFechoESC(){
   var now=new Date(),hora=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
   var esc=new ESCBuilder();esc.init();
   esc.centerBold('FECHO DE CAIXA');
-  esc.center(config.restName);
-  esc.center('NIF '+config.nif);
+  if(config.postoName) esc.centerBold(escNorm(config.postoName));
+  if(config.restName)  esc.center(escNorm(config.restName));
+  if(config.nif)       esc.center('NIF '+config.nif);
   esc.sep();
   esc.row('Data',dFmt(today())+' '+hora);
   esc.row('Operador',(CU?escNorm(CU.nome):'--'));
