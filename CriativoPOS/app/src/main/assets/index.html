@@ -1683,8 +1683,8 @@ function renderGrid(){
   const grid=document.getElementById("items-grid");
   // ── Favoritos ──
   if(posCat==="__favs__"){
-    const allItems=Object.values(ITEMS).flat();
-    const favItems=allItems.filter(it=>favs.includes(it.id));
+    const allItems=ITEMS?Object.values(ITEMS).flat():[];
+    const favItems=allItems.filter(it=>favs&&favs.includes(it.id));
     if(!favItems.length){
       grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#999;font-size:13px;padding:24px 14px;">'+
         '<div style="font-size:28px;margin-bottom:8px;">⭐</div>'+
@@ -1706,7 +1706,7 @@ function renderGrid(){
     return;
   }
   // ── Categoria normal ──
-  const items=ITEMS[posCat]||[];
+  const items=(ITEMS&&ITEMS[posCat])||[];
   if(!items.length){grid.innerHTML='<div style="grid-column:1/-1;color:#999;font-size:12px;padding:14px;">Grupo sem itens.</div>';return;}
   const col=CC(posCat);
   grid.innerHTML=items.map(it=>
@@ -1722,7 +1722,7 @@ function renderGrid(){
 }
 
 function addItem(id){
-  const it=Object.values(ITEMS).flat().find(x=>x.id===id);if(!it)return;
+  const it=ITEMS?Object.values(ITEMS).flat().find(x=>x.id===id):null;if(!it)return;
   order.push({uid:uidCnt++,id:it.id,n:it.n,p:it.p,q:1});
   renderOrder();
 }
@@ -2496,7 +2496,7 @@ function saveModal(){
   const vn=parseFloat(v2)||0;
 
   if(modMode==="addCat"){if(!v1)return;if(CATS.includes(v1)){alert("Já existe!");return;}CATS.push(v1);ITEMS[v1]=[];gestCat=v1;renderCatList();renderItemList();renderCats();}
-  else if(modMode==="editCat"){if(!v1)return;const old=modData.cat,idx=CATS.indexOf(old);if(v1!==old&&CATS.includes(v1)){alert("Já existe!");return;}CATS[idx]=v1;ITEMS[v1]=ITEMS[old];if(v1!==old)delete ITEMS[old];if(gestCat===old)gestCat=v1;if(posCat===old)posCat=v1;renderCatList();renderItemList();renderCats();}
+  else if(modMode==="editCat"){if(!v1)return;const old=modData.cat,idx=CATS.indexOf(old);if(v1!==old&&CATS.includes(v1)){alert("Já existe!");return;}CATS[idx]=v1;ITEMS[v1]=ITEMS[old];if(v1!==old)delete ITEMS[old];if(gestCat===old)gestCat=v1;if(posCat===old)posCat=v1;saveSales();renderCatList();renderItemList();renderCats();}
   else if(modMode==="addItem"){if(!v1||isNaN(vn)||vn<0)return;ITEMS[modData.cat].push({id:nid++,n:v1,p:vn});renderItemList();if(posCat===modData.cat)renderGrid();}
   else if(modMode==="editItem"){if(!v1||isNaN(vn)||vn<0)return;const it=ITEMS[modData.cat].find(x=>x.id===modData.id);if(it){it.n=v1;it.p=vn;}const oi=order.find(x=>x.id===modData.id);if(oi){oi.n=v1;oi.p=vn;renderOrder();}renderItemList();if(posCat===modData.cat)renderGrid();}
   else if(modMode==="note"){
