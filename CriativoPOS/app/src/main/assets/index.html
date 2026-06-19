@@ -2414,6 +2414,7 @@ function editNoteChip(i){
 
 // ─── Favoritos ────────────────────────────────────────
 function toggleFav(id){
+  if(!Array.isArray(favs)) favs=[];
   var idx=favs.indexOf(id);
   if(idx>=0){ favs.splice(idx,1); }
   else { favs.push(id); }
