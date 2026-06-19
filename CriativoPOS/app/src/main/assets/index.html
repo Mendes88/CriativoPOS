@@ -1684,7 +1684,7 @@ function renderGrid(){
   // ── Favoritos ──
   if(posCat==="__favs__"){
     const allItems=ITEMS?Object.values(ITEMS).flat():[];
-    const favItems=allItems.filter(it=>favs&&favs.includes(it.id));
+    const favItems=allItems.filter(it=>Array.isArray(favs)&&favs.includes(it.id));
     if(!favItems.length){
       grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#999;font-size:13px;padding:24px 14px;">'+
         '<div style="font-size:28px;margin-bottom:8px;">⭐</div>'+
@@ -1714,7 +1714,7 @@ function renderGrid(){
     ' style="position:relative;'+(favs.includes(it.id)?'border-color:#EF9F27;':'')+'"'+
     ' onmouseover="this.style.borderColor=\''+col+'\';this.style.background=\'#FAEEDA\';"'+
     ' onmouseout="this.style.borderColor=\'#e0e0e0\';this.style.background=\'#fff\';">'+
-    (favs.includes(it.id)?'<span style="position:absolute;top:4px;right:5px;font-size:10px;line-height:1;">⭐</span>':'')+
+    (Array.isArray(favs)&&favs.includes(it.id)?'<span style="position:absolute;top:4px;right:5px;font-size:10px;line-height:1;">⭐</span>':'')+
     '<div class="item-name">'+it.n+'</div>'+
     '<div class="item-price" style="color:'+col+';">'+EUR(it.p)+'</div>'+
     '</div>'
@@ -5139,7 +5139,7 @@ function loadSales(){
       sales.forEach(function(s){ if(s.detail===undefined) s.detail=true; });
     }
     const fv=localStorage.getItem("crpos_favs");
-    if(fv){try{favs=JSON.parse(fv);}catch(e){}}
+    if(fv){try{var pf=JSON.parse(fv);favs=Array.isArray(pf)?pf:[];}catch(e){favs=[];}}
     const nc=localStorage.getItem("crpos_notechips");
     if(nc){try{noteChips=JSON.parse(nc);}catch(e){}}
     if(n){ordCnt=parseInt(n)||10;}
