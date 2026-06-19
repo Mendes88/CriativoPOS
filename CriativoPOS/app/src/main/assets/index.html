@@ -1761,12 +1761,8 @@ function renderOrder(){
     return '<div class="order-row" id="orow-'+o.uid+'" style="flex-direction:column;align-items:stretch;gap:2px;user-select:none;-webkit-user-select:none;">'+
       '<div style="display:flex;align-items:center;gap:4px;">'+
         '<span class="order-name" style="flex:1;">'+o.n+'</span>'+
-        '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">'+
-          '<button class="qty-btn" onclick="chgQty('+o.uid+',-1)" style="background:#fee2e2;color:#c62828;border-color:#fca5a5;min-width:26px;">−</button>'+
-          '<span style="min-width:22px;text-align:center;font-size:13px;font-weight:700;">'+o.q+'</span>'+
-          '<button class="qty-btn" onclick="chgQty('+o.uid+',1)" style="background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;min-width:26px;">+</button>'+
-        '</div>'+
-        '<span class="order-price">'+EUR(o.q*o.p)+'</span>'+
+        '<button class="qty-btn" onclick="chgQty('+o.uid+',-1)" style="background:#fee2e2;color:#c62828;border-color:#fca5a5;">✕</button>'+
+        '<span class="order-price">'+EUR(o.p)+'</span>'+
       '</div>'+
       noteLine+
     '</div>';
