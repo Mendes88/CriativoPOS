@@ -1724,16 +1724,10 @@ function renderGrid(){
 function addItem(id){
   const it=ITEMS?Object.values(ITEMS).flat().find(x=>x.id===id):null;if(!it)return;
   const packQty = (it.pack&&it.pack>1) ? it.pack : 1;
-  if(packQty===1){
-    // Artigo normal — agrupa com existente
-    const existing = order.find(o=>o.id===id && !o.pack);
-    if(existing){ existing.q++; }
-    else { order.push({uid:uidCnt++,id:it.id,n:it.n,p:it.p,q:1}); }
-  } else {
-    // Artigo Pack — adiciona N entradas individuais (q=1 cada)
-    for(var k=0;k<packQty;k++){
-      order.push({uid:uidCnt++,id:it.id,n:it.n,p:it.p,q:1,packRef:packQty});
-    }
+  // Sempre individual — cada toque = 1 linha separada
+  // Pack = N linhas individuais de uma vez
+  for(var k=0;k<packQty;k++){
+    order.push({uid:uidCnt++,id:it.id,n:it.n,p:it.p,q:1});
   }
   renderOrder();
 }
