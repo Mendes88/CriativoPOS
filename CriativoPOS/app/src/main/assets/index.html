@@ -1724,14 +1724,16 @@ function renderGrid(){
 function addItem(id){
   const it=ITEMS?Object.values(ITEMS).flat().find(x=>x.id===id):null;if(!it)return;
   const packQty = (it.pack&&it.pack>1) ? it.pack : 1;
-  // Se já existe no pedido e é pack, incrementa pelo pack
-  const existing = order.find(o=>o.id===id);
-  if(existing && packQty===1){
-    existing.q++;
-  } else if(existing && packQty>1){
-    existing.q += packQty;
+  if(packQty===1){
+    // Artigo normal — agrupa com existente
+    const existing = order.find(o=>o.id===id && !o.pack);
+    if(existing){ existing.q++; }
+    else { order.push({uid:uidCnt++,id:it.id,n:it.n,p:it.p,q:1}); }
   } else {
-    order.push({uid:uidCnt++,id:it.id,n:it.n,p:it.p,q:packQty,pack:it.pack||1});
+    // Artigo Pack — adiciona N entradas individuais (q=1 cada)
+    for(var k=0;k<packQty;k++){
+      order.push({uid:uidCnt++,id:it.id,n:it.n,p:it.p,q:1,packRef:packQty});
+    }
   }
   renderOrder();
 }
@@ -2446,9 +2448,10 @@ function openModal(mode,arg){
       <div class="field"><label>Nome do grupo</label><input id="mf1" type="text" maxlength="30" placeholder="Ex: Petiscos…"></div>
       <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="saveModal()">✓ Criar</button></div>`;
   } else if(mode==="editCat"){
-    modData={cat:arg};
+    var catNome = (typeof arg==="number") ? CATS[arg] : arg;
+    modData={cat:catNome};
     mb.innerHTML=`<div class="modal-title">✏️ Editar Grupo</div>
-      <div class="field"><label>Nome</label><input id="mf1" type="text" value="${arg}" maxlength="30"></div>
+      <div class="field"><label>Nome</label><input id="mf1" type="text" value="${catNome}" maxlength="30"></div>
       <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="saveModal()">✓ Guardar</button></div>`;
   } else if(mode==="addItem"){
     if(!gestCat)return;modData={cat:gestCat};
