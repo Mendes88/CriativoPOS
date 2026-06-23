@@ -3778,7 +3778,7 @@ function printLevantamento(lev,saldoAntes){
 // ═══════════════════════════════════════════════════════════
 function escNorm(str){
   // PC860: mantém maioria dos chars, converte apenas € e caracteres sem mapeamento
-  var map={'€':'Eur'};
+  var map={'€':''};
   var r='';for(var i=0;i<str.length;i++)r+=map[str[i]]||str[i];return r;
 }
 
