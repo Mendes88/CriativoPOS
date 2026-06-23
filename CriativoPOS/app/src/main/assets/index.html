@@ -124,7 +124,6 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
   /* Topbar: esconder brand, nav com scroll horizontal */
   .brand{display:none;}
   #tb{padding:0 6px;gap:3px;}
-  #nav-tabs{overflow-x:auto;flex-shrink:1;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
   #nav-tabs::-webkit-scrollbar{display:none;}
   .nb{padding:5px 7px;font-size:10px;white-space:nowrap;}
   .logout-btn{padding:4px 7px;font-size:10px;}
@@ -165,7 +164,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 #tb{display:none;align-items:center;padding:0 10px;height:50px;position:relative;z-index:10;background:#fff;
   border-bottom:1px solid #e0e0e0;gap:5px;flex-shrink:0;overflow:hidden;}
 .brand{font-size:15px;font-weight:600;color:#854F0B;flex-shrink:0;white-space:nowrap;}
-#nav-tabs{display:flex;gap:4px;}
+#nav-tabs{display:flex;gap:4px;overflow-x:auto;flex-shrink:1;min-width:0;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .nb{padding:5px 9px;font-size:11px;border-radius:8px;cursor:pointer;
   display:flex;align-items:center;gap:3px;transition:all .15s;white-space:nowrap;border:1px solid #ccc;background:transparent;color:#666;}
 .nb.on{background:#BA7517;color:#FAEEDA;border-color:#BA7517;}
@@ -755,8 +754,8 @@ window.addEventListener('unhandledrejection', function(e){
   <div id="tb">
     <img src="data:image/png;base64,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" style="width:28px;height:28px;border-radius:5px;flex-shrink:0;cursor:pointer;" alt="logo" onclick="abrirGaveta()" title="Abrir gaveta">
     <span class="brand">Criativo POS</span>
-    <button class="logout-btn" onclick="logout()" style="flex-shrink:0;margin-left:4px;">⧁ Sair</button>
-    <div id="nav-tabs"></div>
+    <div id="nav-tabs" style="flex:1;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;"></div>
+    <button class="logout-btn" onclick="logout()" style="flex-shrink:0;margin-left:6px;">⧁ Sair</button>
   </div>
 
   <!-- POS -->
