@@ -1247,7 +1247,7 @@ let nuid=10;
 
 // ═══ UTILS ═══════════════════════════════════════════════
 const EUR=n=>n.toFixed(2).replace(".",",")+" €";
-const EURESC=n=>n.toFixed(2).replace(".",",");
+const EURESC=n=>n.toFixed(2).replace(".",",")+" EUR";
 const PML=m=>({d:"Numerário",c:"Cartão",m:"MB Way"}[m]||m);
 const PTG=m=>({d:"tag-d",c:"tag-c",m:"tag-m"}[m]||"tag-d");
 const CC=c=>COLORS[CATS.indexOf(c)%COLORS.length];
