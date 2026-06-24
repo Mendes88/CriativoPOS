@@ -1153,7 +1153,8 @@ window.addEventListener('unhandledrejection', function(e){
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closePayModal()">Cancelar</button>
-      <button class="btn-ok" onclick="confirmPay()">✓ Confirmar</button>
+      <button class="btn-ok" onclick="confirmPaySemImpressao()" style="background:#555;flex:1;">✓ Sem impressão</button>
+      <button class="btn-ok" onclick="confirmPay()" style="flex:2;">✓ Confirmar</button>
     </div>
   </div>
 </div>
@@ -1920,6 +1921,43 @@ function confirmPay(){
   clearOrder();
 }
 
+
+function confirmPaySemImpressao(){
+  const tot=order.reduce((s,o)=>s+o.q*o.p,0);
+  if(payMethod==="m" && !_mbwayConfirmed){ showMBWayQR(tot); return; }
+  let troco=0;
+  if(payMethod==="d"){
+    const paid=parseFloat(document.getElementById("cash-in").value)||0;
+    if(paid>0) troco=Math.max(0,paid-tot);
+  }
+  let nif=null,nifNome="";
+  if(nifOpen){
+    const raw=document.getElementById("nif-input").value.replace(/\D/g,"");
+    if(raw&&!checkNIF(raw)){alert("NIF inválido!");return;}
+    if(raw)nif=raw.replace(/(\d{3})(\d{3})(\d{3})/,"  ");
+    nifNome=document.getElementById("nif-nome").value.trim();
+  }
+  const now=new Date();
+  const t=now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0");
+  const sale={id:ordCnt++,orderNum:orderNum++,date:today(),time:t,
+    mbwayPhone:(payMethod==="m"?config.mbwayPhone:""),
+    items:(function(){
+      var grouped={},individual=[];
+      order.forEach(function(o){
+        var notes=Array.isArray(o.notes)?o.notes:(o.note?[o.note]:[]);
+        if(notes.length){ individual.push({n:o.n,q:1,p:o.p,notes:notes,note:notes.join(', ')}); }
+        else { var key=o.id+"|"; if(grouped[key]) grouped[key].q++; else grouped[key]={n:o.n,q:1,p:o.p,notes:[],note:""}; }
+      });
+      return Object.values(grouped).concat(individual);
+    })(),total:tot,met:payMethod,troco,nif,nifNome,fatCat:"Alimentação / Donativo / Apoio",
+    split:(splitPessoas>1?splitPessoas:0),user:(CU?CU.nome:"—")||"",detail:detailItems,docType:docType};
+  sales.push(sale);curSale=sale;saveSales();
+  closePayModal();
+  if(payMethod==="d"){setTimeout(function(){abrirGaveta(true);},600);}
+  showToast("✓ Pedido Nº "+String(sale.orderNum).padStart(4,"0")+" registado (sem impressão)");
+  splitPessoas=0;updateSplitBadge();
+  clearOrder();
+}
 
 // Helper: render items grouped or individual
 function renderItems(items, detail){
