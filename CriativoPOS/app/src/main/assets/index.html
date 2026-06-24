@@ -3996,7 +3996,7 @@ function buildConfirmESC(s){
     // s.detail===true  → individual (1 linha por unidade)
     function escArtigoLinha(nome, precoUnit, qty){
       var qtyStr  = 'x'+qty;
-      var precoStr = '('+EUR(precoUnit)+')';
+      var precoStr = '('+EURESC(precoUnit)+')';
       var maxNome = Math.floor(esc.cols*0.45);
       var nomeStr = escNorm(nome).substring(0, maxNome);
       var meio    = esc.cols - nomeStr.length - qtyStr.length;
@@ -4028,20 +4028,20 @@ function buildConfirmESC(s){
     var _qty=s.items.reduce(function(a,i){return a+(i.q||1);},0);
     esc.textLine('='.repeat(esc.cols));
     esc.align('r').textLine(_qty+(_qty===1?' artigo':' artigos')).align('l');
-    esc.bold(1).row('TOTAL',EUR(s.total)).bold(0);
+    esc.bold(1).row('TOTAL',EURESC(s.total)).bold(0);
     esc.textLine('='.repeat(esc.cols));
     esc.row('Pagamento',PML(s.met));
-    if(s.met==='d'&&s.troco>0) esc.row('Troco',EUR(s.troco));
+    if(s.met==='d'&&s.troco>0) esc.row('Troco',EURESC(s.troco));
     if(s.met==='m'&&config.mbwayPhone){
       esc.sep();
       esc.center('MB Way');
       esc.center(config.mbwayPhone.replace(/\D/g,'').replace(/(\d{3})(\d{3})(\d{3})/,'$1 $2 $3'));
-      esc.center(EUR(s.total));
+      esc.center(EURESC(s.total));
     }
     if(s.split>1){
       esc.sep();
       esc.centerBold('DIVIDIDO: '+s.split+' PESSOAS');
-      esc.align('c').size(2,2).textLine(EUR(s.total/s.split)+' p.p.').size(1,1).align('l');
+      esc.align('c').size(2,2).textLine(EURESC(s.total/s.split)+' p.p.').size(1,1).align('l');
     }
     esc.sep();
     esc.center(config.footerMsg||'Obrigado pela visita!');
@@ -4062,9 +4062,9 @@ function buildConfirmESC(s){
     s.items.forEach(function(i){
       var itemNotes = i.notes&&i.notes.length ? i.notes : (i.note ? [i.note] : []);
       if(i.q > 1 && !itemNotes.length){
-        esc.row((i.n+' X'+i.q).substring(0,esc.cols-9), EUR(i.q*i.p));
+        esc.row((i.n+' X'+i.q).substring(0,esc.cols-9), EURESC(i.q*i.p));
       } else {
-        esc.row(i.n.substring(0,esc.cols-9),EUR(i.p));
+        esc.row(i.n.substring(0,esc.cols-9),EURESC(i.p));
         itemNotes.forEach(function(n){ esc.textLine('  > '+escNorm(n)); });
       }
     });
@@ -4072,7 +4072,7 @@ function buildConfirmESC(s){
     s.items.forEach(function(i){
       var itemNotes = i.notes&&i.notes.length ? i.notes : (i.note ? [i.note] : []);
       for(var k=0;k<i.q;k++){
-        esc.row(i.n.substring(0,esc.cols-9),EUR(i.p));
+        esc.row(i.n.substring(0,esc.cols-9),EURESC(i.p));
         if(k===0) itemNotes.forEach(function(n){ esc.textLine('  > '+escNorm(n)); });
       }
     });
@@ -4080,20 +4080,20 @@ function buildConfirmESC(s){
   esc.sep();
   var _qty=s.items.reduce(function(a,i){return a+(i.q||1);},0);
   esc.align('r').textLine(_qty+(_qty===1?' artigo':' artigos')).align('l');
-  esc.row('TOTAL',EUR(s.total),true);
+  esc.row('TOTAL',EURESC(s.total),true);
   esc.row('Pagamento',PML(s.met));
-  if(s.met==='d'&&s.troco>0)esc.row('Troco',EUR(s.troco));
+  if(s.met==='d'&&s.troco>0)esc.row('Troco',EURESC(s.troco));
   if(s.met==='m'&&config.mbwayPhone){
     esc.sep();
     esc.center('MB Way');
     esc.center(config.mbwayPhone.replace(/\D/g,'').replace(/(\d{3})(\d{3})(\d{3})/,'$1 $2 $3'));
-    esc.center(EUR(s.total));
+    esc.center(EURESC(s.total));
     esc.sep();
   }
   if(s.split>1){
     esc.sep();
     esc.centerBold('DIVIDIDO: '+s.split+' PESSOAS');
-    esc.align('c').size(2,2).textLine(EUR(s.total/s.split)+' p.p.').size(1,1).align('l');
+    esc.align('c').size(2,2).textLine(EURESC(s.total/s.split)+' p.p.').size(1,1).align('l');
   }
   esc.sep();
   esc.center(config.footerMsg);
@@ -4116,9 +4116,9 @@ function buildConfirmESC(s){
     // Fatura: descrição fixa
     esc.textLine('Alimentacao / Donativo / Apoio');
     esc.sep();
-    esc.row('TOTAL',EUR(s.total),true);
+    esc.row('TOTAL',EURESC(s.total),true);
     esc.row('Pagamento',PML(s.met));
-    if(s.met==='d'&&s.troco>0)esc.row('Troco',EUR(s.troco));
+    if(s.met==='d'&&s.troco>0)esc.row('Troco',EURESC(s.troco));
     esc.sep();
     esc.center('Fatura Simplificada - IVA incluido');
     esc.lf(3).cut();
@@ -4137,9 +4137,9 @@ function buildLevantamentoESC(lev,saldoAntes){
   esc.row('Data',dFmt(lev.date)+' '+lev.hora);
   esc.row('Operador',lev.user||'--');
   esc.sep();
-  esc.row('Saldo antes',EUR(saldoAntes));
-  esc.row('Valor levantado','- '+EUR(lev.valor),true);
-  esc.row('Saldo apos',EUR(lev.saldoApos));
+  esc.row('Saldo antes',EURESC(saldoAntes));
+  esc.row('Valor levantado','- '+EURESC(lev.valor),true);
+  esc.row('Saldo apos',EURESC(lev.saldoApos));
   esc.sep();
   esc.textLine('Motivo: '+escNorm(lev.motivo));
   esc.sep();
@@ -4169,22 +4169,22 @@ function buildFechoESC(){
   esc.row('Pedidos',String(ts.length));
   esc.sep();
   esc.bold(1).textLine('MOVIMENTO DE CAIXA').bold(0);
-  esc.row('Fundo de Maneio',EUR(fundo));
-  esc.row('Vendas Numerario','+ '+EUR(tN));
-  if(totLev>0)esc.row('Levantamentos','- '+EUR(totLev));
-  esc.row('SALDO FINAL',EUR(fundo+tN-totLev),true);
+  esc.row('Fundo de Maneio',EURESC(fundo));
+  esc.row('Vendas Numerario','+ '+EURESC(tN));
+  if(totLev>0)esc.row('Levantamentos','- '+EURESC(totLev));
+  esc.row('SALDO FINAL',EURESC(fundo+tN-totLev),true);
   esc.sep();
   esc.bold(1).textLine('VENDAS POR METODO').bold(0);
-  esc.row('Numerario',EUR(tN));
-  esc.row('Cartao',EUR(tC));
-  esc.row('MB Way',EUR(tM));
-  esc.row('TOTAL VENDAS',EUR(tV),true);
-  if(ts.length>0)esc.row('Ticket Medio',EUR(tV/ts.length));
+  esc.row('Numerario',EURESC(tN));
+  esc.row('Cartao',EURESC(tC));
+  esc.row('MB Way',EURESC(tM));
+  esc.row('TOTAL VENDAS',EURESC(tV),true);
+  if(ts.length>0)esc.row('Ticket Medio',EURESC(tV/ts.length));
   if(levH.length>0){
     esc.sep();
     esc.bold(1).textLine('LEVANTAMENTOS ('+levH.length+')').bold(0);
-    levH.forEach(function(l){esc.row(l.hora+' '+escNorm(l.motivo).substring(0,esc.cols-10),'- '+EUR(l.valor));});
-    esc.row('TOTAL LEVANTADO','- '+EUR(totLev),true);
+    levH.forEach(function(l){esc.row(l.hora+' '+escNorm(l.motivo).substring(0,esc.cols-10),'- '+EURESC(l.valor));});
+    esc.row('TOTAL LEVANTADO','- '+EURESC(totLev),true);
   }
   esc.sep();
   esc.textLine('Conferencia: _______________');
@@ -4219,11 +4219,11 @@ function buildRelatorioESC(){
   esc.center('Emitido: '+dFmt(today())+' '+hora);
   esc.sep();
   esc.row('Pedidos',String(sl.length));
-  esc.row('Ticket medio',EUR(sl.length?tV/sl.length:0));
+  esc.row('Ticket medio',EURESC(sl.length?tV/sl.length:0));
   esc.sep();
   esc.bold(1).textLine('PAGAMENTOS').bold(0);
-  esc.row('Numerario',EUR(tN));
-  esc.row('Cartao',EUR(tC));
+  esc.row('Numerario',EURESC(tN));
+  esc.row('Cartao',EURESC(tC));
   // MB Way agrupado por numero de telemovel
   var mbGrp={};
   sl.filter(function(s){return s.met==='m';}).forEach(function(s){
@@ -4233,16 +4233,16 @@ function buildRelatorioESC(){
   var mbKeys=Object.keys(mbGrp);
   if(mbKeys.length<=1){
     var mbK=mbKeys[0];
-    esc.row('MB Way'+(mbK&&mbK!=='sem numero'?' ('+mbK+')':''),EUR(tM));
+    esc.row('MB Way'+(mbK&&mbK!=='sem numero'?' ('+mbK+')':''),EURESC(tM));
   } else {
-    mbKeys.forEach(function(k){ esc.row('MB Way ('+k+')',EUR(mbGrp[k])); });
-    esc.row('MB Way TOTAL',EUR(tM),true);
+    mbKeys.forEach(function(k){ esc.row('MB Way ('+k+')',EURESC(mbGrp[k])); });
+    esc.row('MB Way TOTAL',EURESC(tM),true);
   }
-  esc.row('TOTAL',EUR(tV),true);
+  esc.row('TOTAL',EURESC(tV),true);
   esc.sep();
   esc.bold(1).textLine('TOP ARTIGOS').bold(0);
   arts.slice(0,15).forEach(function(a,i){
-    esc.row((i+1)+'. '+escNorm(a.n).substring(0,esc.cols-12)+' ('+a.qty+'x)',EUR(a.rev));
+    esc.row((i+1)+'. '+escNorm(a.n).substring(0,esc.cols-12)+' ('+a.qty+'x)',EURESC(a.rev));
   });
   esc.sep();
   esc.center('*** FIM DO RELATORIO ***');
