@@ -126,6 +126,27 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
   #tb{padding:0 6px;gap:3px;}
   #nav-tabs::-webkit-scrollbar{display:none;}
   .nb{padding:5px 7px;font-size:10px;white-space:nowrap;}
+  /* MESAS */
+  #vmesas{padding:10px;box-sizing:border-box;}
+  .mesas-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .mesas-tit{font-size:14px;font-weight:600;color:#f0f0f0;}
+  .mesas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .mesa-card{background:#2e2e2e;border-radius:10px;border:2px solid #3a3a3a;padding:10px;cursor:pointer;min-height:80px;display:flex;flex-direction:column;gap:4px;transition:border-color .15s;}
+  .mesa-card.aberta{border-color:#EF9F27;background:#2a2200;}
+  .mesa-card.sel{border-color:#a5d6a7;background:#0a2a0a;}
+  .mesa-card:active{transform:scale(.97);}
+  .mesa-num{font-size:16px;font-weight:700;color:#f0f0f0;}
+  .mesa-func{font-size:11px;color:#EF9F27;font-weight:500;min-height:14px;}
+  .mesa-total{font-size:12px;color:#a5d6a7;font-weight:500;}
+  .mesa-tempo{font-size:10px;color:#888;}
+  .mesa-livre{font-size:11px;color:#555;margin-top:4px;}
+  .mesas-btn{padding:6px 12px;border-radius:8px;border:none;font-size:12px;cursor:pointer;font-weight:500;}
+  .mesas-btn.green{background:#2e7d32;color:#fff;}
+  .mesas-btn.red{background:#b71c1c;color:#fff;}
+  .mesas-btn.gray{background:#424242;color:#ccc;}
+  .mesa-pos-hdr{background:#1a1a1a;border-bottom:1px solid #333;padding:8px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .mesa-pos-tag{font-size:11px;background:#EF9F27;color:#000;border-radius:6px;padding:2px 8px;font-weight:600;}
+  .mesa-pos-func{font-size:11px;color:#888;}
   .logout-btn{padding:4px 7px;font-size:10px;}
 
   /* POS: painel de pedido debaixo do menu */
@@ -787,6 +808,10 @@ window.addEventListener('unhandledrejection', function(e){
   </div>
 
   <!-- GESTÃO -->
+  <div id="vmesas">
+    <div id="vmesas-conteudo"></div>
+  </div>
+
   <div id="vgest">
     <div id="gest-left">
       <div class="panel-hdr">
@@ -1261,6 +1286,7 @@ const monthStart=()=>{const d=new Date();d.setDate(1);return d.toISOString().spl
 
 // ═══ STATE ═══════════════════════════════════════════════
 let CU=null,loginUID=null,pinBuf="";
+let mesas=[],mesaActual=null; // sistema de mesas
 let posCat="Entradas",gestCat="Entradas";
 let order=[],payMethod="d",ordCnt=10,nifOpen=false;
 let modMode=null,modData={},detailItems=true,uidCnt=1,docType='talao',orderNum=1,levantamentos=[],splitPessoas=0;
@@ -1460,6 +1486,7 @@ function updateUserBox(){
 // ═══ NAV ════════════════════════════════════════════════
 const TABS=[
   {id:"pos",  lbl:"🧾 POS",          roles:["superadmin","admin","operador"]},
+  {id:"mesas",lbl:"🍽 Mesas",         roles:["superadmin","admin","operador"]},
   {id:"gest", lbl:"⚙️ Gestão",       roles:["superadmin","admin","operador"]},
   {id:"caixa",lbl:"💰 Caixa",        roles:["superadmin","admin"]},
   {id:"rel",  lbl:"📊 Relatórios",   roles:["superadmin","admin"]},
@@ -1467,6 +1494,185 @@ const TABS=[
   {id:"cfg",  lbl:"⚙️ Config",       roles:["superadmin","admin"]},
   {id:"sadm", lbl:"🔐 S.Admin",      roles:["superadmin"]}
 ];
+
+// ══════════════════════════════════════════════════════════════════
+// SISTEMA DE MESAS
+// ══════════════════════════════════════════════════════════════════
+var MESA_NOMES = [];
+var mesaOrders = {}; // mesaId → [orders]
+var mesaActual = null;
+
+function loadMesas(){
+  try{
+    var saved = localStorage.getItem('crpos_mesas');
+    mesas = saved ? JSON.parse(saved) : [];
+    var cfg = localStorage.getItem('crpos_mesa_nomes');
+    MESA_NOMES = cfg ? JSON.parse(cfg) : gerarNomesMesas(10);
+  }catch(e){ mesas=[]; MESA_NOMES=gerarNomesMesas(10); }
+  try{
+    var mo = localStorage.getItem('crpos_mesa_orders');
+    mesaOrders = mo ? JSON.parse(mo) : {};
+  }catch(e){ mesaOrders={}; }
+}
+
+function saveMesas(){
+  localStorage.setItem('crpos_mesas', JSON.stringify(mesas));
+  localStorage.setItem('crpos_mesa_orders', JSON.stringify(mesaOrders));
+}
+
+function gerarNomesMesas(n){
+  var arr=[];
+  for(var i=1;i<=n;i++) arr.push('Mesa '+i);
+  return arr;
+}
+
+function mesaTempo(abertoEm){
+  if(!abertoEm) return '';
+  var diff = Math.floor((Date.now()-abertoEm)/60000);
+  if(diff<1) return 'agora';
+  if(diff<60) return diff+'min';
+  return Math.floor(diff/60)+'h'+(diff%60?diff%60+'m':'');
+}
+
+function mesaTotal(mesaId){
+  var ords = mesaOrders[mesaId]||[];
+  return ords.reduce(function(s,o){ return s+o.reduce(function(a,i){return a+i.q*i.p;},0); },0);
+}
+
+function renderMesas(){
+  loadMesas();
+  var el = document.getElementById('vmesas-conteudo');
+  if(!el) return;
+
+  var html = '<div class="mesas-hdr">';
+  html += '<span class="mesas-tit">🍽 Mesas</span>';
+  html += '<button class="mesas-btn green" onclick="abrirConfigurarMesas()">⚙ Configurar</button>';
+  html += '</div>';
+  html += '<div class="mesas-grid">';
+
+  MESA_NOMES.forEach(function(nome, i){
+    var mesaId = 'mesa_'+i;
+    var aberta = mesas.find(function(m){return m.id===mesaId;});
+    var tot = mesaTotal(mesaId);
+    var cls = aberta ? 'mesa-card aberta' : 'mesa-card';
+
+    html += '<div class="'+cls+'" onclick="selecionarMesa(''+mesaId+'',''+nome+'')">';
+    html += '<div class="mesa-num">'+nome+'</div>';
+    if(aberta){
+      html += '<div class="mesa-func">'+escH(aberta.func)+'</div>';
+      html += '<div class="mesa-total">'+EUR(tot)+'</div>';
+      html += '<div class="mesa-tempo">'+mesaTempo(aberta.abertoEm)+'</div>';
+    } else {
+      html += '<div class="mesa-livre">livre</div>';
+    }
+    html += '</div>';
+  });
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function selecionarMesa(mesaId, mesaNome){
+  var aberta = mesas.find(function(m){return m.id===mesaId;});
+  if(!aberta){
+    // Abrir mesa nova
+    var nova = {id:mesaId, nome:mesaNome, func:CU?CU.nome:'—', abertoEm:Date.now()};
+    mesas.push(nova);
+    mesaOrders[mesaId] = [];
+    saveMesas();
+  }
+  mesaActual = mesas.find(function(m){return m.id===mesaId;});
+  // Carregar pedidos da mesa no order[]
+  order = (mesaOrders[mesaId]||[]).reduce(function(a,b){return a.concat(b);},[]);
+  // Ir para POS com cabeçalho de mesa
+  switchView('pos');
+  // Mostrar cabeçalho de mesa no topo do POS
+  mostrarCabecalhoMesa();
+  renderOrder();
+}
+
+function mostrarCabecalhoMesa(){
+  var hdr = document.getElementById('mesa-pos-hdr');
+  if(!hdr){
+    hdr = document.createElement('div');
+    hdr.id = 'mesa-pos-hdr';
+    hdr.className = 'mesa-pos-hdr';
+    var vpos = document.getElementById('vpos');
+    if(vpos) vpos.insertBefore(hdr, vpos.firstChild);
+  }
+  if(mesaActual){
+    hdr.style.display='flex';
+    hdr.innerHTML =
+      '<span class="mesa-pos-tag">'+escH(mesaActual.nome)+'</span>'+
+      '<span class="mesa-pos-func">'+escH(mesaActual.func)+'</span>'+
+      '<button class="mesas-btn gray" style="margin-left:auto;padding:4px 10px;font-size:11px;" onclick="fecharContaMesa()">Fechar conta</button>'+
+      '<button class="mesas-btn gray" style="padding:4px 10px;font-size:11px;" onclick="voltarMesas()">← Mesas</button>';
+  } else {
+    hdr.style.display='none';
+  }
+}
+
+function voltarMesas(){
+  // Guardar pedidos actuais na mesa antes de sair
+  if(mesaActual){
+    mesaOrders[mesaActual.id] = order.length > 0 ? [order.slice()] : [];
+    saveMesas();
+  }
+  mesaActual = null;
+  order = [];
+  renderOrder();
+  switchView('mesas');
+  renderMesas();
+  var hdr = document.getElementById('mesa-pos-hdr');
+  if(hdr) hdr.style.display='none';
+}
+
+function fecharContaMesa(){
+  if(!mesaActual) return;
+  if(!order.length && !mesaOrders[mesaActual.id]){
+    alert('Sem pedidos nesta mesa.');
+    return;
+  }
+  // Consolidar todos os itens da mesa no order para pagamento
+  var todosItens = (mesaOrders[mesaActual.id]||[]).reduce(function(a,b){return a.concat(b);},[]);
+  if(todosItens.length) order = todosItens;
+  openPayModal();
+}
+
+// Override de confirmPay para limpar a mesa após pagamento
+var _origConfirmPay = null;
+function mesaLimparAposPagamento(){
+  if(mesaActual){
+    // Remover mesa da lista de abertas
+    mesas = mesas.filter(function(m){return m.id!==mesaActual.id;});
+    delete mesaOrders[mesaActual.id];
+    saveMesas();
+    mesaActual = null;
+    var hdr = document.getElementById('mesa-pos-hdr');
+    if(hdr) hdr.style.display='none';
+  }
+}
+
+function abrirConfigurarMesas(){
+  var actual = MESA_NOMES.join('
+');
+  var novo = prompt('Nomes das mesas (uma por linha):
+
+Exemplo:
+Mesa 1
+Mesa 2
+Varanda
+Terraço', actual);
+  if(novo===null) return;
+  MESA_NOMES = novo.split('
+').map(function(s){return s.trim();}).filter(Boolean);
+  localStorage.setItem('crpos_mesa_nomes', JSON.stringify(MESA_NOMES));
+  renderMesas();
+}
+
+// ══════════════════════════════════════════════════════════════════
 
 function buildNav(){
   if(!CU)return;
@@ -1509,6 +1715,7 @@ function switchView(v){
     view.style.overflowY  = "scroll";
     view.style.overflowX  = "hidden";
     view.style.cssText   += ";-webkit-overflow-scrolling:touch;";
+    if(v==="mesas"){ renderMesas(); }
     if(v==="rel"){
       view.style.display       = "flex";
       view.style.flexDirection = "column";
@@ -1732,6 +1939,11 @@ function addItem(id){
     order.push({uid:uidCnt++,id:it.id,n:it.n,p:it.p,q:1});
   }
   renderOrder();
+  // Guardar na mesa se estiver em modo mesa
+  if(mesaActual){
+    mesaOrders[mesaActual.id]=[order.slice()];
+    saveMesas();
+  }
 }
 
 function chgQty(uid,d){
@@ -1912,8 +2124,9 @@ function confirmPay(){
         }
       });
       return Object.values(grouped).concat(individual);
-    })(),total:tot,met:payMethod,troco,nif,nifNome,fatCat:'Alimentação / Donativo / Apoio',split:(splitPessoas>1?splitPessoas:0),user:(CU?CU.nome:'—')||"",detail:detailItems,docType:docType};
+    })(),total:tot,met:payMethod,troco,nif,nifNome,fatCat:'Alimentação / Donativo / Apoio',split:(splitPessoas>1?splitPessoas:0),user:(CU?CU.nome:'—')||"",mesa:(mesaActual?mesaActual.nome:''),mesaFunc:(mesaActual?mesaActual.func:''),detail:detailItems,docType:docType};
   sales.push(sale);curSale=sale;saveSales();
+  mesaLimparAposPagamento(); // limpar mesa após pagamento
   closePayModal();
   printConfirmation(sale);
   showToast('✓ Pedido Nº '+String(sale.orderNum).padStart(4,'0')+' registado');
@@ -1953,6 +2166,7 @@ function confirmPaySemImpressao(){
     })(),total:tot,met:payMethod,troco,nif,nifNome,fatCat:"Alimentação / Donativo / Apoio",
     split:(splitPessoas>1?splitPessoas:0),user:(CU?CU.nome:"—")||"",detail:detailItems,docType:docType};
   sales.push(sale);curSale=sale;saveSales();
+  mesaLimparAposPagamento(); // limpar mesa após pagamento
   closePayModal();
   if(payMethod==="d"){setTimeout(function(){abrirGaveta(true);},600);}
   showToast("✓ Pedido Nº "+String(sale.orderNum).padStart(4,"0")+" registado (sem impressão)");
@@ -5249,7 +5463,8 @@ tick();setInterval(tick,1000);
 // ═══ INIT ════════════════════════════════════════════════
 window.addEventListener("DOMContentLoaded",function(){
   console.log("DOM ready — a iniciar RestoPOS");
-  try{loadSales();console.log("loadSales OK, sales:",sales.length);}catch(e){console.log("loadSales error:",e);}
+  try{loadSales();
+  loadMesas();console.log("loadSales OK, sales:",sales.length);}catch(e){console.log("loadSales error:",e);}
   try{
     console.log("users count:", users.length);
     console.log("user-grid el:", document.getElementById("user-grid"));
