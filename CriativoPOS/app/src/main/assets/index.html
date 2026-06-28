@@ -1557,7 +1557,7 @@ function renderMesasFB(){
     var items = [];
     try{ items = JSON.parse(m.items||'[]'); }catch(e){}
     var nItens = items.reduce(function(s,i){return s+(i.q||1);},0);
-    return '<div class="mesa-card aberta" onclick="abrirModalMesaFB('' + escJs(m.id) + '')">' +
+    return '<div class="mesa-card aberta" onclick="abrirModalMesaFB(\'' + escJs(m.id) + '\')">' +
       '<div class="mesa-card-nome">' + escH(m.nome||m.id) + '</div>' +
       '<div class="mesa-card-func">' + escH(m.func||'—') + '</div>' +
       '<div class="mesa-card-total">' + EUR(m.total||0) + '</div>' +
