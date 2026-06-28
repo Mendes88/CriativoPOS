@@ -1,30 +1,43 @@
 plugins {
     id 'com.android.application'
+    id 'com.google.gms.google-services'
 }
 
 android {
-    compileSdk 33
+    namespace 'pt.criativo.pos'
+    compileSdk 34
 
     defaultConfig {
         applicationId "pt.criativo.pos"
-        minSdk 21
-        targetSdk 33
+        minSdk 23
+        targetSdk 34
         versionCode 1
-        versionName "2.3"
+        versionName "2.4"
     }
 
     buildTypes {
-        release { minifyEnabled false }
-        debug   { debuggable true }
+        release {
+            minifyEnabled false
+            shrinkResources false
+        }
+        debug { debuggable true }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
-    namespace 'pt.criativo.pos'
+    packagingOptions {
+        resources {
+            excludes += ['/META-INF/{AL2.0,LGPL2.1}']
+        }
+    }
 }
 
 dependencies {
+    implementation platform('com.google.firebase:firebase-bom:33.1.0')
+    implementation 'com.google.firebase:firebase-firestore'
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
 }
