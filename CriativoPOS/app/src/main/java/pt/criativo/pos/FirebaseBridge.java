@@ -51,7 +51,7 @@ public class FirebaseBridge {
         Timestamp inicioDia = new Timestamp(new Date(cal.getTimeInMillis()));
 
         mesasListener = db.collection("mesas")
-            .whereEqualTo("estado", "aberta")
+            .whereEqualTo("estado", "aguarda_pagamento")
             .addSnapshotListener((snap, e) -> {
                 if (e != null) {
                     Log.e(TAG, "Mesas listener: " + e.getMessage());
