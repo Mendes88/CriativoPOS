@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "500187235617",
+    "project_id": "criativopos",
+    "storage_bucket": "criativopos.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:500187235617:android:a142eb4106262bdb5eea60",
+        "android_client_info": {
+          "package_name": "pt.criativo.pos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHANQKhbaHhQD-p-fD7ACfNjviGw2RseI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
