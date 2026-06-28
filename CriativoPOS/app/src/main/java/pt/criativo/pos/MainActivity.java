@@ -21,6 +21,7 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private BluetoothBridge btBridge;
+    private FirebaseBridge fbBridge;
     private ValueCallback<Uri[]> fileUploadCallback;
     private static final int FILE_CHOOSER_REQUEST_CODE = 1;
 
@@ -57,17 +58,16 @@ public class MainActivity extends Activity {
         btBridge = new BluetoothBridge(this, webView);
         webView.addJavascriptInterface(btBridge, "AndroidBT");
 
+        fbBridge = new FirebaseBridge(this, webView);
+        webView.addJavascriptInterface(fbBridge, "AndroidFB");
+
         // WebChromeClient com suporte a file picker
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
-            public boolean onShowFileChooser(WebView wv,
+            public boolean onShowFileChooser(WebView webView,
                     ValueCallback<Uri[]> filePathCallback,
                     FileChooserParams fileChooserParams) {
-                // Cancela callback anterior se existir
-                if (fileUploadCallback != null) {
-                    fileUploadCallback.onReceiveValue(null);
-                    fileUploadCallback = null;
-                }
+                if (fileUploadCallback != null) fileUploadCallback.onReceiveValue(null);
                 fileUploadCallback = filePathCallback;
                 Intent intent = fileChooserParams.createIntent();
                 try {
@@ -80,31 +80,22 @@ public class MainActivity extends Activity {
             }
         });
 
-        webView.setWebViewClient(new WebViewClient());
-        webView.loadUrl("file:///android_asset/index.html");
-
-        // Pedir permissão de escrita para Android 6-9 (não necessária no Android 10+)
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(
-                    new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    100);
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return false;
             }
-        }
+        });
+
+        webView.loadUrl("file:///android_asset/index.html");
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == FILE_CHOOSER_REQUEST_CODE) {
             if (fileUploadCallback != null) {
-                Uri[] results = null;
-                if (resultCode == Activity.RESULT_OK && data != null) {
-                    String dataString = data.getDataString();
-                    if (dataString != null) {
-                        results = new Uri[]{Uri.parse(dataString)};
-                    }
-                }
+                Uri[] results = (resultCode == RESULT_OK && data != null)
+                    ? new Uri[]{data.getData()} : null;
                 fileUploadCallback.onReceiveValue(results);
                 fileUploadCallback = null;
             }
@@ -113,13 +104,16 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        // Bloqueia o botão back — mantém o POS aberto
+        if (webView.canGoBack()) webView.goBack();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (btBridge != null) btBridge.disconnect();
-        if (webView != null)  webView.destroy();
+        if (fbBridge != null) fbBridge.destroy();
+        if (webView != null) {
+            webView.removeAllViews();
+            webView.destroy();
+        }
     }
 }
