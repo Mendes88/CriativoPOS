@@ -127,28 +127,35 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
   #nav-tabs::-webkit-scrollbar{display:none;}
   .nb{padding:5px 7px;font-size:10px;white-space:nowrap;}
   /* MESAS FIREBASE */
-  #vmesas{padding:10px;box-sizing:border-box;overflow-y:auto;}
+  #vmesas{padding:12px;box-sizing:border-box;overflow-y:auto;background:#111;min-height:100%;}
   .mesas-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-  .mesas-tit{font-size:14px;font-weight:600;color:#f0f0f0;}
-  .mesas-estado{font-size:11px;color:#888;}
-  .mesas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-  .mesa-card{background:#2e2e2e;border-radius:10px;border:2px solid #3a3a3a;padding:10px;cursor:pointer;min-height:80px;display:flex;flex-direction:column;gap:3px;transition:border-color .15s;}
-  .mesa-card.aberta{border-color:#EF9F27;background:#2a2200;}
-  .mesa-card:active{transform:scale(.97);}
-  .mesa-card-nome{font-size:15px;font-weight:700;color:#f0f0f0;}
-  .mesa-card-func{font-size:11px;color:#EF9F27;font-weight:500;}
-  .mesa-card-total{font-size:12px;color:#a5d6a7;font-weight:600;}
-  .mesa-card-tempo{font-size:10px;color:#888;}
+  .mesas-tit{font-size:15px;font-weight:700;color:#f0f0f0;}
+  .mesas-estado{font-size:11px;color:#888;background:#1a1a1a;padding:3px 10px;border-radius:10px;}
+  .mesas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:10px;}
+  .mesa-card{background:#1e1e1e;border-radius:12px;border:2px solid #EF9F27;padding:14px 12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+  .mesa-card.aberta{border-color:#EF9F27;}
+  .mesa-card:active{transform:scale(.96);}
+  .mesa-card-nome{font-size:17px;font-weight:800;color:#fff;letter-spacing:.3px;}
+  .mesa-card-func{font-size:11px;color:#EF9F27;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+  .mesa-card-total{font-size:22px;font-weight:800;color:#a5d6a7;margin-top:4px;}
+  .mesa-card-tempo{font-size:10px;color:#555;display:flex;justify-content:space-between;margin-top:2px;}
   .mesa-card-vazia{font-size:11px;color:#555;margin-top:4px;}
-  .mesa-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;}
+  .mesa-modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:9000;align-items:flex-end;justify-content:center;}
   .mesa-modal-bg.on{display:flex;}
-  .mesa-modal{background:#1e1e1e;border-radius:14px;border:1px solid #333;padding:20px;width:90%;max-width:340px;display:flex;flex-direction:column;gap:12px;}
-  .mesa-modal-tit{font-size:16px;font-weight:600;color:#f0f0f0;}
-  .mesa-modal-info{font-size:12px;color:#888;line-height:1.5;}
-  .mesa-modal-total{font-size:20px;font-weight:700;color:#a5d6a7;}
-  .mesa-modal-btn{padding:12px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;}
+  .mesa-modal{background:#1a1a1a;border-radius:18px 18px 0 0;border-top:2px solid #EF9F27;padding:20px 16px 32px;width:100%;max-width:500px;display:flex;flex-direction:column;gap:10px;max-height:82vh;overflow-y:auto;}
+  .mesa-modal-tit{font-size:20px;font-weight:800;color:#fff;}
+  .mesa-modal-info{font-size:11px;color:#666;display:flex;gap:14px;}
+  .mesa-modal-total{font-size:28px;font-weight:800;color:#a5d6a7;text-align:right;padding:4px 0;border-top:1px solid #2a2a2a;margin-top:2px;}
+  .mesa-modal-btn{padding:14px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;}
   .mesa-modal-btn.verde{background:#2e7d32;color:#fff;}
-  .mesa-modal-btn.cinza{background:#424242;color:#ccc;}
+  .mesa-modal-btn.azul{background:#1565c0;color:#fff;}
+  .mesa-modal-btn.cinza{background:#2a2a2a;color:#888;font-weight:500;font-size:13px;}
+  .mm-itens-lista{background:#111;border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;margin-top:2px;}
+  .mm-item-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:.5px solid #1e1e1e;font-size:12px;color:#ccc;}
+  .mm-item-row:last-child{border-bottom:none;}
+  .mm-item-qtd{color:#EF9F27;font-weight:700;min-width:24px;font-size:13px;}
+  .mm-item-nome{flex:1;}
+  .mm-item-preco{color:#666;min-width:52px;text-align:right;}
   .logout-btn{padding:4px 7px;font-size:10px;}
 
   /* POS: painel de pedido debaixo do menu */
@@ -819,13 +826,20 @@ window.addEventListener('unhandledrejection', function(e){
       <div style="grid-column:1/-1;text-align:center;padding:30px;color:#555;font-size:13px;">Sem mesas abertas</div>
     </div>
     <!-- Modal detalhe da mesa -->
-    <div class="mesa-modal-bg" id="mesa-modal-bg">
+    <div class="mesa-modal-bg" id="mesa-modal-bg" onclick="fecharModalMesaBg(event)">
       <div class="mesa-modal">
-        <div class="mesa-modal-tit" id="mm-nome"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="mesa-modal-tit" id="mm-nome"></div>
+          <button onclick="fecharModalMesa()" style="background:none;border:none;color:#555;font-size:20px;cursor:pointer;padding:0 4px;">✕</button>
+        </div>
         <div class="mesa-modal-info" id="mm-info"></div>
+        <div class="mm-itens-lista" id="mm-itens"></div>
         <div class="mesa-modal-total" id="mm-total"></div>
-        <button class="mesa-modal-btn verde" onclick="fecharContaMesaFB()">💳 Fechar conta</button>
-        <button class="mesa-modal-btn cinza" onclick="fecharModalMesa()">Cancelar</button>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+          <button class="mesa-modal-btn verde" onclick="fecharContaMesaFB()">💳 Fechar conta</button>
+          <button class="mesa-modal-btn azul" onclick="imprimirReciboMesa()">🖨️ Imprimir recibo</button>
+          <button class="mesa-modal-btn cinza" onclick="fecharModalMesa()">Cancelar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1548,20 +1562,20 @@ function renderMesasFB(){
   var grid = document.getElementById('mesas-grid');
   if(!grid) return;
   if(!mesasFB.length){
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:#555;font-size:13px;">Sem mesas abertas</div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#444;font-size:13px;">Sem mesas a aguardar pagamento</div>';
     return;
   }
-  // Ordenar por tempo de abertura (mais antigas primeiro)
   var lista = mesasFB.slice().sort(function(a,b){ return (a.abertoEm||0)-(b.abertoEm||0); });
   grid.innerHTML = lista.map(function(m){
     var items = [];
     try{ items = JSON.parse(m.items||'[]'); }catch(e){}
-    var nItens = items.reduce(function(s,i){return s+(i.q||1);},0);
+    var nItens = items.reduce(function(s,i){return s+(i.qtd||i.q||1);},0);
+    var tempo = mesaTempoStr(m.enviado_caixa_em||m.abertoEm);
     return '<div class="mesa-card aberta" onclick="abrirModalMesaFB(\'' + escJs(m.id) + '\')">' +
       '<div class="mesa-card-nome">' + escH(m.nome||m.id) + '</div>' +
-      '<div class="mesa-card-func">' + escH(m.func||'—') + '</div>' +
+      '<div class="mesa-card-func">👤 ' + escH(m.funcionario||m.func||'—') + '</div>' +
       '<div class="mesa-card-total">' + EUR(m.total||0) + '</div>' +
-      '<div class="mesa-card-tempo">' + mesaTempoStr(m.abertoEm) + ' · ' + nItens + ' items</div>' +
+      '<div class="mesa-card-tempo"><span>🕐 ' + tempo + '</span><span>' + nItens + ' itens</span></div>' +
       '</div>';
   }).join('');
 }
@@ -1574,12 +1588,30 @@ function abrirModalMesaFB(mesaId){
   if(!mesaSelFB) return;
   var items = [];
   try{ items = JSON.parse(mesaSelFB.items||'[]'); }catch(e){}
-  var nItens = items.reduce(function(s,i){return s+(i.q||1);},0);
-  document.getElementById('mm-nome').textContent  = mesaSelFB.nome || mesaSelFB.id;
-  document.getElementById('mm-info').innerHTML    =
-    'Funcionário: <strong>' + escH(mesaSelFB.func||'—') + '</strong><br>' +
-    'Aberta há: ' + mesaTempoStr(mesaSelFB.abertoEm) + '<br>' +
-    nItens + ' item(s)';
+  var nItens = items.reduce(function(s,i){return s+(i.qtd||i.q||1);},0);
+  document.getElementById('mm-nome').textContent = mesaSelFB.nome || mesaSelFB.id;
+  document.getElementById('mm-info').innerHTML =
+    '<span>👤 ' + escH(mesaSelFB.funcionario||mesaSelFB.func||'—') + '</span>' +
+    '<span>🕐 ' + mesaTempoStr(mesaSelFB.enviado_caixa_em||mesaSelFB.abertoEm) + '</span>' +
+    '<span>' + nItens + ' itens</span>';
+  // Lista de itens
+  var listaEl = document.getElementById('mm-itens');
+  if(items.length){
+    listaEl.innerHTML = items.map(function(it){
+      var nome = it.nome||it.n||'';
+      var qtd  = it.qtd||it.q||1;
+      var preco= it.preco||it.p||0;
+      return '<div class="mm-item-row">' +
+        '<span class="mm-item-qtd">' + qtd + '×</span>' +
+        '<span class="mm-item-nome">' + escH(nome) + '</span>' +
+        '<span class="mm-item-preco">' + EUR(preco*qtd) + '</span>' +
+        '</div>';
+    }).join('');
+    listaEl.style.display = 'flex';
+  } else {
+    listaEl.innerHTML = '<div style="color:#444;font-size:11px;text-align:center;padding:8px;">Sem itens disponíveis</div>';
+    listaEl.style.display = 'flex';
+  }
   document.getElementById('mm-total').textContent = EUR(mesaSelFB.total||0);
   document.getElementById('mesa-modal-bg').classList.add('on');
 }
@@ -1587,6 +1619,46 @@ function abrirModalMesaFB(mesaId){
 function fecharModalMesa(){
   document.getElementById('mesa-modal-bg').classList.remove('on');
   mesaSelFB = null;
+}
+
+function fecharModalMesaBg(e){
+  if(e.target === document.getElementById('mesa-modal-bg')) fecharModalMesa();
+}
+
+function imprimirReciboMesa(){
+  if(!mesaSelFB) return;
+  var items = [];
+  try{ items = JSON.parse(mesaSelFB.items||'[]'); }catch(e){}
+  if(!items.length){ alert('Sem itens para imprimir.'); return; }
+  // Usar sistema de impressão existente do POS
+  if(typeof AndroidBT !== 'undefined' && window.kdsImpressora){
+    // Impressão BT se disponível
+    var linhas = [];
+    linhas.push('CRIATIVO POS');
+    linhas.push('--------------------------------');
+    linhas.push(mesaSelFB.nome || mesaSelFB.id);
+    linhas.push('Funcionário: '+(mesaSelFB.funcionario||mesaSelFB.func||'—'));
+    linhas.push('--------------------------------');
+    items.forEach(function(it){
+      var q = it.qtd||it.q||1;
+      var n = it.nome||it.n||'';
+      var p = it.preco||it.p||0;
+      linhas.push(q+'x '+n+' '+EUR(p*q));
+    });
+    linhas.push('--------------------------------');
+    linhas.push('TOTAL: '+EUR(mesaSelFB.total||0));
+    linhas.push('');
+    linhas.push('Obrigado!');
+    alert('Impressão BT: '+linhas.join('\n'));
+  } else if(window.printRecibo) {
+    // Usar função de impressão do POS Caixa se existir
+    var ord = items.map(function(it,idx){
+      return {uid:idx,id:it.id||('m'+idx),n:it.nome||it.n||'?',p:it.preco||it.p||0,q:it.qtd||it.q||1};
+    });
+    printRecibo(ord, mesaSelFB.total||0, mesaSelFB.nome||mesaSelFB.id);
+  } else {
+    alert('Função de impressão não disponível neste dispositivo.');
+  }
 }
 
 function fecharContaMesaFB(){
