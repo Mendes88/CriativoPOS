@@ -817,7 +817,7 @@ window.addEventListener('unhandledrejection', function(e){
   </div>
 
   <!-- GESTÃO -->
-  <div id="vmesas">
+  <div id="vmesas" style="background:#111;min-height:100%;padding:12px;box-sizing:border-box;">
     <div class="mesas-hdr">
       <span class="mesas-tit">🍽 Mesas</span>
       <span class="mesas-estado" id="mesas-estado">A ligar...</span>
@@ -1587,20 +1587,24 @@ function abrirModalMesaFB(mesaId){
   mesaSelFB = mesasFB.find(function(m){return m.id===mesaId;});
   if(!mesaSelFB) return;
   var items = [];
-  try{ items = JSON.parse(mesaSelFB.items||'[]'); }catch(e){}
+  try{
+    var raw = mesaSelFB.items||'[]';
+    // suporta string JSON ou array nativo
+    items = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if(!Array.isArray(items)) items = [];
+  }catch(e){ items=[]; }
   var nItens = items.reduce(function(s,i){return s+(i.qtd||i.q||1);},0);
   document.getElementById('mm-nome').textContent = mesaSelFB.nome || mesaSelFB.id;
   document.getElementById('mm-info').innerHTML =
     '<span>👤 ' + escH(mesaSelFB.funcionario||mesaSelFB.func||'—') + '</span>' +
     '<span>🕐 ' + mesaTempoStr(mesaSelFB.enviado_caixa_em||mesaSelFB.abertoEm) + '</span>' +
     '<span>' + nItens + ' itens</span>';
-  // Lista de itens
   var listaEl = document.getElementById('mm-itens');
   if(items.length){
     listaEl.innerHTML = items.map(function(it){
-      var nome = it.nome||it.n||'';
-      var qtd  = it.qtd||it.q||1;
-      var preco= it.preco||it.p||0;
+      var nome  = it.nome||it.n||'';
+      var qtd   = it.qtd||it.q||1;
+      var preco = parseFloat(it.preco||it.p||0);
       return '<div class="mm-item-row">' +
         '<span class="mm-item-qtd">' + qtd + '×</span>' +
         '<span class="mm-item-nome">' + escH(nome) + '</span>' +
@@ -1609,7 +1613,7 @@ function abrirModalMesaFB(mesaId){
     }).join('');
     listaEl.style.display = 'flex';
   } else {
-    listaEl.innerHTML = '<div style="color:#444;font-size:11px;text-align:center;padding:8px;">Sem itens disponíveis</div>';
+    listaEl.innerHTML = '<div style="color:#555;font-size:11px;text-align:center;padding:10px;">Sem itens — verifica se o Smartphone foi actualizado</div>';
     listaEl.style.display = 'flex';
   }
   document.getElementById('mm-total').textContent = EUR(mesaSelFB.total||0);
@@ -1630,35 +1634,24 @@ function imprimirReciboMesa(){
   var items = [];
   try{ items = JSON.parse(mesaSelFB.items||'[]'); }catch(e){}
   if(!items.length){ alert('Sem itens para imprimir.'); return; }
-  // Usar sistema de impressão existente do POS
-  if(typeof AndroidBT !== 'undefined' && window.kdsImpressora){
-    // Impressão BT se disponível
-    var linhas = [];
-    linhas.push('CRIATIVO POS');
-    linhas.push('--------------------------------');
-    linhas.push(mesaSelFB.nome || mesaSelFB.id);
-    linhas.push('Funcionário: '+(mesaSelFB.funcionario||mesaSelFB.func||'—'));
-    linhas.push('--------------------------------');
-    items.forEach(function(it){
-      var q = it.qtd||it.q||1;
-      var n = it.nome||it.n||'';
-      var p = it.preco||it.p||0;
-      linhas.push(q+'x '+n+' '+EUR(p*q));
-    });
-    linhas.push('--------------------------------');
-    linhas.push('TOTAL: '+EUR(mesaSelFB.total||0));
-    linhas.push('');
-    linhas.push('Obrigado!');
-    alert('Impressão BT: '+linhas.join('\n'));
-  } else if(window.printRecibo) {
-    // Usar função de impressão do POS Caixa se existir
-    var ord = items.map(function(it,idx){
-      return {uid:idx,id:it.id||('m'+idx),n:it.nome||it.n||'?',p:it.preco||it.p||0,q:it.qtd||it.q||1};
-    });
-    printRecibo(ord, mesaSelFB.total||0, mesaSelFB.nome||mesaSelFB.id);
-  } else {
-    alert('Função de impressão não disponível neste dispositivo.');
-  }
+  // Converter para formato que printConfirmation espera
+  var orderItems = items.map(function(it, idx){
+    return {
+      n: it.nome||it.n||'?',
+      p: parseFloat(it.preco||it.p||0),
+      q: parseInt(it.qtd||it.q||1),
+      id: it.id||('m'+idx)
+    };
+  });
+  var s = {
+    orderNum: mesaSelFB.nome||mesaSelFB.id,
+    items: orderItems,
+    total: mesaSelFB.total||0,
+    detail: false,
+    mesa: mesaSelFB.nome||mesaSelFB.id,
+    func: mesaSelFB.funcionario||mesaSelFB.func||'—'
+  };
+  printConfirmation(s);
 }
 
 function fecharContaMesaFB(){
