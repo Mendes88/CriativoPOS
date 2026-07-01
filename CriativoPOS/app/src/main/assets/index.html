@@ -1593,17 +1593,15 @@ function abrirModalMesaFB(mesaId){
     itens = typeof raw === 'string' ? JSON.parse(raw) : raw;
     if(!Array.isArray(itens)) itens = [];
   }catch(e){ itens=[]; }
-  // Carregar itens no order do POS
+  // Carregar itens no order do POS — uma entrada por item com qtd correcta
   order = [];
   uidCnt = 1;
   itens.forEach(function(it){
     var nome  = it.nome||it.n||'?';
     var preco = parseFloat(it.preco||it.p||0);
     var qtd   = parseInt(it.qtd||it.q||1);
-    // Agrupar por nome+preco
-    var existing = order.find(function(o){ return o.n===nome && o.p===preco; });
-    if(existing){ existing.q += qtd; }
-    else{ order.push({uid:uidCnt++, id:uidCnt, n:nome, p:preco, q:qtd}); }
+    if(!nome || preco < 0) return;
+    order.push({uid:uidCnt++, id:uidCnt, n:nome, p:preco, q:qtd});
   });
   if(!order.length){
     // Itens vazios — mostrar modal informativo
