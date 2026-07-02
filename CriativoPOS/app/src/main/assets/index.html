@@ -2155,11 +2155,11 @@ function confirmPay(){
       order.forEach(function(o){
         var notes=Array.isArray(o.notes)?o.notes:(o.note?[o.note]:[]);
         if(notes.length){
-          individual.push({n:o.n,q:1,p:o.p,notes:notes,note:notes.join(', ')});
+          individual.push({n:o.n,q:parseInt(o.q||1),p:o.p,notes:notes,note:notes.join(', ')});
         } else {
           var key=o.id+'|';
-          if(grouped[key]) grouped[key].q++;
-          else grouped[key]={n:o.n,q:1,p:o.p,notes:[],note:''};
+          if(grouped[key]) grouped[key].q+=parseInt(o.q||1);
+          else grouped[key]={n:o.n,q:parseInt(o.q||1),p:o.p,notes:[],note:''};
         }
       });
       return Object.values(grouped).concat(individual);
@@ -2204,8 +2204,8 @@ function confirmPaySemImpressao(){
       var grouped={},individual=[];
       order.forEach(function(o){
         var notes=Array.isArray(o.notes)?o.notes:(o.note?[o.note]:[]);
-        if(notes.length){ individual.push({n:o.n,q:1,p:o.p,notes:notes,note:notes.join(', ')}); }
-        else { var key=o.id+"|"; if(grouped[key]) grouped[key].q++; else grouped[key]={n:o.n,q:1,p:o.p,notes:[],note:""}; }
+        if(notes.length){ individual.push({n:o.n,q:parseInt(o.q||1),p:o.p,notes:notes,note:notes.join(', ')}); }
+        else { var key=o.id+"|"; if(grouped[key]) grouped[key].q+=parseInt(o.q||1); else grouped[key]={n:o.n,q:parseInt(o.q||1),p:o.p,notes:[],note:""}; }
       });
       return Object.values(grouped).concat(individual);
     })(),total:tot,met:payMethod,troco,nif,nifNome,fatCat:"Alimentação / Donativo / Apoio",
