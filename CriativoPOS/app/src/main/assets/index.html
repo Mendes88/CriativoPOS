@@ -21,7 +21,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 /* ── LOGIN ─────────────────────────────────────────────── */
 #login-screen{
   position:fixed;top:0;left:0;width:100%;height:100%;
-  background:#f5f5f5;
+  background:#1a1a1a;
   z-index:9999;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
@@ -1641,7 +1641,10 @@ function cobrarMesa(mesaId){
   window._mesaAFechar = mesaSelFB;
   renderOrder();
   switchView('pos');
-  setTimeout(function(){ openPayModal(); }, 200);
+  setTimeout(function(){
+    openPayModal();
+    setDocType('recibo'); // mesas -> sempre recibo
+  }, 200);
 }
 
 function fecharModalMesa(){
