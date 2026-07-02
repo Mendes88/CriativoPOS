@@ -15,13 +15,13 @@
 <title>Criativo POS</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
-html,body{width:100%;height:100%;background:#252525;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+html,body{width:100%;height:100%;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
 body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 
 /* ── LOGIN ─────────────────────────────────────────────── */
 #login-screen{
   position:fixed;top:0;left:0;width:100%;height:100%;
-  background:#252525;
+  background:#f5f5f5;
   z-index:9999;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
@@ -30,7 +30,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 }
 .ls-title{font-size:28px;font-weight:700;color:#FAEEDA;}
 .ls-sub{font-size:13px;color:#c4956a;margin-top:-8px;}
-.ls-hint{font-size:11px;color:#aaa;background:rgba(255,255,255,.07);
+.ls-hint{font-size:11px;color:#888888666;background:rgba(255,255,255,.07);
   padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.1);}
 /* USER CARDS */
 #user-grid{
@@ -53,7 +53,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 .uav{
   width:56px;height:56px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:18px;font-weight:700;color:#fff;
+  font-size:18px;font-weight:700;color:#111111;
 }
 .ucard-name{font-weight:600;font-size:13px;text-align:center;}
 .ucard-role{font-size:10px;color:#c4956a;text-align:center;}
@@ -66,7 +66,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 .pin-who-av{
   width:40px;height:40px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;color:#fff;
+  font-size:13px;font-weight:700;color:#111111;
 }
 .pin-who-name{font-size:15px;font-weight:600;color:#FAEEDA;}
 .pin-dots{display:flex;gap:12px;}
@@ -127,35 +127,35 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
   #nav-tabs::-webkit-scrollbar{display:none;}
   .nb{padding:5px 7px;font-size:10px;white-space:nowrap;}
   /* MESAS FIREBASE */
-  #vmesas{padding:12px;box-sizing:border-box;overflow-y:auto;background:#111;min-height:100%;}
+  #vmesas{padding:12px;box-sizing:border-box;overflow-y:auto;background:#f8f8f8;min-height:100%;}
   .mesas-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-  .mesas-tit{font-size:15px;font-weight:700;color:#f0f0f0;}
-  .mesas-estado{font-size:11px;color:#888;background:#1a1a1a;padding:3px 10px;border-radius:10px;}
+  .mesas-tit{font-size:15px;font-weight:700;color:#111111;}
+  .mesas-estado{font-size:11px;color:#777777;background:#ffffff;padding:3px 10px;border-radius:10px;}
   .mesas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:10px;}
-  .mesa-card{background:#1e1e1e !important;border-radius:12px;border:2px solid #EF9F27;padding:14px 12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+  .mesa-card{background:#ffffff !important;border-radius:12px;border:2px solid #EF9F27;padding:14px 12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.4);}
   .mesa-card.aberta{border-color:#EF9F27;}
   .mesa-card:active{transform:scale(.96);}
-  .mesa-card-nome{font-size:17px;font-weight:800;color:#fff;letter-spacing:.3px;}
+  .mesa-card-nome{font-size:17px;font-weight:800;color:#111111;letter-spacing:.3px;}
   .mesa-card-func{font-size:11px;color:#EF9F27;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
-  .mesa-card-total{font-size:22px;font-weight:800;color:#a5d6a7;margin-top:4px;}
-  .mesa-card-tempo{font-size:10px;color:#555;display:flex;justify-content:space-between;margin-top:2px;}
-  .mesa-card-vazia{font-size:11px;color:#555;margin-top:4px;}
+  .mesa-card-total{font-size:22px;font-weight:800;color:#2e7d32;margin-top:4px;}
+  .mesa-card-tempo{font-size:10px;color:#999999;display:flex;justify-content:space-between;margin-top:2px;}
+  .mesa-card-vazia{font-size:11px;color:#999999;margin-top:4px;}
   .mesa-modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:9000;align-items:flex-end;justify-content:center;}
   .mesa-modal-bg.on{display:flex;}
-  .mesa-modal{background:#1a1a1a;border-radius:18px 18px 0 0;border-top:2px solid #EF9F27;padding:20px 16px 32px;width:100%;max-width:500px;display:flex;flex-direction:column;gap:10px;max-height:82vh;overflow-y:auto;}
-  .mesa-modal-tit{font-size:20px;font-weight:800;color:#fff;}
-  .mesa-modal-info{font-size:11px;color:#666;display:flex;gap:14px;}
-  .mesa-modal-total{font-size:28px;font-weight:800;color:#a5d6a7;text-align:right;padding:4px 0;border-top:1px solid #2a2a2a;margin-top:2px;}
+  .mesa-modal{background:#ffffff;border-radius:18px 18px 0 0;border-top:2px solid #EF9F27;padding:20px 16px 32px;width:100%;max-width:500px;display:flex;flex-direction:column;gap:10px;max-height:82vh;overflow-y:auto;}
+  .mesa-modal-tit{font-size:20px;font-weight:800;color:#111111;}
+  .mesa-modal-info{font-size:11px;color:#888888;display:flex;gap:14px;}
+  .mesa-modal-total{font-size:28px;font-weight:800;color:#2e7d32;text-align:right;padding:4px 0;border-top:1px solid #ddd;margin-top:2px;}
   .mesa-modal-btn{padding:14px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;}
-  .mesa-modal-btn.verde{background:#2e7d32;color:#fff;}
-  .mesa-modal-btn.azul{background:#1565c0;color:#fff;}
-  .mesa-modal-btn.cinza{background:#2a2a2a;color:#888;font-weight:500;font-size:13px;}
-  .mm-itens-lista{background:#111;border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;margin-top:2px;}
-  .mm-item-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:.5px solid #1e1e1e;font-size:12px;color:#ccc;}
+  .mesa-modal-btn.verde{background:#2e7d32;color:#111111;}
+  .mesa-modal-btn.azul{background:#1565c0;color:#111111;}
+  .mesa-modal-btn.cinza{background:#ebebeb;color:#777777;font-weight:500;font-size:13px;}
+  .mm-itens-lista{background:#f8f8f8;border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;margin-top:2px;}
+  .mm-item-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:.5px solid #1e1e1e;font-size:12px;color:#aaaaaa444;}
   .mm-item-row:last-child{border-bottom:none;}
   .mm-item-qtd{color:#EF9F27;font-weight:700;min-width:24px;font-size:13px;}
   .mm-item-nome{flex:1;}
-  .mm-item-preco{color:#666;min-width:52px;text-align:right;}
+  .mm-item-preco{color:#888888;min-width:52px;text-align:right;}
   .logout-btn{padding:4px 7px;font-size:10px;}
 
   /* POS: painel de pedido debaixo do menu */
@@ -196,18 +196,18 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 .brand{font-size:15px;font-weight:600;color:#854F0B;flex-shrink:0;white-space:nowrap;}
 #nav-tabs{display:flex;gap:4px;overflow-x:auto;flex-shrink:1;min-width:0;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .nb{padding:5px 9px;font-size:11px;border-radius:8px;cursor:pointer;
-  display:flex;align-items:center;gap:3px;transition:all .15s;white-space:nowrap;border:1px solid #ccc;background:transparent;color:#666;}
+  display:flex;align-items:center;gap:3px;transition:all .15s;white-space:nowrap;border:1px solid #ccc;background:transparent;color:#888888;}
 .nb.on{background:#BA7517;color:#FAEEDA;border-color:#BA7517;}
 .nb:hover:not(.on){background:#f5f5f5;}
-#clk{font-size:11px;color:#666;margin-left:auto;white-space:nowrap;}
+#clk{font-size:11px;color:#888888;margin-left:auto;white-space:nowrap;}
 .cur-user-box{display:flex;align-items:center;gap:6px;padding:4px 9px;
   border-radius:8px;background:#f5f5f5;border:1px solid #e0e0e0;}
 .cur-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;}
+  justify-content:center;font-size:9px;font-weight:700;color:#111111;flex-shrink:0;}
 .cur-name{font-size:11px;font-weight:500;color:#1a1a1a;}
-.cur-role{font-size:10px;color:#666;}
+.cur-role{font-size:10px;color:#888888;}
 .logout-btn{padding:4px 9px;font-size:11px;border-radius:8px;border:1px solid #ccc;
-  background:transparent;color:#666;cursor:pointer;flex-shrink:0;white-space:nowrap;}
+  background:transparent;color:#888888;cursor:pointer;flex-shrink:0;white-space:nowrap;}
 .logout-btn:hover{background:#fdecea;color:#c62828;border-color:#ef9a9a;}
 
 /* ── POS ────────────────────────────────────────────────── */
@@ -216,7 +216,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 #cats-row{display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;padding-bottom:2px;max-height:calc(2 * 36px + 5px);overflow:hidden;}
 #cats-row::-webkit-scrollbar{display:none;}
 .cat-btn{padding:6px 13px;border-radius:20px;font-size:12px;cursor:pointer;
-  white-space:nowrap;flex-shrink:0;transition:all .14s;border:1px solid #ccc;background:#fff;color:#666;}
+  white-space:nowrap;flex-shrink:0;transition:all .14s;border:1px solid #ccc;background:#fff;color:#888888;}
 .cat-btn.on{background:#BA7517;color:#FAEEDA;border-color:#BA7517;}
 .cat-btn:hover:not(.on){background:#f5f5f5;}
 #items-grid{overflow-y:scroll;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
@@ -242,7 +242,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 .order-price{font-size:12px;font-weight:500;color:#1a1a1a;min-width:46px;text-align:right;}
 #order-totals{padding:9px 12px;border-top:1px solid #e0e0e0;}
 #order-actions{padding:8px;display:flex;gap:7px;border-top:1px solid #e0e0e0;}
-.btn-cancel{flex:1;padding:10px;border-radius:8px;border:1px solid #ccc;background:transparent;color:#666;font-size:12px;cursor:pointer;}
+.btn-cancel{flex:1;padding:10px;border-radius:8px;border:1px solid #ccc;background:transparent;color:#888888;font-size:12px;cursor:pointer;}
 .btn-pay{flex:2;padding:10px;border-radius:8px;border:none;background:#BA7517;color:#FAEEDA;font-size:13px;font-weight:500;cursor:pointer;}
 .btn-pay:disabled{opacity:.35;cursor:not-allowed;}
 .btn-pay:not(:disabled):hover{background:#9A5F10;}
@@ -257,7 +257,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 .panel-hdr{display:flex;justify-content:space-between;align-items:center;
   padding:11px 13px;border-bottom:1px solid #e0e0e0;flex-shrink:0;}
 .panel-title{font-size:13px;font-weight:500;color:#1a1a1a;}
-.panel-sub{font-size:11px;color:#666;}
+.panel-sub{font-size:11px;color:#888888;}
 .add-btn{padding:5px 10px;font-size:11px;border-radius:8px;border:1px solid #BA7517;
   background:transparent;color:#854F0B;cursor:pointer;}
 .add-btn:hover{background:#FAEEDA;}
@@ -269,7 +269,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 .cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .cat-name{flex:1;font-size:13px;color:#1a1a1a;}
 .icon-btn{width:26px;height:26px;border-radius:8px;border:1px solid #e0e0e0;
-  background:transparent;cursor:pointer;color:#666;display:flex;align-items:center;
+  background:transparent;cursor:pointer;color:#888888;display:flex;align-items:center;
   justify-content:center;font-size:13px;flex-shrink:0;}
 .icon-btn:hover{background:#f5f5f5;color:#1a1a1a;}
 .icon-btn.del:hover{background:#fdecea;color:#c62828;}
@@ -285,7 +285,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 .cx-card.amber{background:#FAEEDA;border:1px solid #EF9F27;}
 .cx-card.green{background:#e8f5e9;border:1px solid #a5d6a7;}
 .cx-card.gray{background:#f5f5f5;border:1px solid #e0e0e0;}
-.cx-lbl{font-size:11px;color:#666;margin-bottom:4px;}
+.cx-lbl{font-size:11px;color:#888888;margin-bottom:4px;}
 .cx-val{font-size:20px;font-weight:500;}
 .cx-sub{font-size:10px;color:#999;margin-top:2px;}
 .cx-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -295,12 +295,12 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 .cx-action.red:hover{background:#fdecea;border-color:#ef9a9a;}
 .cx-action .ca-icon{font-size:26px;}
 .cx-action .ca-title{font-size:13px;font-weight:500;color:#1a1a1a;}
-.cx-action .ca-sub{font-size:11px;color:#666;text-align:center;line-height:1.4;}
+.cx-action .ca-sub{font-size:11px;color:#888888;text-align:center;line-height:1.4;}
 .card-wrap{background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden;}
 .card-hdr{padding:11px 13px;font-size:13px;font-weight:500;border-bottom:1px solid #e0e0e0;
   display:flex;justify-content:space-between;align-items:center;}
 table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;}
-th{padding:8px 10px;text-align:left;color:#666;font-weight:400;
+th{padding:8px 10px;text-align:left;color:#888888;font-weight:400;
   border-bottom:1px solid #e0e0e0;background:#f5f5f5;}
 td{padding:8px 10px;color:#1a1a1a;border-bottom:1px solid #eee;}
 tr:last-child td{border-bottom:none;}
@@ -312,21 +312,21 @@ tr:last-child td{border-bottom:none;}
   flex-shrink:0;gap:8px;flex-wrap:wrap;}
 .rel-tabs{display:flex;gap:5px;}
 .rel-tab{padding:5px 13px;font-size:12px;border-radius:8px;cursor:pointer;
-  transition:all .14s;border:1px solid #ccc;background:transparent;color:#666;}
+  transition:all .14s;border:1px solid #ccc;background:transparent;color:#888888;}
 .rel-tab.on{background:#BA7517;color:#FAEEDA;border-color:#BA7517;}
 .date-nav{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
 .dnav-btn{width:27px;height:27px;border-radius:8px;border:1px solid #ccc;
-  background:transparent;cursor:pointer;color:#666;font-size:14px;
+  background:transparent;cursor:pointer;color:#888888;font-size:14px;
   display:flex;align-items:center;justify-content:center;}
 .dnav-btn:hover{background:#f5f5f5;}
 .dnav-lbl{font-size:12px;font-weight:500;color:#1a1a1a;min-width:82px;text-align:center;}
 .dquick{padding:3px 9px;font-size:11px;border-radius:8px;cursor:pointer;
-  transition:all .14s;border:1px solid #ccc;background:transparent;color:#666;}
+  transition:all .14s;border:1px solid #ccc;background:transparent;color:#888888;}
 .dquick.on{background:#FAEEDA;border-color:#BA7517;color:#854F0B;}
 #rel-body{overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:13px 13px 60px 13px;display:flex;flex-direction:column;gap:12px;background:#eeeeee;flex:1;min-height:0;}
 .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;}
 .metric{background:#f5f5f5;border-radius:10px;padding:14px;}
-.metric-label{font-size:11px;color:#666;margin-bottom:3px;}
+.metric-label{font-size:11px;color:#888888;margin-bottom:3px;}
 .metric-val{font-size:20px;font-weight:500;color:#1a1a1a;}
 .metric-sub{font-size:10px;color:#999;margin-top:2px;}
 .tag{font-size:10px;padding:2px 7px;border-radius:8px;}
@@ -337,7 +337,7 @@ tr:last-child td{border-bottom:none;}
 .bar-fg{background:#BA7517;height:100%;border-radius:3px;}
 .sort-btns{display:flex;gap:5px;}
 .sort-btn{padding:3px 10px;font-size:11px;border-radius:8px;cursor:pointer;
-  transition:all .14s;border:1px solid #ccc;background:transparent;color:#666;}
+  transition:all .14s;border:1px solid #ccc;background:transparent;color:#888888;}
 .sort-btn.on{background:#FAEEDA;border-color:#BA7517;color:#854F0B;}
 .print-btn{padding:5px 12px;font-size:11px;border-radius:8px;border:none;
   background:#BA7517;color:#FAEEDA;cursor:pointer;}
@@ -347,16 +347,16 @@ tr:last-child td{border-bottom:none;}
 #vutil{overflow-y:scroll;-webkit-overflow-scrolling:touch;display:none;flex-direction:column;padding:14px 14px 60px 14px;gap:14px;background:#eeeeee;}
 .user-row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #eee;}
 .user-row-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+  justify-content:center;font-size:13px;font-weight:700;color:#111111;flex-shrink:0;}
 .user-row-info{flex:1;}
 .user-row-name{font-size:13px;font-weight:500;color:#1a1a1a;}
-.user-row-detail{font-size:11px;color:#666;}
+.user-row-detail{font-size:11px;color:#888888;}
 .badge-admin{background:#FAEEDA;color:#854F0B;font-size:10px;padding:2px 8px;border-radius:8px;font-weight:500;}
-.badge-oper{background:#f5f5f5;color:#666;font-size:10px;padding:2px 8px;border-radius:8px;}
+.badge-oper{background:#f5f5f5;color:#888888;font-size:10px;padding:2px 8px;border-radius:8px;}
 .perms-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;font-size:12px;}
 .perm-box{padding:11px 13px;background:#fff;border-radius:10px;border:1px solid #e0e0e0;}
 .perm-title{font-weight:500;margin-bottom:7px;}
-.perm-item{color:#666;padding:2px 0;}
+.perm-item{color:#888888;padding:2px 0;}
 .perm-item.off{opacity:.35;}
 
 /* ── OVERLAYS ───────────────────────────────────────────── */
@@ -367,7 +367,7 @@ tr:last-child td{border-bottom:none;}
   display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto;}
 .modal-title{font-size:15px;font-weight:500;color:#1a1a1a;}
 .field{display:flex;flex-direction:column;gap:5px;}
-.field label{font-size:12px;color:#666;}
+.field label{font-size:12px;color:#888888;}
 .field input,.field select{padding:10px;font-size:14px;border:1px solid #ccc;
   border-radius:8px;background:#f5f5f5;color:#1a1a1a;width:100%;}
 .field input:focus,.field select:focus{outline:none;border-color:#BA7517;}
@@ -380,7 +380,7 @@ tr:last-child td{border-bottom:none;}
 .btn-red:hover{background:#821f1f;}
 .pay-methods{display:flex;gap:7px;}
 .pay-btn{flex:1;padding:9px 5px;border-radius:8px;border:1px solid #ccc;
-  background:transparent;cursor:pointer;font-size:11px;color:#666;
+  background:transparent;cursor:pointer;font-size:11px;color:#888888;
   transition:all .15s;text-align:center;line-height:1.6;}
 .pay-btn.on{background:#FAEEDA;border-color:#BA7517;color:#854F0B;}
 .total-box{display:flex;justify-content:space-between;align-items:center;
@@ -391,7 +391,7 @@ tr:last-child td{border-bottom:none;}
 .fecho-modal{width:400px;}
 .fecho-sec{padding:10px 0;border-bottom:1px solid #eee;}
 .fecho-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;}
-.fecho-row .flbl{color:#666;}
+.fecho-row .flbl{color:#888888;}
 .fecho-row.ftot{font-weight:600;font-size:14px;border-top:1px dashed #ccc;padding-top:8px;margin-top:5px;}
 .fecho-row.ftot .fval{color:#854F0B;}
 .fecho-sec-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#999;margin-bottom:7px;}
@@ -405,9 +405,9 @@ tr:last-child td{border-bottom:none;}
 .nif-pill.off{background:#e0e0e0;color:#999;}
 #nif-fields{display:none;flex-direction:column;gap:8px;padding:10px 0 2px;}
 .nif-iw{flex:1;display:flex;flex-direction:column;gap:4px;}
-.nif-iw label{font-size:11px;color:#666;}
+.nif-iw label{font-size:11px;color:#888888;}
 .nif-iw input{padding:9px;font-size:14px;border:1px solid #ccc;border-radius:8px;background:#f5f5f5;color:#1a1a1a;width:100%;}
-.nif-iw input.ok{border-color:#a5d6a7;}
+.nif-iw input.ok{border-color:#2e7d32;}
 .nif-iw input.bad{border-color:#ef9a9a;}
 .nif-msg{font-size:10px;margin-top:2px;}
 .nif-msg.ok{color:#2e7d32;}.nif-msg.bad{color:#c62828;}
@@ -417,14 +417,14 @@ tr:last-child td{border-bottom:none;}
 
 /* Toast notification */
 #toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);
-  background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:10px;
+  background:#ffffff;color:#111111;padding:10px 20px;border-radius:10px;
   font-size:13px;font-weight:500;opacity:0;transition:all .3s;z-index:9000;
   pointer-events:none;white-space:nowrap;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* Session timeout warning */
 #timeout-warn{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
-  background:#A32D2D;color:#fff;padding:12px 24px;border-radius:12px;
+  background:#A32D2D;color:#111111;padding:12px 24px;border-radius:12px;
   font-size:13px;font-weight:500;z-index:9999;display:none;
   box-shadow:0 4px 20px rgba(0,0,0,.3);white-space:nowrap;}
 #timeout-warn.show{display:block;}
@@ -454,7 +454,7 @@ tr:last-child td{border-bottom:none;}
 }
 
 .cat-btn.fav-tab { border-color:#EF9F27; color:#854F0B; background:#FAEEDA; }
-.cat-btn.fav-tab.on { background:#EF9F27; color:#fff; border-color:#EF9F27; }
+.cat-btn.fav-tab.on { background:#EF9F27; color:#111111; border-color:#EF9F27; }
   /* Android PWA */
   html{-webkit-tap-highlight-color:transparent;}
   body{overscroll-behavior:contain;}
@@ -717,7 +717,7 @@ window.CrativoBT = (function(){
 <!-- LOGIN -->
 
 <div id="err-box" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99999;
-  background:#c62828;color:#fff;padding:12px 16px;font-size:13px;font-family:monospace;
+  background:#c62828;color:#111111;padding:12px 16px;font-size:13px;font-family:monospace;
   max-height:200px;overflow-y:auto;white-space:pre-wrap;">
   <b>ERRO JAVASCRIPT — Abre DevTools (F12) → Consola para detalhes</b><br>
 </div>
@@ -798,7 +798,7 @@ window.addEventListener('unhandledrejection', function(e){
       <div id="order-hdr">
         <span>Pedido</span>
         <span id="order-badge"></span>
-        <button onclick="showLastReceipts()" title="Últimos talões" style="background:transparent;border:1px solid #e0e0e0;border-radius:8px;padding:3px 8px;cursor:pointer;font-size:12px;color:#666;margin-left:auto;">🖨️ Talões</button>
+        <button onclick="showLastReceipts()" title="Últimos talões" style="background:transparent;border:1px solid #e0e0e0;border-radius:8px;padding:3px 8px;cursor:pointer;font-size:12px;color:#888888;margin-left:auto;">🖨️ Talões</button>
       </div>
       <div id="order-items"></div>
       <div id="order-totals"></div>
@@ -817,13 +817,13 @@ window.addEventListener('unhandledrejection', function(e){
   </div>
 
   <!-- GESTÃO -->
-  <div id="vmesas" style="background:#111;min-height:100%;padding:12px;box-sizing:border-box;color:#f0f0f0;">
+  <div id="vmesas" style="background:#f8f8f8;min-height:100%;padding:12px;box-sizing:border-box;color:#111111;">
     <div class="mesas-hdr">
       <span class="mesas-tit">🍽 Mesas</span>
       <span class="mesas-estado" id="mesas-estado">A ligar...</span>
     </div>
     <div class="mesas-grid" id="mesas-grid">
-      <div style="grid-column:1/-1;text-align:center;padding:30px;color:#555;font-size:13px;">Sem mesas abertas</div>
+      <div style="grid-column:1/-1;text-align:center;padding:30px;color:#999999;font-size:13px;">Sem mesas abertas</div>
     </div>
   </div>
 
@@ -870,22 +870,22 @@ window.addEventListener('unhandledrejection', function(e){
         <button class="dquick"    id="dq-custom"    onclick="toggleCustomRange()">📅 Intervalo</button>
       </div>
       <div style="display:flex;gap:6px;">
-        <button onclick="printRelatorio()" style="padding:5px 12px;font-size:11px;border-radius:8px;border:none;background:#BA7517;color:#fff;cursor:pointer;font-weight:500;white-space:nowrap;">🖨️ Relatório</button>
-        <button onclick="exportCSV()" style="padding:5px 12px;font-size:11px;border-radius:8px;border:none;background:#1D9E75;color:#fff;cursor:pointer;font-weight:500;white-space:nowrap;">📊 CSV</button>
+        <button onclick="printRelatorio()" style="padding:5px 12px;font-size:11px;border-radius:8px;border:none;background:#BA7517;color:#111111;cursor:pointer;font-weight:500;white-space:nowrap;">🖨️ Relatório</button>
+        <button onclick="exportCSV()" style="padding:5px 12px;font-size:11px;border-radius:8px;border:none;background:#1D9E75;color:#111111;cursor:pointer;font-weight:500;white-space:nowrap;">📊 CSV</button>
       </div>
     </div>
     <!-- Custom date range row -->
     <div id="custom-range-row" style="display:none;align-items:center;gap:10px;padding:7px 13px;background:#FAEEDA;border-bottom:1px solid #e0e0e0;flex-wrap:wrap;">
       <span style="font-size:12px;font-weight:500;color:#854F0B;">📅 Intervalo personalizado:</span>
       <div style="display:flex;align-items:center;gap:6px;">
-        <label style="font-size:11px;color:#666;">De</label>
+        <label style="font-size:11px;color:#888888;">De</label>
         <input type="date" id="range-from" style="padding:5px 8px;font-size:12px;border:1px solid #ccc;border-radius:6px;background:#fff;" onchange="applyCustomRange()">
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
-        <label style="font-size:11px;color:#666;">Até</label>
+        <label style="font-size:11px;color:#888888;">Até</label>
         <input type="date" id="range-to" style="padding:5px 8px;font-size:12px;border:1px solid #ccc;border-radius:6px;background:#fff;" onchange="applyCustomRange()">
       </div>
-      <button onclick="applyCustomRange()" style="padding:5px 14px;font-size:11px;border-radius:7px;border:none;background:#BA7517;color:#fff;cursor:pointer;font-weight:500;">✓ Aplicar</button>
+      <button onclick="applyCustomRange()" style="padding:5px 14px;font-size:11px;border-radius:7px;border:none;background:#BA7517;color:#111111;cursor:pointer;font-weight:500;">✓ Aplicar</button>
       <span id="custom-range-lbl" style="font-size:11px;color:#854F0B;font-weight:500;"></span>
     </div>
     <div id="rel-body"></div>
@@ -902,10 +902,10 @@ window.addEventListener('unhandledrejection', function(e){
     display:none;align-items:center;gap:8px;z-index:100;pointer-events:auto;">
     <div id="bb-av" style="width:22px;height:22px;border-radius:50%;
       display:flex;align-items:center;justify-content:center;
-      font-size:9px;font-weight:700;color:#fff;flex-shrink:0;"></div>
+      font-size:9px;font-weight:700;color:#111111;flex-shrink:0;"></div>
     <div style="line-height:1.3;">
       <div id="bb-name" style="font-size:11px;font-weight:600;color:#1a1a1a;"></div>
-      <div id="bb-clk"  style="font-size:10px;color:#666;"></div>
+      <div id="bb-clk"  style="font-size:10px;color:#888888;"></div>
     </div>
   </div>
 
@@ -919,7 +919,7 @@ window.addEventListener('unhandledrejection', function(e){
       <div style="background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:14px;display:flex;flex-direction:column;gap:10px;">
         <div style="font-size:12px;font-weight:600;color:#854F0B;text-transform:uppercase;letter-spacing:.5px;">&#127978; Estabelecimento</div>
         <div class="field"><label>Nome</label><input id="cfg-name" type="text" maxlength="50"></div>
-        <div class="field"><label>&#127978; Posto de Venda</label><input id="cfg-posto" type="text" maxlength="30" placeholder="Bar, Comida, Entrada..."><div style="font-size:11px;color:#888;margin-top:3px;">Identifica este tablet nos relatórios consolidados.</div></div>
+        <div class="field"><label>&#127978; Posto de Venda</label><input id="cfg-posto" type="text" maxlength="30" placeholder="Bar, Comida, Entrada..."><div style="font-size:11px;color:#777777;margin-top:3px;">Identifica este tablet nos relatórios consolidados.</div></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
           <div class="field"><label>NIF</label><input id="cfg-nif" type="text" maxlength="15"></div>
           <div class="field"><label>Telefone</label><input id="cfg-phone" type="text" maxlength="20"></div>
@@ -931,12 +931,12 @@ window.addEventListener('unhandledrejection', function(e){
             <option value="talao">📋 Talão (pré-pagamento / festival)</option>
             <option value="recibo">🧾 Recibo (pós-consumo / restaurante)</option>
           </select>
-          <div style="font-size:11px;color:#888;margin-top:3px;">O operador pode sempre alterar no momento do pagamento.</div>
+          <div style="font-size:11px;color:#777777;margin-top:3px;">O operador pode sempre alterar no momento do pagamento.</div>
         </div>
         <div class="field">
           <label>📱 Número MB Way</label>
           <input id="cfg-mbway" type="tel" inputmode="numeric" maxlength="13" placeholder="9XXXXXXXX">
-          <div style="font-size:11px;color:#888;margin-top:3px;">Número de telemóvel associado à conta MB Way do estabelecimento — usado para gerar o QR Code no checkout.</div>
+          <div style="font-size:11px;color:#777777;margin-top:3px;">Número de telemóvel associado à conta MB Way do estabelecimento — usado para gerar o QR Code no checkout.</div>
         </div>
         <button class="btn-ok" type="button" onclick="saveCfgBasic()" style="align-self:flex-start;padding:8px 20px;">&#128190; Guardar</button>
       </div>
@@ -954,7 +954,7 @@ window.addEventListener('unhandledrejection', function(e){
         <div style="font-size:12px;font-weight:600;color:#854F0B;text-transform:uppercase;letter-spacing:.5px;">&#128444;&#65039; Logótipo no Talão</div>
         <div id="logo-preview"><span style="color:#999;font-size:12px;">Sem logótipo definido</span></div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <label style="padding:8px 16px;background:#185FA5;color:#fff;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">
+          <label style="padding:8px 16px;background:#185FA5;color:#111111;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">
             &#128193; Escolher Imagem <input type="file" accept="image/*" style="display:none;" onchange="loadLogo(this)">
           </label>
           <button id="btn-remove-logo" class="btn-cancel" type="button" onclick="removeLogo()" style="display:none;">&#128465;&#65039; Remover</button>
@@ -988,7 +988,7 @@ window.addEventListener('unhandledrejection', function(e){
             <div class="field"><label>IP da Impressora</label><input id="cfg-pip" type="text" placeholder="192.168.1.100"></div>
             <div class="field"><label>Porta</label><input id="cfg-pport" type="text" placeholder="9100"></div>
           </div>
-          <div style="font-size:11px;color:#666;background:#fff8e1;padding:8px 10px;border-radius:6px;border:1px solid #ffe082;">
+          <div style="font-size:11px;color:#888888;background:#fff8e1;padding:8px 10px;border-radius:6px;border:1px solid #ffe082;">
             &#9888;&#65039; Requer servidor proxy na mesma rede WiFi (porta ESC/POS 9100).
           </div>
           <div style="display:flex;gap:8px;">
@@ -1002,7 +1002,7 @@ window.addEventListener('unhandledrejection', function(e){
             <button class="btn-ok" type="button" onclick="conectarUSB()" style="flex:1;background:#185FA5;">&#128269; Ligar USB</button>
             <button class="btn-ok" type="button" onclick="testarGaveta()" style="flex:1;background:#1D9E75;">&#128452;&#65039; Testar</button>
           </div>
-          <div style="font-size:11px;color:#888;padding:6px 8px;background:#f5f5f5;border-radius:6px;">Requer APK com suporte USB. Ver HARDWARE_SETUP.md.</div>
+          <div style="font-size:11px;color:#777777;padding:6px 8px;background:#f5f5f5;border-radius:6px;">Requer APK com suporte USB. Ver HARDWARE_SETUP.md.</div>
         </div>
         <div class="field" style="max-width:280px;">
           <label>Largura do papel</label>
@@ -1022,7 +1022,7 @@ window.addEventListener('unhandledrejection', function(e){
           </select>
         </div>
         <button class="btn-ok" type="button" onclick="saveCfgPrinterType()" style="align-self:flex-start;padding:8px 20px;background:#555;">&#128190; Guardar Tipo</button>
-        <div style="font-size:11px;color:#666;">&#128161; Gaveta abre automaticamente em pagamentos a numerário.</div>
+        <div style="font-size:11px;color:#888888;">&#128161; Gaveta abre automaticamente em pagamentos a numerário.</div>
       </div>
 
       <!-- TIMEOUT -->
@@ -1044,8 +1044,8 @@ window.addEventListener('unhandledrejection', function(e){
       <!-- BACKUP -->
       <div style="background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:14px;display:flex;flex-direction:column;gap:10px;">
         <div style="font-size:12px;font-weight:600;color:#854F0B;text-transform:uppercase;letter-spacing:.5px;">&#128250; Ajuste à Tela do Tablet</div>
-        <div style="font-size:12px;color:#666;">Se o conteúdo estiver cortado, ajusta a app à altura real do teu tablet.</div>
-        <div style="font-size:12px;color:#666;">Altura atual do ecrã: <strong id="screen-h">—</strong></div>
+        <div style="font-size:12px;color:#888888;">Se o conteúdo estiver cortado, ajusta a app à altura real do teu tablet.</div>
+        <div style="font-size:12px;color:#888888;">Altura atual do ecrã: <strong id="screen-h">—</strong></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn-ok" type="button" onclick="fitScreen()" style="background:#185FA5;">&#8597; Ajustar à Tela Agora</button>
           <button class="btn-cancel" type="button" onclick="resetScreen()">&#8635; Repor Padrão</button>
@@ -1055,7 +1055,7 @@ window.addEventListener('unhandledrejection', function(e){
 
       <div style="background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:14px;display:flex;flex-direction:column;gap:10px;">
         <div style="font-size:12px;font-weight:600;color:#854F0B;text-transform:uppercase;letter-spacing:.5px;">&#128190; Backup &amp; Exportação</div>
-        <div style="font-size:12px;color:#666;">Backup automático a cada 2h. Backup manual disponível abaixo.</div>
+        <div style="font-size:12px;color:#888888;">Backup automático a cada 2h. Backup manual disponível abaixo.</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn-ok" type="button" onclick="doBackup()" style="background:#185FA5;">&#128229; Backup Agora</button>
           <button class="btn-ok" type="button" onclick="exportCSV()" style="background:#1D9E75;">&#128202; Exportar CSV</button>
@@ -1066,14 +1066,14 @@ window.addEventListener('unhandledrejection', function(e){
       <!-- SINCRONIZAÇÃO -->
       <div style="background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:14px;display:flex;flex-direction:column;gap:10px;">
         <div style="font-size:12px;font-weight:600;color:#854F0B;text-transform:uppercase;letter-spacing:.5px;">&#128257; Sincronização entre Máquinas</div>
-        <div style="font-size:12px;color:#666;">Exporta os dados desta máquina e importa noutra para manter tudo sincronizado.</div>
+        <div style="font-size:12px;color:#888888;">Exporta os dados desta máquina e importa noutra para manter tudo sincronizado.</div>
 
         <div style="background:#f5f5f5;border-radius:8px;padding:11px 13px;display:flex;flex-direction:column;gap:8px;border:1px solid #e0e0e0;">
           <div style="font-size:11px;font-weight:600;color:#1a1a1a;">&#128463;&#65039; Menu de Artigos</div>
-          <div style="font-size:11px;color:#666;">Grupos, artigos e preços. Usa para sincronizar o menu entre caixas.</div>
+          <div style="font-size:11px;color:#888888;">Grupos, artigos e preços. Usa para sincronizar o menu entre caixas.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn-ok" type="button" onclick="exportMenu()" style="background:#185FA5;">&#11015;&#65039; Exportar Menu</button>
-            <label style="padding:8px 16px;background:#1D9E75;color:#fff;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">
+            <label style="padding:8px 16px;background:#1D9E75;color:#111111;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">
               &#11014;&#65039; Importar Menu <input type="file" accept=".json" style="display:none;" onchange="importMenu(this)">
             </label>
           </div>
@@ -1083,10 +1083,10 @@ window.addEventListener('unhandledrejection', function(e){
 
         <div style="background:#f5f5f5;border-radius:8px;padding:11px 13px;display:flex;flex-direction:column;gap:8px;border:1px solid #e0e0e0;">
           <div style="font-size:11px;font-weight:600;color:#1a1a1a;">&#9881;&#65039; Configurações do Sistema</div>
-          <div style="font-size:11px;color:#666;">Dados do estabelecimento, impressora, timeout. Não inclui vendas.</div>
+          <div style="font-size:11px;color:#888888;">Dados do estabelecimento, impressora, timeout. Não inclui vendas.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn-ok" type="button" onclick="exportConfig()" style="background:#185FA5;">&#11015;&#65039; Exportar Config</button>
-            <label style="padding:8px 16px;background:#1D9E75;color:#fff;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">
+            <label style="padding:8px 16px;background:#1D9E75;color:#111111;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">
               &#11014;&#65039; Importar Config <input type="file" accept=".json" style="display:none;" onchange="importConfig(this)">
             </label>
           </div>
@@ -1094,10 +1094,10 @@ window.addEventListener('unhandledrejection', function(e){
 
         <div style="background:#fff8e1;border-radius:8px;padding:11px 13px;display:flex;flex-direction:column;gap:8px;border:1px solid #ffe082;">
           <div style="font-size:11px;font-weight:600;color:#1a1a1a;">&#128274; Dados Completos (Menu + Config + Utilizadores)</div>
-          <div style="font-size:11px;color:#666;">Para configurar uma nova máquina de raiz. <strong>Não inclui vendas nem histórico.</strong></div>
+          <div style="font-size:11px;color:#888888;">Para configurar uma nova máquina de raiz. <strong>Não inclui vendas nem histórico.</strong></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn-ok" type="button" onclick="exportAll()" style="background:#854F0B;">&#11015;&#65039; Exportar Tudo</button>
-            <label style="padding:8px 16px;background:#A32D2D;color:#fff;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">
+            <label style="padding:8px 16px;background:#A32D2D;color:#111111;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">
               &#11014;&#65039; Importar Tudo <input type="file" accept=".json" style="display:none;" onchange="importAll(this)">
             </label>
           </div>
@@ -1109,11 +1109,11 @@ window.addEventListener('unhandledrejection', function(e){
     <!-- NOTAS RÁPIDAS -->
     <div class="cfg-group" id="cfg-notechips-section" style="display:none;flex-direction:column;gap:10px;padding:14px;background:#fff;border-radius:10px;border:1px solid #e0e0e0;">
       <div style="font-size:13px;font-weight:500;">📝 Notas Rápidas do Pedido</div>
-      <div style="font-size:12px;color:#666;">Sugestões que aparecem ao pressionar 3s num artigo do pedido.</div>
+      <div style="font-size:12px;color:#888888;">Sugestões que aparecem ao pressionar 3s num artigo do pedido.</div>
       <div id="notechips-list" style="display:flex;flex-direction:column;gap:6px;"></div>
       <div style="display:flex;gap:8px;">
         <input id="new-chip-input" type="text" maxlength="30" placeholder="Nova nota rápida..." style="flex:1;padding:9px;border:1px solid #e0e0e0;border-radius:8px;font-size:13px;">
-        <button onclick="addNoteChip()" style="padding:9px 14px;border-radius:8px;border:none;background:#BA7517;color:#fff;font-size:13px;cursor:pointer;font-weight:500;">+ Adicionar</button>
+        <button onclick="addNoteChip()" style="padding:9px 14px;border-radius:8px;border:none;background:#BA7517;color:#111111;font-size:13px;cursor:pointer;font-weight:500;">+ Adicionar</button>
       </div>
     </div>
 
@@ -1134,7 +1134,7 @@ window.addEventListener('unhandledrejection', function(e){
     <div class="modal-title">💳 Pagamento</div>
     <div style="display:flex;gap:8px;margin-bottom:8px;">
       <button id="doc-talao" onclick="setDocType('talao')" style="flex:1;padding:8px;border-radius:8px;border:2px solid #BA7517;background:#FAEEDA;color:#854F0B;font-size:13px;font-weight:600;cursor:pointer;">📋 Talão</button>
-      <button id="doc-recibo" onclick="setDocType('recibo')" style="flex:1;padding:8px;border-radius:8px;border:2px solid #e0e0e0;background:#fff;color:#666;font-size:13px;font-weight:500;cursor:pointer;">🧾 Recibo</button>
+      <button id="doc-recibo" onclick="setDocType('recibo')" style="flex:1;padding:8px;border-radius:8px;border:2px solid #e0e0e0;background:#fff;color:#888888;font-size:13px;font-weight:500;cursor:pointer;">🧾 Recibo</button>
     </div>
     <div class="pay-methods">
       <button class="pay-btn on" id="pm-d" onclick="setPayMethod('d')">💵<br>Numerário</button>
@@ -1142,14 +1142,14 @@ window.addEventListener('unhandledrejection', function(e){
       <button class="pay-btn" id="pm-m" onclick="setPayMethod('m')">📱<br>MB Way</button>
     </div>
     <div class="total-box">
-      <span style="font-size:12px;color:#666;">Total a pagar</span>
+      <span style="font-size:12px;color:#888888;">Total a pagar</span>
       <span id="pay-total" style="font-size:21px;font-weight:500;color:#1a1a1a;">€0.00</span>
     </div>
     <div id="cash-section" style="display:flex;flex-direction:column;gap:7px;">
-      <label style="font-size:12px;color:#666;">Montante entregue</label>
+      <label style="font-size:12px;color:#888888;">Montante entregue</label>
       <input type="number" id="cash-in" style="padding:11px;font-size:18px;font-weight:500;border:1px solid #ccc;border-radius:8px;background:#f5f5f5;color:#1a1a1a;width:100%;" placeholder="0.00" min="0" step="0.01" oninput="calcTroco()">
       <div style="display:flex;justify-content:space-between;font-size:13px;">
-        <span style="color:#666;">Troco</span>
+        <span style="color:#888888;">Troco</span>
         <span id="troco-val" style="font-weight:500;color:#2e7d32;">€0.00</span>
       </div>
     </div>
@@ -1159,7 +1159,7 @@ window.addEventListener('unhandledrejection', function(e){
           <span style="font-size:16px;">🧾</span>
           <div>
             <div style="font-size:12px;color:#1a1a1a;">Fatura com NIF?</div>
-            <div style="font-size:11px;color:#666;">Opcional</div>
+            <div style="font-size:11px;color:#888888;">Opcional</div>
           </div>
         </div>
         <span class="nif-pill off" id="nif-pill">Não</span>
@@ -1185,7 +1185,7 @@ window.addEventListener('unhandledrejection', function(e){
           <span style="font-size:16px;">📋</span>
           <div>
             <div style="font-size:12px;color:#1a1a1a;">Listar artigos individualmente?</div>
-            <div style="font-size:11px;color:#666;">Ex: 2× Café → Café / Café</div>
+            <div style="font-size:11px;color:#888888;">Ex: 2× Café → Café / Café</div>
           </div>
         </div>
         <span id="detail-pill" style="padding:2px 9px;font-size:11px;border-radius:9px;background:#BA7517;color:#FAEEDA;">Sim</span>
@@ -1212,20 +1212,20 @@ window.addEventListener('unhandledrejection', function(e){
 
     <!-- Amount -->
     <div style="background:#f0faf3;border:2px solid #1a8a37;border-radius:14px;padding:16px;margin-bottom:16px;">
-      <div style="font-size:12px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Valor a pagar</div>
+      <div style="font-size:12px;color:#888888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Valor a pagar</div>
       <div id="mbway-amount" style="font-size:48px;font-weight:900;color:#1a8a37;line-height:1;"></div>
     </div>
 
     <!-- Phone number big -->
     <div style="background:#f5f5f5;border-radius:12px;padding:14px;margin-bottom:16px;">
-      <div style="font-size:11px;color:#888;margin-bottom:6px;">Enviar para o número</div>
+      <div style="font-size:11px;color:#777777;margin-bottom:6px;">Enviar para o número</div>
       <div id="mbway-phone-label" style="font-size:28px;font-weight:900;color:#1a1a1a;letter-spacing:2px;"></div>
     </div>
 
     <!-- Instructions -->
     <div style="background:#fff8e1;border-radius:10px;padding:10px 12px;margin-bottom:18px;text-align:left;">
       <div style="font-size:11px;font-weight:700;color:#e65100;margin-bottom:5px;">Como pagar:</div>
-      <div style="font-size:12px;color:#555;line-height:1.8;">
+      <div style="font-size:12px;color:#999999;line-height:1.8;">
         1. Abre o <strong>MB Way</strong><br>
         2. Toca em <strong>Enviar Dinheiro</strong><br>
         3. Insere o número acima<br>
@@ -1238,8 +1238,8 @@ window.addEventListener('unhandledrejection', function(e){
 
     <!-- Buttons -->
     <div style="display:flex;gap:10px;">
-      <button onclick="cancelMBWay()" style="flex:1;padding:13px;border-radius:10px;border:1px solid #e0e0e0;background:#fff;font-size:14px;cursor:pointer;color:#666;font-weight:500;">✕ Cancelar</button>
-      <button onclick="confirmMBWay()" style="flex:2;padding:13px;border-radius:10px;border:none;background:#1a8a37;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">✓ Confirmar Pago</button>
+      <button onclick="cancelMBWay()" style="flex:1;padding:13px;border-radius:10px;border:1px solid #e0e0e0;background:#fff;font-size:14px;cursor:pointer;color:#888888;font-weight:500;">✕ Cancelar</button>
+      <button onclick="confirmMBWay()" style="flex:2;padding:13px;border-radius:10px;border:none;background:#1a8a37;color:#111111;font-size:15px;font-weight:700;cursor:pointer;">✓ Confirmar Pago</button>
     </div>
   </div>
 </div>
@@ -1335,7 +1335,7 @@ function checkPostoConfig(){
   modMode = "postoConfig";
   mb.innerHTML =
     '<div class="modal-title" style="color:#e65100;">⚠️ Configuração do Posto</div>'+
-    '<div style="font-size:13px;color:#555;margin-bottom:14px;">Este tablet tem configurações por definir. Por favor revê antes de começar:</div>'+
+    '<div style="font-size:13px;color:#999999;margin-bottom:14px;">Este tablet tem configurações por definir. Por favor revê antes de começar:</div>'+
     '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">'+
       missing.map(function(m){
         return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;">'+
@@ -1343,7 +1343,7 @@ function checkPostoConfig(){
           '<span style="font-size:13px;font-weight:500;color:#e65100;">'+m+'</span></div>';
       }).join("")+
     '</div>'+
-    '<div style="font-size:12px;color:#888;margin-bottom:14px;">Importante se este tablet foi configurado por cópia de outro posto.</div>'+
+    '<div style="font-size:12px;color:#777777;margin-bottom:14px;">Importante se este tablet foi configurado por cópia de outro posto.</div>'+
     '<div class="modal-actions">'+
       '<button class="btn-cancel" onclick="closeModal()">Ignorar</button>'+
       '<button class="btn-ok" onclick="closeModal();switchView(\'cfg\')">⚙️ Ir para Config</button>'+
@@ -1545,7 +1545,7 @@ function renderMesasFB(){
   var grid = document.getElementById('mesas-grid');
   if(!grid) return;
   if(!mesasFB.length){
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#444;font-size:13px;">Sem mesas a aguardar pagamento</div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaaaaa;font-size:13px;">Sem mesas a aguardar pagamento</div>';
     return;
   }
   var lista = mesasFB.slice().sort(function(a,b){ return (a.abertoEm||0)-(b.abertoEm||0); });
@@ -1592,7 +1592,7 @@ function abrirModalMesaFB(mesaId){
     var nomeM = mesaSelFB ? (mesaSelFB.nome||mesaSelFB.id) : mesaId;
     document.getElementById('mm-nome').textContent = nomeM;
     document.getElementById('mm-info').innerHTML = '<span style="color:#e57373;">⚠️ Sem itens — actualiza o POS Smartphone</span>';
-    document.getElementById('mm-itens').innerHTML = '<div style="color:#555;font-size:11px;text-align:center;padding:10px;">Os itens não chegaram do Smartphone.<br>Podes cobrar manualmente pelo POS normal.</div>';
+    document.getElementById('mm-itens').innerHTML = '<div style="color:#999999;font-size:11px;text-align:center;padding:10px;">Os itens não chegaram do Smartphone.<br>Podes cobrar manualmente pelo POS normal.</div>';
     document.getElementById('mm-itens').style.display = 'flex';
     document.getElementById('mm-total').textContent = EUR(mesaSelFB ? (mesaSelFB.total||0) : 0);
     document.getElementById('mesa-modal-bg').classList.add('on');
@@ -1790,7 +1790,7 @@ function openNoteModal(itemId){
     // Existing notes (removable)
     var existingHtml = pending.length
       ? '<div style="margin-bottom:12px;">'+
-          '<div style="font-size:11px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;">Notas seleccionadas</div>'+
+          '<div style="font-size:11px;color:#777777;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;">Notas seleccionadas</div>'+
           '<div style="display:flex;flex-wrap:wrap;gap:5px;">'+
             pending.map(function(n,i){
               return '<div style="display:flex;align-items:center;gap:3px;background:#e3f2fd;border:1px solid #90caf9;border-radius:20px;padding:4px 10px;font-size:12px;color:#185FA5;">'+
@@ -1800,7 +1800,7 @@ function openNoteModal(itemId){
             }).join('')+
           '</div>'+
         '</div>'
-      : '<div style="font-size:12px;color:#bbb;margin-bottom:12px;">Nenhuma nota seleccionada</div>';
+      : '<div style="font-size:12px;color:#999999555;margin-bottom:12px;">Nenhuma nota seleccionada</div>';
 
     // Chips — highlight if already selected
     var chipsHtml = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">'+
@@ -1815,13 +1815,13 @@ function openNoteModal(itemId){
     // Free text
     var inputHtml = '<div style="display:flex;gap:6px;margin-bottom:4px;">'+
       '<input id="note-free" type="text" inputmode="text" maxlength="50" placeholder="Nota livre..." style="flex:1;padding:8px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:13px;">'+
-      '<button onclick="pendingAddFree()" style="padding:8px 12px;border-radius:8px;border:none;background:#185FA5;color:#fff;font-size:13px;cursor:pointer;white-space:nowrap;">+ Add</button>'+
+      '<button onclick="pendingAddFree()" style="padding:8px 12px;border-radius:8px;border:none;background:#185FA5;color:#111111;font-size:13px;cursor:pointer;white-space:nowrap;">+ Add</button>'+
     '</div>';
 
     mb.innerHTML =
       '<div class="modal-title" style="margin-bottom:10px;">📝 '+o.n+'</div>'+
       existingHtml +
-      '<div style="font-size:11px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Sugestões</div>'+
+      '<div style="font-size:11px;color:#777777;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Sugestões</div>'+
       chipsHtml +
       inputHtml +
       '<div class="modal-actions" style="margin-top:8px;">'+
@@ -1977,7 +1977,7 @@ function renderOrder(){
     attachLongPress(el, o.uid);
   });
   ot.innerHTML=
-    '<div style="display:flex;justify-content:space-between;font-size:11px;color:#666;margin-bottom:5px;">'+
+    '<div style="display:flex;justify-content:space-between;font-size:11px;color:#888888;margin-bottom:5px;">'+
       '<span>Subtotal (IVA incl.)</span><span>'+EUR(tot)+'</span>'+
     '</div>'+
     '<div style="display:flex;justify-content:space-between;font-size:16px;font-weight:500;padding-top:7px;border-top:1px solid #eee;">'+
@@ -2229,16 +2229,16 @@ function showReceipt(s){
   const isFat=!!s.nif;
   document.getElementById("rcpt-content").innerHTML=`
     <div style="text-align:center;border-bottom:1px dashed #ccc;padding-bottom:8px;margin-bottom:8px;">
-      <div style="font-size:11px;font-weight:500;color:#666;">${isFat?"FATURA SIMPLIFICADA":s.docType==="recibo"?"RECIBO":"TALÃO DE VENDA"}</div>
+      <div style="font-size:11px;font-weight:500;color:#888888;">${isFat?"FATURA SIMPLIFICADA":s.docType==="recibo"?"RECIBO":"TALÃO DE VENDA"}</div>
       <div style="font-size:14px;font-weight:600;color:#854F0B;margin-top:2px;">${config.restName}</div>
-      <div style="font-size:10px;color:#666;">NIF ${config.nif} · ${config.address}</div>
+      <div style="font-size:10px;color:#888888;">NIF ${config.nif} · ${config.address}</div>
     </div>
     ${isFat?`<div style="padding:7px 10px;background:#e3f2fd;border-radius:8px;margin-bottom:7px;">
       <div style="font-size:10px;color:#1565c0;font-weight:500;margin-bottom:2px;">🧾 Cliente</div>
       ${s.nifNome?`<div style="font-size:12px;">${s.nifNome}</div>`:""}
       <div style="font-size:12px;font-weight:500;">NIF: ${s.nif}</div>
     </div>`:""}
-    <div style="font-size:10px;color:#666;margin-bottom:6px;">Nº ${String(s.id).padStart(4,"0")} · ${dFmt(s.date)} ${s.time}</div>
+    <div style="font-size:10px;color:#888888;margin-bottom:6px;">Nº ${String(s.id).padStart(4,"0")} · ${dFmt(s.date)} ${s.time}</div>
     <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:7px;">
       ${renderItems(s.items, s.detail)}
     </div>
@@ -2247,8 +2247,8 @@ function showReceipt(s){
     <div style="display:flex;justify-content:space-between;font-weight:600;font-size:13px;margin-bottom:4px;">
       <span>TOTAL</span><span style="color:#854F0B;">${EUR(s.total)}</span>
     </div>
-    <div style="font-size:11px;color:#666;">Pagamento: ${PML(s.met)}</div>
-    ${s.met==="d"&&s.troco>0?`<div style="font-size:11px;color:#666;">Troco: ${EUR(s.troco)}</div>`:""}
+    <div style="font-size:11px;color:#888888;">Pagamento: ${PML(s.met)}</div>
+    ${s.met==="d"&&s.troco>0?`<div style="font-size:11px;color:#888888;">Troco: ${EUR(s.troco)}</div>`:""}
     <div style="font-size:10px;color:#999;margin-top:3px;">Operador: ${s.user||"—"}</div>
     <div style="text-align:center;font-size:10px;color:#999;border-top:1px dashed #ccc;padding-top:7px;margin-top:7px;">
       ${isFat?"Fatura Simplificada":"Obrigado pela visita! 😊"}
@@ -2322,7 +2322,7 @@ function printConfirmation(s){
         itensListTalao +=
           '<tr style="border-bottom:1px dotted #e0e0e0;">'+
             '<td style="padding:5px 6px;font-size:18px;font-weight:700;">'+i.n+'</td>'+
-            '<td style="padding:5px 4px;font-size:15px;font-weight:400;color:#888;text-align:center;white-space:nowrap;">('+EUR(i.p)+')</td>'+
+            '<td style="padding:5px 4px;font-size:15px;font-weight:400;color:#777777;text-align:center;white-space:nowrap;">('+EUR(i.p)+')</td>'+
             '<td style="padding:5px 6px;font-size:18px;font-weight:700;text-align:right;white-space:nowrap;color:#1a1a1a;">×1</td>'+
           '</tr>'+(k===0?notesHtml:'');
       }
@@ -2333,7 +2333,7 @@ function printConfirmation(s){
       itensListTalao +=
         '<tr style="border-bottom:1px dotted #e0e0e0;">'+
           '<td style="padding:5px 6px;font-size:18px;font-weight:700;">'+i.n+'</td>'+
-          '<td style="padding:5px 4px;font-size:15px;font-weight:400;color:#888;text-align:center;white-space:nowrap;">('+lineTotal+')</td>'+
+          '<td style="padding:5px 4px;font-size:15px;font-weight:400;color:#777777;text-align:center;white-space:nowrap;">('+lineTotal+')</td>'+
           '<td style="padding:5px 6px;font-size:18px;font-weight:700;text-align:right;white-space:nowrap;color:#1a1a1a;">×'+qty+'</td>'+
         '</tr>'+notesHtml;
     }
@@ -2353,8 +2353,8 @@ function printConfirmation(s){
       var reciboName = i.n;
       var reciboPrice, reciboSub = '';
       if(i.q > 1 && !itemNotes.length){
-        reciboName += ' <span style="font-size:11px;color:#888;">×'+i.q+'</span>';
-        reciboSub   = '<tr><td colspan="2" style="padding:0 8px 4px 16px;font-size:10px;color:#aaa;">'+i.q+' × '+EUR(i.p)+'</td></tr>';
+        reciboName += ' <span style="font-size:11px;color:#777777;">×'+i.q+'</span>';
+        reciboSub   = '<tr><td colspan="2" style="padding:0 8px 4px 16px;font-size:10px;color:#888888666;">'+i.q+' × '+EUR(i.p)+'</td></tr>';
         reciboPrice = EUR(i.q*i.p);
       } else {
         reciboPrice = EUR(i.p);
@@ -2371,7 +2371,7 @@ function printConfirmation(s){
 
   // Calcular total de artigos (soma das quantidades)
   var totalQty = s.items.reduce(function(acc, i){ return acc + (i.q||1); }, 0);
-  var totalArtigosHtml = '<div style="text-align:right;font-size:12px;color:#666;padding:2px 6px 6px;">'+totalQty+' artigo'+(totalQty!==1?'s':'')+'</div>';
+  var totalArtigosHtml = '<div style="text-align:right;font-size:12px;color:#888888;padding:2px 6px 6px;">'+totalQty+' artigo'+(totalQty!==1?'s':'')+'</div>';
 
   const ticketHtml=
     cfgHeader()+
@@ -2414,7 +2414,7 @@ function printConfirmation(s){
       '<div class="page-break"></div>'+
       '<div class="c b" style="font-size:13px;">FATURA SIMPLIFICADA</div>'+
       '<div class="c b" style="font-size:13px;margin:3px 0;">'+config.restName+'</div>'+
-      '<div class="c" style="font-size:9px;color:#555;">NIF '+config.nif+' · '+config.address+'</div>'+
+      '<div class="c" style="font-size:9px;color:#999999;">NIF '+config.nif+' · '+config.address+'</div>'+
       '<div class="sep"></div>'+
       '<div class="row"><span>Nº Doc.</span><span>FS '+num+'</span></div>'+
       '<div class="row"><span>Data</span><span>'+dFmt(s.date)+' '+s.time+'</span></div>'+
@@ -2443,13 +2443,13 @@ function printConfirmation(s){
       '.b{font-weight:700;}'+
       '.sep{border-top:1px dashed #999;margin:7px 0;}'+
       '.rest{font-size:13px;font-weight:700;margin-bottom:2px;}'+
-      '.sub{font-size:10px;color:#555;margin-bottom:6px;}'+
-      '.leve{font-size:11px;color:#555;margin-bottom:4px;}'+
+      '.sub{font-size:10px;color:#999999;margin-bottom:6px;}'+
+      '.leve{font-size:11px;color:#999999;margin-bottom:4px;}'+
       '.num{font-size:76px;font-weight:900;color:#1a1a1a;line-height:1;margin:8px 0;}'+
-      '.pago{display:inline-block;background:#1a1a1a;color:#fff;font-size:13px;font-weight:700;padding:4px 20px;border-radius:4px;margin:4px 0;}'+
+      '.pago{display:inline-block;background:#ffffff;color:#111111;font-size:13px;font-weight:700;padding:4px 20px;border-radius:4px;margin:4px 0;}'+
       'table{width:100%;border-collapse:collapse;margin:6px 0;text-align:left;}'+
       '.total-line{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:6px 0;border-top:2px solid #1a1a1a;}'+
-      '.footer{font-size:9px;color:#888;margin-top:6px;}'+
+      '.footer{font-size:9px;color:#777777;margin-top:6px;}'+
       '.row{display:flex;justify-content:space-between;padding:3px 0;font-size:11px;}'+
       '.nif-box{border:1.5px solid #185FA5;border-radius:4px;padding:6px 8px;margin:6px 0;background:#f0f6ff;}'+
       '.nif-lbl{font-size:9px;font-weight:700;color:#185FA5;text-transform:uppercase;margin-bottom:2px;}'+
@@ -2505,7 +2505,7 @@ function doPrint(){
     '@media print{body{padding:0;}}</style></head><body>'+
     '<div class="c b" style="font-size:13px;">'+(isFat?'FATURA SIMPLIFICADA':s.docType==="recibo"?'RECIBO':'TALÃO DE VENDA')+'</div>'+
     '<div class="c b" style="font-size:13px;margin:3px 0;">'+config.restName+'</div>'+
-    '<div class="c" style="font-size:9px;color:#555;">NIF '+config.nif+' · '+config.address+'</div>'+
+    '<div class="c" style="font-size:9px;color:#999999;">NIF '+config.nif+' · '+config.address+'</div>'+
     '<div class="sep"></div>'+
     '<div class="row"><span>Nº</span><span>'+String(s.id).padStart(4,"0")+'</span></div>'+
     '<div class="row"><span>Data</span><span>'+dFmt(s.date)+' '+s.time+'</span></div>'+
@@ -2582,7 +2582,7 @@ function renderItemList(){
           '<button class="icon-btn" onclick="toggleFav('+it.id+')" title="'+(favs.includes(it.id)?'Remover dos favoritos':'Adicionar aos favoritos')+'" style="'+
           (favs.includes(it.id)
             ? 'background:#FFF3CD;border-color:#EF9F27;color:#EF9F27;'
-            : 'background:transparent;border-color:#e0e0e0;color:#ccc;')+
+            : 'background:transparent;border-color:#222222;color:#aaaaaa444;')+
           '">⭐</button>'+
           '<button class="icon-btn" onclick="moveItem('+ii+',-1)" '+(ii===0?'disabled style="opacity:.3;"':'')+'>↑</button>'+
           '<button class="icon-btn" onclick="moveItem('+ii+',1)"  '+(ii===items.length-1?'disabled style="opacity:.3;"':'')+'>↓</button>'+
@@ -2719,7 +2719,7 @@ function openModal(mode,arg){
     mb.innerHTML=`<div class="modal-title">➕ Novo Item — <span style="color:${CC(gestCat)};">${gestCat}</span></div>
       <div class="field"><label>Nome</label><input id="mf1" type="text" maxlength="40"></div>
       <div class="field"><label>Preço (€)</label><input id="mf2" type="number" min="0" step="0.01"></div>
-      <div class="field"><label>Pack — nº unidades <span style="font-size:10px;color:#888;">(opcional, ex: 10)</span></label><input id="mf3" type="number" min="1" step="1" placeholder="1"></div>
+      <div class="field"><label>Pack — nº unidades <span style="font-size:10px;color:#777777;">(opcional, ex: 10)</span></label><input id="mf3" type="number" min="1" step="1" placeholder="1"></div>
       <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="saveModal()">✓ Criar</button></div>`;
   } else if(mode==="editItem"){
     const it=(ITEMS[gestCat]||[]).find(x=>x.id===arg);if(!it)return;
@@ -2727,12 +2727,12 @@ function openModal(mode,arg){
     mb.innerHTML=`<div class="modal-title">✏️ Editar Item</div>
       <div class="field"><label>Nome</label><input id="mf1" type="text" value="${it.n}" maxlength="40"></div>
       <div class="field"><label>Preço (€)</label><input id="mf2" type="number" value="${it.p}" min="0" step="0.01"></div>
-      <div class="field"><label>Pack — nº unidades <span style="font-size:10px;color:#888;">(opcional, ex: 10)</span></label><input id="mf3" type="number" min="1" step="1" value="${it.pack||1}" placeholder="1"></div>
+      <div class="field"><label>Pack — nº unidades <span style="font-size:10px;color:#777777;">(opcional, ex: 10)</span></label><input id="mf3" type="number" min="1" step="1" value="${it.pack||1}" placeholder="1"></div>
       <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="saveModal()">✓ Guardar</button></div>`;
   } else if(mode==="fundo"){
     modData={};
     mb.innerHTML=`<div class="modal-title">💵 Fundo de Maneio</div>
-      <div style="font-size:12px;color:#666;">Valor inicial em caixa no início do turno.</div>
+      <div style="font-size:12px;color:#888888;">Valor inicial em caixa no início do turno.</div>
       <div class="field"><label>Montante (€)</label><input id="mf1" type="number" value="${fundo}" min="0" step="0.01"></div>
       <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="saveModal()">✓ Definir</button></div>`;
   } else if(mode==="addUser"){
@@ -2830,7 +2830,7 @@ function renderCaixa(){
       ${(function(){
         var fh=isCaixaFechada()?lastFecho():null;
         return fh
-          ? '<div class="cx-action" style="opacity:.5;cursor:not-allowed;border-color:#aaa;"><div class="ca-icon">✅</div><div class="ca-title" style="color:#666;">Caixa Fechada</div><div class="ca-sub">Fecho às '+fh.hora+'</div></div>'
+          ? '<div class="cx-action" style="opacity:.5;cursor:not-allowed;border-color:#888888666;"><div class="ca-icon">✅</div><div class="ca-title" style="color:#888888;">Caixa Fechada</div><div class="ca-sub">Fecho às '+fh.hora+'</div></div>'
           : '<div class="cx-action red" onclick="showFecho()"><div class="ca-icon">🔒</div><div class="ca-title">Fecho de Caixa</div><div class="ca-sub">Encerrar turno e gerar<br>relatório de fecho</div></div>';
       })()}
     </div>
@@ -2839,8 +2839,8 @@ function renderCaixa(){
         '<div style="font-size:28px;">✅</div>'+
         '<div>'+
           '<div style="font-size:14px;font-weight:600;color:#2e7d32;">Caixa Fechada</div>'+
-          '<div style="font-size:12px;color:#666;margin-top:2px;">Fecho realizado hoje às '+lf.hora+' por '+(lf.user||'—').split(' ')[0]+'</div>'+
-          '<div style="font-size:11px;color:#888;margin-top:1px;">Total encerrado: '+EUR(lf.totV)+'</div>'+
+          '<div style="font-size:12px;color:#888888;margin-top:2px;">Fecho realizado hoje às '+lf.hora+' por '+(lf.user||'—').split(' ')[0]+'</div>'+
+          '<div style="font-size:11px;color:#777777;margin-top:1px;">Total encerrado: '+EUR(lf.totV)+'</div>'+
           '<div style="font-size:11px;color:#2e7d32;margin-top:4px;font-weight:500;">Realize vendas para iniciar novo turno</div>'+
         '</div>'+
       '</div>'
@@ -2850,7 +2850,7 @@ function renderCaixa(){
     <div class="card-wrap">
       <div class="card-hdr">
         <span>💼 Levantamentos de Hoje</span>
-        <span style="font-size:12px;color:#666;">Total: ${EUR(levantamentosSinceFecho().reduce(function(s,l){return s+l.valor;},0))}</span>
+        <span style="font-size:12px;color:#888888;">Total: ${EUR(levantamentosSinceFecho().reduce(function(s,l){return s+l.valor;},0))}</span>
       </div>
       <table><thead><tr>
         <th style="width:16%;">Hora</th>
@@ -2864,8 +2864,8 @@ function renderCaixa(){
           '<td>'+l.hora+'</td>'+
           '<td>'+l.motivo+'</td>'+
           '<td style="text-align:right;font-weight:500;color:#c62828;">- '+EUR(l.valor)+'</td>'+
-          '<td style="text-align:right;color:#666;">'+EUR(l.saldoApos)+'</td>'+
-          '<td style="font-size:11px;color:#666;">'+(l.user||'—').split(' ')[0]+'</td>'+
+          '<td style="text-align:right;color:#888888;">'+EUR(l.saldoApos)+'</td>'+
+          '<td style="font-size:11px;color:#888888;">'+(l.user||'—').split(' ')[0]+'</td>'+
         '</tr>';
       }).join('')}
       </tbody></table>
@@ -2903,12 +2903,12 @@ function renderCaixa(){
           '</tr></thead><tbody>'+
           levFilt.slice().reverse().map(function(l){
             return '<tr>'+
-              '<td style="font-size:10px;color:#666;">'+dFmt(l.date)+'</td>'+
+              '<td style="font-size:10px;color:#888888;">'+dFmt(l.date)+'</td>'+
               '<td>'+l.hora+'</td>'+
               '<td>'+l.motivo+'</td>'+
               '<td style="text-align:right;font-weight:600;color:#c62828;">− '+EUR(l.valor)+'</td>'+
-              '<td style="text-align:right;color:#666;">'+EUR(l.saldoApos)+'</td>'+
-              '<td style="font-size:11px;color:#666;">'+( l.user||'—').split(' ')[0]+'</td>'+
+              '<td style="text-align:right;color:#888888;">'+EUR(l.saldoApos)+'</td>'+
+              '<td style="font-size:11px;color:#888888;">'+( l.user||'—').split(' ')[0]+'</td>'+
             '</tr>';
           }).join("")+
           '<tr style="background:#f5f5f5;font-weight:700;">'+
@@ -2923,7 +2923,7 @@ function renderCaixa(){
     <div class="card-wrap">
       <div class="card-hdr"><span>Histórico de Fechos</span></div>
       <table><thead><tr><th style="width:22%;">Data</th><th style="width:13%;">Hora</th><th style="width:12%;text-align:right;">Ped.</th><th style="width:18%;text-align:right;">Vendas</th><th style="width:17%;text-align:right;">Numerário</th><th>Estado</th></tr></thead>
-      <tbody>${closings.slice().reverse().map(c=>`<tr><td>${dFmt(c.date)}</td><td>${c.hora}</td><td style="text-align:right;">${c.nP}</td><td style="text-align:right;font-weight:500;color:#854F0B;">${EUR(c.totV)}</td><td style="text-align:right;">${EUR(c.totN)}</td><td><span style="font-size:10px;padding:2px 6px;border-radius:7px;background:#f5f5f5;color:#666;">✓ Fechado</span></td></tr>`).join("")}</tbody>
+      <tbody>${closings.slice().reverse().map(c=>`<tr><td>${dFmt(c.date)}</td><td>${c.hora}</td><td style="text-align:right;">${c.nP}</td><td style="text-align:right;font-weight:500;color:#854F0B;">${EUR(c.totV)}</td><td style="text-align:right;">${EUR(c.totN)}</td><td><span style="font-size:10px;padding:2px 6px;border-radius:7px;background:#f5f5f5;color:#888888;">✓ Fechado</span></td></tr>`).join("")}</tbody>
       </table>
     </div>`:""}
   `;
@@ -2969,7 +2969,7 @@ function showFecho(){
   document.getElementById("fecho-modal").innerHTML=`
     <div style="text-align:center;padding-bottom:11px;border-bottom:1px solid #eee;">
       <div style="font-size:15px;font-weight:600;">🔒 Fecho de Caixa</div>
-      <div style="font-size:12px;color:#666;margin-top:2px;">${dFmt(today())} · ${hora} · ${(CU?CU.nome:'—')}</div>
+      <div style="font-size:12px;color:#888888;margin-top:2px;">${dFmt(today())} · ${hora} · ${(CU?CU.nome:'—')}</div>
       ${(config.postoName||config.restName)?'<div style="font-size:11px;font-weight:600;color:#854F0B;margin-top:3px;">🏪 '+(config.postoName||config.restName)+'</div>':''}
     </div>
     <div class="fecho-sec">
@@ -3057,8 +3057,8 @@ function printFecho(){
         '<td style="padding:5px 8px;border-bottom:.5px solid #eee;">'+l.hora+'</td>'+
         '<td style="padding:5px 8px;border-bottom:.5px solid #eee;">'+l.motivo+'</td>'+
         '<td style="padding:5px 8px;border-bottom:.5px solid #eee;text-align:right;color:#c62828;font-weight:600;">− '+EUR(l.valor)+'</td>'+
-        '<td style="padding:5px 8px;border-bottom:.5px solid #eee;text-align:right;color:#666;">'+EUR(l.saldoApos)+'</td>'+
-        '<td style="padding:5px 8px;border-bottom:.5px solid #eee;font-size:9px;color:#666;">'+(l.user||'—').split(' ')[0]+'</td>'+
+        '<td style="padding:5px 8px;border-bottom:.5px solid #eee;text-align:right;color:#888888;">'+EUR(l.saldoApos)+'</td>'+
+        '<td style="padding:5px 8px;border-bottom:.5px solid #eee;font-size:9px;color:#888888;">'+(l.user||'—').split(' ')[0]+'</td>'+
         '</tr>';
     }).join('')
     :'<tr><td colspan="5" style="padding:8px;color:#999;text-align:center;">Sem levantamentos registados</td></tr>';
@@ -3075,7 +3075,7 @@ function printFecho(){
     '</style></head><body>'+
     '<div style="text-align:center;font-weight:700;font-size:13px;">FECHO DE CAIXA</div>'+
     '<div style="text-align:center;font-size:11px;">'+escNorm(config.restName)+'</div>'+
-    '<div style="text-align:center;font-size:10px;color:#555;">NIF '+config.nif+'</div>'+
+    '<div style="text-align:center;font-size:10px;color:#999999;">NIF '+config.nif+'</div>'+
     '<div class="sep"></div>'+
     '<div class="row"><span>Data</span><span>'+dFmt(today())+' '+hora+'</span></div>'+
     '<div class="row"><span>Operador</span><span>'+(CU?escNorm(CU.nome):'--')+'</span></div>'+
@@ -3199,8 +3199,8 @@ function printCSS(){
     '.row{white-space:pre;font-size:'+(config.printerWidth===58?'10':'11')+'px;}'+
     '.sep{color:#999;}'+
     '.section{font-weight:700;text-align:center;margin:2px 0;}'+
-    '.small{font-size:9px;text-align:center;color:#555;}'+
-    'footer{text-align:center;font-size:9px;color:#888;margin-top:5px;}'+
+    '.small{font-size:9px;text-align:center;color:#999999;}'+
+    'footer{text-align:center;font-size:9px;color:#777777;margin-top:5px;}'+
     '@media print{body{width:'+mm+';padding:0;}@page{size:'+mm+' auto;margin:2mm;}}';
 }
 
@@ -3457,10 +3457,10 @@ function renderConsolidado(){
       '<div style="padding:24px;text-align:center;">' +
         '<div style="font-size:36px;margin-bottom:10px;">🔀</div>' +
         '<div style="font-size:15px;font-weight:600;color:var(--txt,#333);margin-bottom:6px;">Relatório Consolidado</div>' +
-        '<div style="font-size:12px;color:#888;margin-bottom:16px;">Exporta os dados deste posto e importa os dos outros para consolidar.</div>' +
+        '<div style="font-size:12px;color:#777777;margin-bottom:16px;">Exporta os dados deste posto e importa os dos outros para consolidar.</div>' +
         '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">' +
-          '<button onclick="exportTurno()" style="padding:10px 18px;background:#185FA5;color:#fff;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;">📤 Exportar este Posto</button>' +
-          '<label style="display:inline-flex;align-items:center;padding:10px 18px;background:#1D9E75;color:#fff;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;">' +
+          '<button onclick="exportTurno()" style="padding:10px 18px;background:#185FA5;color:#111111;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;">📤 Exportar este Posto</button>' +
+          '<label style="display:inline-flex;align-items:center;padding:10px 18px;background:#1D9E75;color:#111111;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;">' +
             '📂 Importar Posto' +
             '<input type="file" accept=".json" style="display:none;" onchange="importPosto(this)">' +
           '</label>' +
@@ -3498,15 +3498,15 @@ function renderConsolidado(){
   el.innerHTML = relPosto()+
     // Header actions
     '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '<button onclick="exportTurno()" style="padding:8px 14px;background:#185FA5;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;">📤 Exportar este Posto</button>' +
-      '<label style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#1D9E75;color:#fff;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">' +
+      '<button onclick="exportTurno()" style="padding:8px 14px;background:#185FA5;color:#111111;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;">📤 Exportar este Posto</button>' +
+      '<label style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#1D9E75;color:#111111;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">' +
         '📂 Importar Posto' +
         '<input type="file" accept=".json" style="display:none;" onchange="importPosto(this)">' +
       '</label>' +
       (postoImports.length ?
         '<button onclick="clearPostoImports()" style="padding:8px 14px;background:#fee2e2;color:#c62828;border:1px solid #fca5a5;border-radius:8px;font-size:12px;cursor:pointer;">🗑️ Limpar</button>'
       : '') +
-      '<button onclick="printConsolidado()" style="padding:8px 14px;background:#854F0B;color:#fff;border-radius:8px;font-size:12px;cursor:pointer;border:none;">🖨️ Imprimir</button>' +
+      '<button onclick="printConsolidado()" style="padding:8px 14px;background:#854F0B;color:#111111;border-radius:8px;font-size:12px;cursor:pointer;border:none;">🖨️ Imprimir</button>' +
     '</div>' +
 
     // Postos breakdown
@@ -3556,8 +3556,8 @@ function printConsolidado(){
   if(config.postoName||config.restName){
     postoHdr='<div style="text-align:center;padding:10px 0 8px;border-bottom:2px solid #854F0B;margin-bottom:14px;">'+
       (config.postoName?'<div style="font-size:16px;font-weight:700;color:#854F0B;">'+config.postoName+'</div>':'')+
-      (config.restName?'<div style="font-size:13px;color:#555;">'+config.restName+'</div>':'')+
-      ((config.nif||config.phone)?'<div style="font-size:12px;color:#888;">'+(config.nif?'NIF '+config.nif:'')+(config.nif&&config.phone?' · ':'')+(config.phone?'Tel: '+config.phone:'')+'</div>':'')+
+      (config.restName?'<div style="font-size:13px;color:#999999;">'+config.restName+'</div>':'')+
+      ((config.nif||config.phone)?'<div style="font-size:12px;color:#777777;">'+(config.nif?'NIF '+config.nif:'')+(config.nif&&config.phone?' · ':'')+(config.phone?'Tel: '+config.phone:'')+'</div>':'')+
     '</div>';
   }
   var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Consolidado</title>'+
@@ -3575,7 +3575,7 @@ function relPosto(){
   return '<div style="background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:4px;">'+
     '<span style="font-size:18px;">🏪</span>'+
     '<div><div style="font-size:13px;font-weight:600;color:#1a1a1a;">'+nome+resto+'</div>'+
-    (config.nif?'<div style="font-size:11px;color:#888;">NIF '+config.nif+(config.phone?' · Tel: '+config.phone:'')+'</div>':'')+
+    (config.nif?'<div style="font-size:11px;color:#777777;">NIF '+config.nif+(config.phone?' · Tel: '+config.phone:'')+'</div>':'')+
     '</div></div>';
 }
 
@@ -3625,7 +3625,7 @@ function renderRel(){
         </div>
       </div>
       <div class="card-wrap">
-        <div class="card-hdr"><span>Pedidos</span><span style="font-size:11px;color:#666;">${cnt} resultado${cnt!==1?"s":""}</span></div>
+        <div class="card-hdr"><span>Pedidos</span><span style="font-size:11px;color:#888888;">${cnt} resultado${cnt!==1?"s":""}</span></div>
         ${!sl.length?`<div style="padding:20px;text-align:center;color:#999;font-size:12px;">Sem vendas para este período</div>`:`
         <table><thead><tr>
           <th style="width:11%;">Nº</th><th style="width:14%;">Data</th><th style="width:11%;">Hora</th>
@@ -3633,14 +3633,14 @@ function renderRel(){
           <th style="width:12%;text-align:right;">Total</th>
         </tr></thead><tbody>
         ${sl.slice().reverse().map(s=>`<tr>
-          <td style="color:#666;">#${String(s.id).padStart(3,"0")}</td>
+          <td style="color:#888888;">#${String(s.id).padStart(3,"0")}</td>
           <td style="font-size:10px;">${dFmt(s.date)}</td><td>${s.time}</td>
-          <td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#666;">
+          <td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888888;">
             ${s.items.map(i=>i.q+"×"+i.n).join(", ")}
             ${s.nif?` <span style="font-size:10px;padding:1px 5px;border-radius:6px;background:#e3f2fd;color:#1565c0;">NIF</span>`:""}
           </td>
           <td><span class="tag ${PTG(s.met)}">${PML(s.met)}</span></td>
-          <td style="font-size:10px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(s.user||"").split(" ")[0]}</td>
+          <td style="font-size:10px;color:#888888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(s.user||"").split(" ")[0]}</td>
           <td style="text-align:right;font-weight:500;color:#854F0B;">${EUR(s.total)}</td>
         </tr>`).join("")}
         </tbody></table>`}
@@ -3709,7 +3709,7 @@ function renderRel(){
         <div class="metric"><div class="metric-label">Total</div><div class="metric-val" style="color:#854F0B;">${EUR(tot)}</div><div class="metric-sub">${sl.length} pedidos</div></div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:12px;color:#666;">Ordenar por:</span>
+        <span style="font-size:12px;color:#888888;">Ordenar por:</span>
         <div class="sort-btns">
           <button class="sort-btn ${artSort==="revenue"?"on":""}" onclick="setArtSort('revenue')">Total €</button>
           <button class="sort-btn ${artSort==="qty"?"on":""}" onclick="setArtSort('qty')">Quantidade</button>
@@ -3731,7 +3731,7 @@ function renderRel(){
             <td style="font-weight:${i<3?"500":"400"};">${a.n}</td>
             <td style="text-align:right;">${a.qty}</td>
             <td style="text-align:right;font-weight:500;color:#854F0B;">${EUR(a.rev)}</td>
-            <td style="text-align:right;color:#666;">${pct.toFixed(1)}%</td>
+            <td style="text-align:right;color:#888888;">${pct.toFixed(1)}%</td>
             <td><div class="bar-bg"><div class="bar-fg" style="width:${bw.toFixed(1)}%;"></div></div></td>
           </tr>`;}).join("")}
         <tr style="background:#f5f5f5;">
@@ -3754,17 +3754,17 @@ function printArtigos(){
   const per=selDate==="WEEK"?`${dFmt(weekStart())} – ${dFmt(today())}`:dFmt(selDate);
   const html=`<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><title>Artigos ${per}</title>
 <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;font-size:11px;padding:14mm 18mm;}
-h1{font-size:18px;font-weight:700;color:#7A3B0A;}.info{font-size:10px;color:#666;margin:1px 0;}
+h1{font-size:18px;font-weight:700;color:#7A3B0A;}.info{font-size:10px;color:#888888;margin:1px 0;}
 hr{border:none;border-top:1.5px solid #7A3B0A;margin:8px 0;}
 .sum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0;}
 .sb2{border:1px solid #e0d9d0;border-radius:5px;padding:7px 10px;background:#faf8f4;}
-.sl{font-size:9px;color:#888;}.sv{font-size:16px;font-weight:700;color:#7A3B0A;}
+.sl{font-size:9px;color:#777777;}.sv{font-size:16px;font-weight:700;color:#7A3B0A;}
 table{width:100%;border-collapse:collapse;}
 th{padding:6px 8px;background:#f5f1ea;font-size:9px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #ddd;text-align:left;}
 td{padding:6px 8px;border-bottom:.5px solid #ede8e0;}
 .tr-tot td{font-weight:700;border-top:1.5px solid #999;background:#f5f1ea;}
 .bar{background:#f0ede8;height:6px;border-radius:3px;}.bar div{background:#BA7517;height:100%;border-radius:3px;}
-footer{margin-top:18px;text-align:center;font-size:9px;color:#aaa;border-top:.5px solid #ddd;padding-top:7px;}
+footer{margin-top:18px;text-align:center;font-size:9px;color:#888888666;border-top:.5px solid #ddd;padding-top:7px;}
 </style></head><body>
 <div style="display:flex;justify-content:space-between;align-items:flex-start;">
   <div><div style="font-size:15px;font-weight:700;">${config.restName}</div><div class="info">NIF ${config.nif} · ${config.phone}</div></div>
@@ -3772,7 +3772,7 @@ footer{margin-top:18px;text-align:center;font-size:9px;color:#aaa;border-top:.5p
 </div><hr>
 <div class="sum"><div class="sb2"><div class="sl">Total Vendas</div><div class="sv">${EUR(tot)}</div></div><div class="sb2"><div class="sl">Unidades</div><div class="sv">${tqty}</div></div><div class="sb2"><div class="sl">Artigos</div><div class="sv">${arts.length}</div></div><div class="sb2"><div class="sl">Pedidos</div><div class="sv">${sl.length}</div></div></div>
 <table><thead><tr><th style="width:20px;">#</th><th>Artigo</th><th style="text-align:right;width:55px;">Qtd.</th><th style="text-align:right;width:60px;">Pr.Unit.</th><th style="text-align:right;width:65px;">Total €</th><th style="text-align:right;width:45px;">%</th><th style="width:80px;">Dist.</th></tr></thead>
-<tbody>${arts.map((a,i)=>{const pct=tot>0?(a.rev/tot*100):0,bw=maxR>0?(a.rev/maxR*100):0;return `<tr><td style="text-align:center;color:#888;">${i+1}</td><td>${i===0?"🥇 ":i===1?"🥈 ":i===2?"🥉 ":""}${a.n}</td><td style="text-align:right;">${a.qty}</td><td style="text-align:right;">${EUR(a.p)}</td><td style="text-align:right;font-weight:600;color:#7A3B0A;">${EUR(a.rev)}</td><td style="text-align:right;">${pct.toFixed(1)}%</td><td><div class="bar"><div style="width:${bw.toFixed(1)}%;"></div></div></td></tr>`;}).join("")}
+<tbody>${arts.map((a,i)=>{const pct=tot>0?(a.rev/tot*100):0,bw=maxR>0?(a.rev/maxR*100):0;return `<tr><td style="text-align:center;color:#777777;">${i+1}</td><td>${i===0?"🥇 ":i===1?"🥈 ":i===2?"🥉 ":""}${a.n}</td><td style="text-align:right;">${a.qty}</td><td style="text-align:right;">${EUR(a.p)}</td><td style="text-align:right;font-weight:600;color:#7A3B0A;">${EUR(a.rev)}</td><td style="text-align:right;">${pct.toFixed(1)}%</td><td><div class="bar"><div style="width:${bw.toFixed(1)}%;"></div></div></td></tr>`;}).join("")}
 <tr class="tr-tot"><td></td><td>TOTAL</td><td style="text-align:right;">${tqty}</td><td style="text-align:right;">—</td><td style="text-align:right;color:#7A3B0A;">${EUR(tot)}</td><td style="text-align:right;">100%</td><td></td></tr>
 </tbody></table>
 <footer>Criativo POS · Relatório por Artigo · ${per} · ${(CU?CU.nome:'—')||"—"} · ${dFmt(today())} ${hora}</footer></body></html>`;
@@ -3787,7 +3787,7 @@ function renderUtil(){
     el.innerHTML=`
       <div>
         <div style="font-size:14px;font-weight:500;color:#1a1a1a;">👥 Gestão de Utilizadores</div>
-        <div style="font-size:12px;color:#666;margin-top:2px;">${users.length} utilizador${users.length!==1?"es":""} registado${users.length!==1?"s":""}</div>
+        <div style="font-size:12px;color:#888888;margin-top:2px;">${users.length} utilizador${users.length!==1?"es":""} registado${users.length!==1?"s":""}</div>
       </div>
       <button class="add-btn" onclick="openModal('addUser')">+ Novo Utilizador</button>
     </div>
@@ -3938,12 +3938,12 @@ function showLevantamento(){
     '<div style="background:#e3f2fd;border-radius:8px;padding:11px 13px;border:1px solid #90caf9;">'+
       '<div style="font-size:12px;color:#1565c0;margin-bottom:3px;">Saldo atual em caixa</div>'+
       '<div style="font-size:22px;font-weight:700;color:#1a1a1a;">'+EUR(saldo)+'</div>'+
-      '<div style="font-size:11px;color:#666;margin-top:2px;">Fundo + Vendas numerário − Levantamentos anteriores</div>'+
+      '<div style="font-size:11px;color:#888888;margin-top:2px;">Fundo + Vendas numerário − Levantamentos anteriores</div>'+
     '</div>'+
     '<div class="field">'+
       '<label>Valor a levantar (€)</label>'+
       '<input id="mf1" type="number" min="0.01" step="0.01" max="'+saldo.toFixed(2)+'" placeholder="0.00" oninput="updateLevantChange('+saldo.toFixed(2)+')">'+
-      '<div id="levant-troco" style="font-size:12px;color:#666;margin-top:4px;"></div>'+
+      '<div id="levant-troco" style="font-size:12px;color:#888888;margin-top:4px;"></div>'+
     '</div>'+
     '<div class="field">'+
       '<label>Motivo</label>'+
@@ -4013,7 +4013,7 @@ function printLevantamento(lev,saldoAntes){
     'footer{text-align:center;font-size:9px;color:#999;margin-top:8px;padding-top:6px;border-top:1px dashed #999;}'+
     '</style></head><body>'+
     '<div class="c b" style="font-size:13px;">LEVANTAMENTO DE CAIXA</div>'+
-    '<div class="c" style="font-size:10px;color:#555;margin-top:2px;">'+config.restName+' · NIF '+config.nif+'</div>'+
+    '<div class="c" style="font-size:10px;color:#999999;margin-top:2px;">'+config.restName+' · NIF '+config.nif+'</div>'+
     '<div class="sep"></div>'+
     '<div class="row"><span>Data</span><span>'+dFmt(lev.date)+' '+lev.hora+'</span></div>'+
     '<div class="row"><span>Operador</span><span>'+(lev.user||"—")+'</span></div>'+
@@ -4182,10 +4182,10 @@ function showInlineReport(html, title){
   ov.id='inline-rpt-ov';
   ov.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;background:#f5f5f5;display:flex;flex-direction:column;';
   ov.innerHTML=
-    '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#1a1a1a;color:#fff;flex-shrink:0;">'+
-      '<button onclick="document.getElementById(\'inline-rpt-ov\').remove()" style="background:#555;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;">✕ Fechar</button>'+
+    '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#ffffff;color:#111111;flex-shrink:0;">'+
+      '<button onclick="document.getElementById(\'inline-rpt-ov\').remove()" style="background:#555;color:#111111;border:none;border-radius:6px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;">✕ Fechar</button>'+
       '<span style="flex:1;font-size:14px;font-weight:600;">'+(title||'Relatório')+'</span>'+
-      '<button onclick="document.getElementById(\'rpt-fr\').contentWindow.print()" style="background:#185FA5;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;">🖨️ Imprimir</button>'+
+      '<button onclick="document.getElementById(\'rpt-fr\').contentWindow.print()" style="background:#185FA5;color:#111111;border:none;border-radius:6px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;">🖨️ Imprimir</button>'+
     '</div>'+
     '<iframe id="rpt-fr" style="flex:1;border:none;width:100%;background:#fff;"></iframe>';
   document.body.appendChild(ov);
@@ -4947,8 +4947,8 @@ function cfgHeader(){
   const posto=config.postoName?'<div class="c b" style="font-size:14px;color:#854F0B;">'+config.postoName+'</div>':'';
   return logo+posto+
     (config.restName?'<div class="c b" style="font-size:13px;">'+config.restName+'</div>':'')+
-    ((config.nif||config.phone)?'<div class="c" style="font-size:9px;color:#555;">'+(config.nif?'NIF '+config.nif:'')+(config.nif&&config.phone?' · ':'')+(config.phone?'Tel: '+config.phone:'')+'</div>':'')+
-    (config.address?'<div class="c" style="font-size:9px;color:#555;">'+config.address+'</div>':'');
+    ((config.nif||config.phone)?'<div class="c" style="font-size:9px;color:#999999;">'+(config.nif?'NIF '+config.nif:'')+(config.nif&&config.phone?' · ':'')+(config.phone?'Tel: '+config.phone:'')+'</div>':'')+
+    (config.address?'<div class="c" style="font-size:9px;color:#999999;">'+config.address+'</div>':'');
 }
 function cfgFooter(){
   return '<footer>'+config.footerMsg+(config.footerMsg2?'<br>'+config.footerMsg2:'')+'</footer>';
@@ -5228,7 +5228,7 @@ function showDividir(){
   mb.innerHTML=
     '<div class="modal-title">➗ Dividir Conta</div>'+
     '<div style="background:#f5f5f5;border-radius:8px;padding:11px 13px;border:1px solid #e0e0e0;">'+
-      '<div style="font-size:12px;color:#666;margin-bottom:3px;">Total do pedido</div>'+
+      '<div style="font-size:12px;color:#888888;margin-bottom:3px;">Total do pedido</div>'+
       '<div style="font-size:22px;font-weight:700;color:#854F0B;">'+EUR(tot)+'</div>'+
     '</div>'+
     '<div class="field"><label>Dividir por quantas pessoas?</label>'+
@@ -5241,7 +5241,7 @@ function showDividir(){
     '<div id="div-result" style="display:none;background:#e8f5e9;border-radius:8px;padding:12px 14px;border:1px solid #a5d6a7;">'+
       '<div style="font-size:12px;color:#2e7d32;margin-bottom:4px;">Valor por pessoa</div>'+
       '<div id="div-per" style="font-size:28px;font-weight:700;color:#1a1a1a;"></div>'+
-      '<div id="div-note" style="font-size:11px;color:#666;margin-top:3px;"></div>'+
+      '<div id="div-note" style="font-size:11px;color:#888888;margin-top:3px;"></div>'+
     '</div>'+
     '<div class="modal-actions">'+
       '<button class="btn-cancel" onclick="splitPessoas=0;updateSplitBadge();closeModal()">Cancelar</button>'+
@@ -5286,14 +5286,14 @@ function printDivide(){
     cfgHeader()+
     '<div class="sep"></div>'+
     '<div class="c" style="font-size:12px;font-weight:600;">CONTA DIVIDIDA</div>'+
-    '<div class="c" style="font-size:10px;color:#666;margin-bottom:6px;">'+dFmt(today())+' · '+divPeople+' pessoas</div>'+
+    '<div class="c" style="font-size:10px;color:#888888;margin-bottom:6px;">'+dFmt(today())+' · '+divPeople+' pessoas</div>'+
     '<div class="sep"></div>'+
     itemsList+
     '<div class="sep"></div>'+
     '<div class="row b"><span>TOTAL</span><span>'+EUR(divTot)+'</span></div>'+
-    '<div class="row" style="color:#666;"><span>Dividido por</span><span>'+divPeople+' pessoas</span></div>'+
+    '<div class="row" style="color:#888888;"><span>Dividido por</span><span>'+divPeople+' pessoas</span></div>'+
     '<div class="sep"></div>'+
-    '<div class="c" style="font-size:11px;color:#666;margin-bottom:4px;">Cada pessoa paga</div>'+
+    '<div class="c" style="font-size:11px;color:#888888;margin-bottom:4px;">Cada pessoa paga</div>'+
     '<div class="big">'+EUR(per)+'</div>'+
     '<div class="sep"></div>'+
     cfgFooter()+
@@ -5439,8 +5439,8 @@ function showLastReceipts(){
     html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;">';
     html+='<div style="flex:1;min-width:0;">';
     html+='<div style="font-size:13px;font-weight:500;color:#1a1a1a;">Nº '+String(s.id).padStart(4,"0")+(isFat?' 🧾':'')+'</div>';
-    html+='<div style="font-size:11px;color:#666;">'+dFmt(s.date)+' '+s.time+' · '+PML(s.met)+'</div>';
-    html+='<div style="font-size:11px;color:#666;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+resumo+'</div>';
+    html+='<div style="font-size:11px;color:#888888;">'+dFmt(s.date)+' '+s.time+' · '+PML(s.met)+'</div>';
+    html+='<div style="font-size:11px;color:#888888;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+resumo+'</div>';
     html+=nifLine;
     html+='</div>';
     html+='<div style="text-align:right;flex-shrink:0;margin-left:8px;">';
@@ -5487,9 +5487,9 @@ window.addEventListener("DOMContentLoaded",function(){
   }catch(e){
     console.log("renderLogin error:",e);
     document.getElementById("login-screen").innerHTML=
-      "<div style=\"color:#fff;padding:20px;font-size:14px;\">"+
+      "<div style=\"color:#111111;padding:20px;font-size:14px;\">"+
       "<p>Erro ao carregar: "+e.message+"</p>"+
-      "<button onclick=\"location.reload()\" style=\"padding:12px 24px;margin-top:12px;border-radius:8px;border:none;background:#BA7517;color:#fff;font-size:14px;cursor:pointer;\">Recarregar</button>"+
+      "<button onclick=\"location.reload()\" style=\"padding:12px 24px;margin-top:12px;border-radius:8px;border:none;background:#BA7517;color:#111111;font-size:14px;cursor:pointer;\">Recarregar</button>"+
       "</div>";
   }
 });
@@ -5673,7 +5673,7 @@ function renderUtilSA(){
   el.innerHTML=
     '<div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid #5F3DC4;border-radius:10px;padding:12px 14px;">'+
       '<div style="font-size:12px;color:#a78bfa;font-weight:600;">🔐 SUPER ADMIN — GESTÃO GLOBAL</div>'+
-      '<div style="font-size:11px;color:#888;margin-top:2px;">Criativo · Acesso total</div>'+
+      '<div style="font-size:11px;color:#777777;margin-top:2px;">Criativo · Acesso total</div>'+
     '</div>'+
     '<div style="display:flex;align-items:center;justify-content:space-between;">'+
       '<div style="font-size:13px;font-weight:500;">👑 Administradores ('+admins.length+')</div>'+
@@ -5714,7 +5714,7 @@ function renderUtilAdmin(){
     '<div style="display:flex;align-items:center;justify-content:space-between;">'+
       '<div>'+
         '<div style="font-size:14px;font-weight:500;">👤 Colaboradores ('+opers.length+')</div>'+
-        '<div style="font-size:12px;color:#666;margin-top:2px;">Gerir colaboradores do estabelecimento</div>'+
+        '<div style="font-size:12px;color:#888888;margin-top:2px;">Gerir colaboradores do estabelecimento</div>'+
       '</div>'+
       '<button class="add-btn" onclick="_origOpenModal(\'addUser\')">+ Novo</button>'+
     '</div>'+
@@ -5748,31 +5748,31 @@ function renderSAdm(){
   var nArt=(typeof ITEMS!=="undefined"?Object.values(ITEMS).reduce(function(a,v){return a+v.length;},0):0);
   el.innerHTML=
     '<div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid #5F3DC4;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;">'+
-      '<div style="width:44px;height:44px;border-radius:50%;background:#5F3DC4;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0;">SA</div>'+
+      '<div style="width:44px;height:44px;border-radius:50%;background:#5F3DC4;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#111111;flex-shrink:0;">SA</div>'+
       '<div><div style="font-size:15px;font-weight:700;color:#a78bfa;">Super Admin — Criativo</div>'+
       '<div style="font-size:11px;color:#7c7c9a;margin-top:2px;">Modo de administração total do sistema</div></div>'+
     '</div>'+
     '<div class="card-wrap"><div class="card-hdr"><span>📊 Estado do Sistema</span></div>'+
     '<div style="padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;">'+
       '<div style="background:#f5f5f5;border-radius:8px;padding:12px;text-align:center;">'+
-        '<div style="font-size:10px;color:#888;text-transform:uppercase;">Utilizadores</div>'+
+        '<div style="font-size:10px;color:#777777;text-transform:uppercase;">Utilizadores</div>'+
         '<div style="font-size:24px;font-weight:700;">'+(nadm+nop)+'</div>'+
-        '<div style="font-size:10px;color:#666;">'+nadm+' admin, '+nop+' oper.</div>'+
+        '<div style="font-size:10px;color:#888888;">'+nadm+' admin, '+nop+' oper.</div>'+
       '</div>'+
       '<div style="background:#f5f5f5;border-radius:8px;padding:12px;text-align:center;">'+
-        '<div style="font-size:10px;color:#888;text-transform:uppercase;">Artigos</div>'+
+        '<div style="font-size:10px;color:#777777;text-transform:uppercase;">Artigos</div>'+
         '<div style="font-size:24px;font-weight:700;">'+nArt+'</div>'+
-        '<div style="font-size:10px;color:#666;">'+(typeof CATS!=="undefined"?CATS.length:0)+' grupos</div>'+
+        '<div style="font-size:10px;color:#888888;">'+(typeof CATS!=="undefined"?CATS.length:0)+' grupos</div>'+
       '</div>'+
       '<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:12px;text-align:center;">'+
-        '<div style="font-size:10px;color:#888;text-transform:uppercase;">Total Vendas</div>'+
+        '<div style="font-size:10px;color:#777777;text-transform:uppercase;">Total Vendas</div>'+
         '<div style="font-size:20px;font-weight:700;color:#854F0B;">'+EUR(totalV)+'</div>'+
-        '<div style="font-size:10px;color:#666;">'+(typeof sales!=="undefined"?sales.length:0)+' pedidos</div>'+
+        '<div style="font-size:10px;color:#888888;">'+(typeof sales!=="undefined"?sales.length:0)+' pedidos</div>'+
       '</div>'+
     '</div></div>'+
     '<div class="card-wrap"><div class="card-hdr"><span>🔑 PIN Super Admin</span></div>'+
     '<div style="padding:14px;display:flex;flex-direction:column;gap:10px;">'+
-      '<div style="font-size:12px;color:#666;">Alterar o PIN de acesso secreto. Não partilhar com o estabelecimento.</div>'+
+      '<div style="font-size:12px;color:#888888;">Alterar o PIN de acesso secreto. Não partilhar com o estabelecimento.</div>'+
       '<div style="display:flex;gap:10px;">'+
         '<div class="field" style="flex:1;"><label>Novo PIN</label>'+
           '<input id="sa-new-pin" type="password" maxlength="4" inputmode="numeric" placeholder="••••" style="letter-spacing:6px;font-size:20px;text-align:center;"></div>'+
@@ -5783,7 +5783,7 @@ function renderSAdm(){
     '</div></div>'+
     '<div class="card-wrap"><div class="card-hdr"><span>🧹 Cache &amp; Armazenamento</span></div>'+
     '<div style="padding:14px;display:flex;flex-direction:column;gap:10px;">'+
-      '<div id="sa-cache-info" style="font-size:12px;color:#666;">Clica em Ver Tamanho para calcular.</div>'+
+      '<div id="sa-cache-info" style="font-size:12px;color:#888888;">Clica em Ver Tamanho para calcular.</div>'+
       '<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
         '<button class="btn-ok" style="background:#185FA5;max-width:180px;" onclick="saShowCacheInfo()">🔍 Ver Tamanho</button>'+
         '<button class="btn-ok" style="background:#D85A30;max-width:180px;" onclick="saClearCache()">🧹 Limpar Cache</button>'+
@@ -5792,7 +5792,7 @@ function renderSAdm(){
     '</div></div>'+
     '<div class="card-wrap" style="border-color:#fca5a5;"><div class="card-hdr" style="color:#c62828;"><span>⚠️ Zona de Risco</span></div>'+
     '<div style="padding:14px;display:flex;flex-direction:column;gap:10px;">'+
-      '<div style="font-size:12px;color:#666;">Operações irreversíveis. Usar com cuidado.</div>'+
+      '<div style="font-size:12px;color:#888888;">Operações irreversíveis. Usar com cuidado.</div>'+
       '<button class="btn-red" style="max-width:280px;" onclick="saResetMovimentos()">🗑️ Limpar Todos os Movimentos</button>'+
       '<button class="btn-red" style="max-width:280px;background:#7f1d1d;" onclick="saResetTotal()">☠️ Reset Total do Sistema</button>'+
     '</div></div>';
@@ -5994,21 +5994,21 @@ function renderArquivo(){
         '<div style="background:#f5f1ea;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">'+
           '<div>'+
             '<div style="font-size:14px;font-weight:600;color:#1a1a1a;">'+label+'</div>'+
-            '<div style="font-size:11px;color:#666;margin-top:2px;">'+a.cnt+' pedidos · '+a.days+' dias de actividade</div>'+
+            '<div style="font-size:11px;color:#888888;margin-top:2px;">'+a.cnt+' pedidos · '+a.days+' dias de actividade</div>'+
           '</div>'+
           '<div style="text-align:right;">'+
             '<div style="font-size:18px;font-weight:700;color:#854F0B;">'+EUR(a.total)+'</div>'+
-            '<div style="font-size:11px;color:#666;">ticket médio: '+EUR(a.avgTicket)+'</div>'+
+            '<div style="font-size:11px;color:#888888;">ticket médio: '+EUR(a.avgTicket)+'</div>'+
           '</div>'+
         '</div>'+
         '<div style="padding:10px 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-bottom:1px solid #f0f0f0;">'+
-          '<div style="text-align:center;"><div style="font-size:10px;color:#888;">Numerário</div><div style="font-size:13px;font-weight:500;color:#2e7d32;">'+EUR(a.totN)+'</div></div>'+
-          '<div style="text-align:center;"><div style="font-size:10px;color:#888;">Cartão</div><div style="font-size:13px;font-weight:500;">'+EUR(a.totC)+'</div></div>'+
-          '<div style="text-align:center;"><div style="font-size:10px;color:#888;">MB Way</div><div style="font-size:13px;font-weight:500;">'+EUR(a.totM)+'</div></div>'+
+          '<div style="text-align:center;"><div style="font-size:10px;color:#777777;">Numerário</div><div style="font-size:13px;font-weight:500;color:#2e7d32;">'+EUR(a.totN)+'</div></div>'+
+          '<div style="text-align:center;"><div style="font-size:10px;color:#777777;">Cartão</div><div style="font-size:13px;font-weight:500;">'+EUR(a.totC)+'</div></div>'+
+          '<div style="text-align:center;"><div style="font-size:10px;color:#777777;">MB Way</div><div style="font-size:13px;font-weight:500;">'+EUR(a.totM)+'</div></div>'+
         '</div>'+
         (a.topItems.length ?
           '<div style="padding:10px 14px;">'+
-            '<div style="font-size:11px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">Top artigos</div>'+
+            '<div style="font-size:11px;color:#777777;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">Top artigos</div>'+
             a.topItems.slice(0,5).map(function(it,i){
               return '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-bottom:'+(i<4?'1px solid #f5f5f5':'none')+';">'+
                 '<span>'+(i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'  ')+it.n+' ('+it.qty+'×)</span>'+
@@ -6153,7 +6153,7 @@ function printMBWaySlip(total){
     '<div style="display:flex;justify-content:space-between;font-size:12px;"><span>Pagamento</span><span>MB Way</span></div>'+
     '<div class="sep"></div>'+
     '<div class="box">'+
-      '<div style="font-size:11px;color:#666;margin-bottom:4px;">Enviar via MB Way para</div>'+
+      '<div style="font-size:11px;color:#888888;margin-bottom:4px;">Enviar via MB Way para</div>'+
       '<div style="font-size:22px;font-weight:900;letter-spacing:2px;color:#1a1a1a;">'+fmt+'</div>'+
       '<div style="font-size:12px;color:#1a8a37;font-weight:700;margin-top:4px;">Valor: '+EUR(total)+'</div>'+
     '</div>'+
@@ -6222,7 +6222,7 @@ function saShowCacheInfo(){
     var totalKB = (total / 1024).toFixed(1);
     var totalMB = (total / 1024 / 1024).toFixed(2);
     el.innerHTML = '<strong>Armazenamento usado: ' + totalKB + ' KB (' + totalMB + ' MB)</strong><br>' +
-      '<span style="font-size:10px;color:#888;">' + details.join(" &nbsp;·&nbsp; ") + '</span>';
+      '<span style="font-size:10px;color:#777777;">' + details.join(" &nbsp;·&nbsp; ") + '</span>';
   } catch(e){
     el.textContent = "Erro ao ler cache: " + e.message;
   }
@@ -6281,13 +6281,13 @@ function exportTurno(){
 
   mb.innerHTML =
     '<div class="modal-title">📤 Exportar Dados do Posto</div>' +
-    '<div style="font-size:12px;color:#666;margin-bottom:14px;">Selecciona o período a exportar.<br>' +
+    '<div style="font-size:12px;color:#888888;margin-bottom:14px;">Selecciona o período a exportar.<br>' +
     'Este posto tem vendas de <strong>' + dFmt(minDate) + '</strong> a <strong>' + dFmt(maxDate) + '</strong>.</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">' +
       '<div class="field"><label>Data Início</label><input type="date" id="exp-from" value="' + minDate + '"></div>' +
       '<div class="field"><label>Data Fim</label><input type="date" id="exp-to" value="' + maxDate + '"></div>' +
     '</div>' +
-    '<div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;font-size:12px;color:#666;margin-bottom:14px;" id="exp-preview">' +
+    '<div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;font-size:12px;color:#888888;margin-bottom:14px;" id="exp-preview">' +
       'A calcular...' +
     '</div>' +
     '<div class="modal-actions">' +
@@ -8726,7 +8726,7 @@ function drawQR(canvas, text, size){
     <div class="mesa-modal">
       <div style="display:flex;align-items:center;justify-content:space-between;">
         <div class="mesa-modal-tit" id="mm-nome"></div>
-        <button onclick="fecharModalMesa()" style="background:none;border:none;color:#555;font-size:20px;cursor:pointer;padding:0 4px;">X</button>
+        <button onclick="fecharModalMesa()" style="background:none;border:none;color:#999999;font-size:20px;cursor:pointer;padding:0 4px;">X</button>
       </div>
       <div class="mesa-modal-info" id="mm-info"></div>
       <div class="mm-itens-lista" id="mm-itens"></div>
