@@ -132,7 +132,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
   .mesas-tit{font-size:15px;font-weight:700;color:#f0f0f0;}
   .mesas-estado{font-size:11px;color:#888;background:#1a1a1a;padding:3px 10px;border-radius:10px;}
   .mesas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:10px;}
-  .mesa-card{background:#1e1e1e;border-radius:12px;border:2px solid #EF9F27;padding:14px 12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+  .mesa-card{background:#1e1e1e !important;border-radius:12px;border:2px solid #EF9F27;padding:14px 12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.4);}
   .mesa-card.aberta{border-color:#EF9F27;}
   .mesa-card:active{transform:scale(.96);}
   .mesa-card-nome{font-size:17px;font-weight:800;color:#fff;letter-spacing:.3px;}
@@ -817,30 +817,13 @@ window.addEventListener('unhandledrejection', function(e){
   </div>
 
   <!-- GESTÃO -->
-  <div id="vmesas" style="background:#111;min-height:100%;padding:12px;box-sizing:border-box;">
+  <div id="vmesas" style="background:#111;min-height:100%;padding:12px;box-sizing:border-box;color:#f0f0f0;">
     <div class="mesas-hdr">
       <span class="mesas-tit">🍽 Mesas</span>
       <span class="mesas-estado" id="mesas-estado">A ligar...</span>
     </div>
     <div class="mesas-grid" id="mesas-grid">
       <div style="grid-column:1/-1;text-align:center;padding:30px;color:#555;font-size:13px;">Sem mesas abertas</div>
-    </div>
-    <!-- Modal detalhe da mesa -->
-    <div class="mesa-modal-bg" id="mesa-modal-bg" onclick="fecharModalMesaBg(event)">
-      <div class="mesa-modal">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div class="mesa-modal-tit" id="mm-nome"></div>
-          <button onclick="fecharModalMesa()" style="background:none;border:none;color:#555;font-size:20px;cursor:pointer;padding:0 4px;">✕</button>
-        </div>
-        <div class="mesa-modal-info" id="mm-info"></div>
-        <div class="mm-itens-lista" id="mm-itens"></div>
-        <div class="mesa-modal-total" id="mm-total"></div>
-        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
-          <button class="mesa-modal-btn verde" onclick="fecharContaMesaFB()">💳 Fechar conta</button>
-          <button class="mesa-modal-btn azul" onclick="imprimirReciboMesa()">🖨️ Imprimir recibo</button>
-          <button class="mesa-modal-btn cinza" onclick="fecharModalMesa()">Cancelar</button>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -1600,7 +1583,7 @@ function abrirModalMesaFB(mesaId){
     var nome  = it.nome||it.n||'?';
     var preco = parseFloat(it.preco||it.p||0);
     var qtd   = parseInt(it.qtd||it.q||1);
-    if(!nome || preco < 0) return;
+    if(!nome) return;
     order.push({uid:uidCnt++, id:uidCnt, n:nome, p:preco, q:qtd});
   });
   if(!order.length){
@@ -8738,5 +8721,22 @@ function drawQR(canvas, text, size){
 }
 
 </script>
+  <!-- Modal detalhe da mesa — FORA de vmesas para position:fixed funcionar -->
+  <div class="mesa-modal-bg" id="mesa-modal-bg" onclick="fecharModalMesaBg(event)">
+    <div class="mesa-modal">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div class="mesa-modal-tit" id="mm-nome"></div>
+        <button onclick="fecharModalMesa()" style="background:none;border:none;color:#555;font-size:20px;cursor:pointer;padding:0 4px;">X</button>
+      </div>
+      <div class="mesa-modal-info" id="mm-info"></div>
+      <div class="mm-itens-lista" id="mm-itens"></div>
+      <div class="mesa-modal-total" id="mm-total"></div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+        <button class="mesa-modal-btn verde" onclick="fecharContaMesaFB()">Fechar conta</button>
+        <button class="mesa-modal-btn azul" onclick="imprimirReciboMesa()">Imprimir recibo</button>
+        <button class="mesa-modal-btn cinza" onclick="fecharModalMesa()">Cancelar</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
