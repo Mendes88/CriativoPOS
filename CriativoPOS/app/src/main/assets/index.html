@@ -2361,7 +2361,7 @@ function printConfirmation(s){
       }
     } else {
       // Agrupado
-      var qty  = i.q > 1 && !itemNotes.length ? i.q : 1;
+      var qty  = parseInt(i.qtd||i.q||1);
       var lineTotal = qty > 1 ? EUR(qty*i.p) : EUR(i.p);
       itensListTalao +=
         '<tr style="border-bottom:1px dotted #e0e0e0;">'+
@@ -2385,10 +2385,11 @@ function printConfirmation(s){
       // Agrupado
       var reciboName = i.n;
       var reciboPrice, reciboSub = '';
-      if(i.q > 1 && !itemNotes.length){
-        reciboName += ' <span style="font-size:11px;color:#777777;">×'+i.q+'</span>';
-        reciboSub   = '<tr><td colspan="2" style="padding:0 8px 4px 16px;font-size:10px;color:#888888666;">'+i.q+' × '+EUR(i.p)+'</td></tr>';
-        reciboPrice = EUR(i.q*i.p);
+      var rQty = parseInt(i.qtd||i.q||1);
+      if(rQty > 1){
+        reciboName += ' <span style="font-size:11px;color:#777777;">×'+rQty+'</span>';
+        reciboSub   = '<tr><td colspan="2" style="padding:0 8px 4px 16px;font-size:10px;color:#888888;">('+rQty+' x '+EUR(i.p)+ ')</td></tr>';
+        reciboPrice = EUR(rQty*i.p);
       } else {
         reciboPrice = EUR(i.p);
       }
@@ -2403,7 +2404,7 @@ function printConfirmation(s){
   var itemsTable = '<table>'+(isTalao ? itensListTalao : itensListRecibo)+'</table>';
 
   // Calcular total de artigos (soma das quantidades)
-  var totalQty = s.items.reduce(function(acc, i){ return acc + (i.q||1); }, 0);
+  var totalQty = s.items.reduce(function(acc, i){ return acc + parseInt(i.qtd||i.q||1); }, 0);
   var totalArtigosHtml = '<div style="text-align:right;font-size:12px;color:#888888;padding:2px 6px 6px;">'+totalQty+' artigo'+(totalQty!==1?'s':'')+'</div>';
 
   const ticketHtml=
@@ -8754,22 +8755,6 @@ function drawQR(canvas, text, size){
 }
 
 </script>
-  <!-- Modal detalhe da mesa — FORA de vmesas para position:fixed funcionar -->
-  <div class="mesa-modal-bg" id="mesa-modal-bg" onclick="fecharModalMesaBg(event)">
-    <div class="mesa-modal">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div class="mesa-modal-tit" id="mm-nome"></div>
-        <button onclick="fecharModalMesa()" style="background:none;border:none;color:#999999;font-size:20px;cursor:pointer;padding:0 4px;">X</button>
-      </div>
-      <div class="mesa-modal-info" id="mm-info"></div>
-      <div class="mm-itens-lista" id="mm-itens"></div>
-      <div class="mesa-modal-total" id="mm-total"></div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
-        <button class="mesa-modal-btn verde" onclick="fecharContaMesaFB()">Fechar conta</button>
-        <button class="mesa-modal-btn azul" onclick="imprimirReciboMesa()">Imprimir recibo</button>
-        <button class="mesa-modal-btn cinza" onclick="fecharModalMesa()">Cancelar</button>
-      </div>
-    </div>
-  </div>
+  <!-- Modal removido - fluxo vai directo para cobrarMesa() -->
 </body>
 </html>
