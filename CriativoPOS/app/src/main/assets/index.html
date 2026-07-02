@@ -1307,7 +1307,7 @@ let order=[],payMethod="d",ordCnt=10,nifOpen=false;
 let modMode=null,modData={},detailItems=true,uidCnt=1,docType='talao',orderNum=1,levantamentos=[],splitPessoas=0;
 // Carregar preferência de listagem individual (predefinição: Sim)
 (function(){ var d=localStorage.getItem('crpos_detail'); if(d==='0') detailItems=false; })();
-let config={appHeight:0,defaultDocType:'talao',postoName:'',restName:'Restaurante',nif:'123 456 789',phone:'232 123 456',address:'Viseu, Portugal',footerMsg:'Obrigado pela visita!',footerMsg2:'',logo:null,timeout:15,printerType:'none',printerIP:'192.168.1.100',printerPort:'9100',printerWidth:80,printerCols:48,mbwayPhone:''};
+let config={appHeight:0,defaultDocType:'talao',postoName:'',restName:'Restaurante',nif:'123 456 789',phone:'232 123 456',address:'Viseu, Portugal',footerMsg:'Obrigado pela visita!',footerMsg2:'',logo:null,timeout:15,printerType:'bluetooth',printerIP:'192.168.1.100',printerPort:'9100',printerWidth:80,printerCols:46,mbwayPhone:''};
 let btDevice=null,btChar=null;
 let relTab="resumo",artSort="revenue",selDate=today(),dateMode="today",customFrom="",customTo="";
 let fundo=50,closings=[],curSale=null;
@@ -5446,6 +5446,10 @@ function loadSales(){
     if(lv){levantamentos=JSON.parse(lv);}
     const cf=localStorage.getItem("crpos_config");
     if(cf){try{config=Object.assign(config,JSON.parse(cf));}catch(e){}}
+    // Se printerType ainda é 'none' (nunca configurado), usar bluetooth por defeito
+    if(!config.printerType || config.printerType==='none') config.printerType='bluetooth';
+    // Se printerCols ainda é 48 (valor antigo), actualizar para 46
+    if(config.printerCols===48) config.printerCols=46;
     const us=localStorage.getItem("crpos_users");
     if(us){try{var pu=JSON.parse(us);if(pu&&pu.length){users=pu;nuid=Math.max.apply(null,users.map(function(u){return u.id;}))+1;}}catch(e){}}
     const mn=localStorage.getItem("crpos_menu");
