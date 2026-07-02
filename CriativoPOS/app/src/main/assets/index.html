@@ -131,7 +131,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
   .mesas-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .mesas-tit{font-size:15px;font-weight:700;color:#111111;}
   .mesas-estado{font-size:11px;color:#777777;background:#ffffff;padding:3px 10px;border-radius:10px;}
-  .mesas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:10px;}
+  .mesas-grid{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:10px;}
   .mesa-card{background:#ffffff !important;border-radius:12px;border:2px solid #EF9F27;padding:14px 12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.4);}
   .mesa-card.aberta{border-color:#EF9F27;}
   .mesa-card:active{transform:scale(.96);}
@@ -1552,13 +1552,18 @@ function renderMesasFB(){
   grid.innerHTML = lista.map(function(m){
     var items = [];
     try{ items = JSON.parse(m.items||'[]'); }catch(e){}
-    var nItens = items.reduce(function(s,i){return s+(i.qtd||i.q||1);},0);
+    var nItens = items.reduce(function(s,i){return s+(parseInt(i.qtd||i.q||1));},0);
     var tempo = mesaTempoStr(m.enviado_caixa_em||m.abertoEm);
-    return '<div class="mesa-card aberta" onclick="abrirModalMesaFB(\'' + escJs(m.id) + '\')">' +
+    var temItens = items.length > 0;
+    return '<div class="mesa-card aberta">' +
       '<div class="mesa-card-nome">' + escH(m.nome||m.id) + '</div>' +
       '<div class="mesa-card-func">👤 ' + escH(m.funcionario||m.func||'—') + '</div>' +
       '<div class="mesa-card-total">' + EUR(m.total||0) + '</div>' +
       '<div class="mesa-card-tempo"><span>🕐 ' + tempo + '</span><span>' + nItens + ' itens</span></div>' +
+      '<button onclick="cobrarMesa(\'' + escJs(m.id) + '\')" ' +
+        'style="margin-top:10px;padding:10px;width:100%;border:none;border-radius:8px;background:#EF9F27;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">' +
+        (temItens ? '💳 Fechar conta' : '⚠️ Sem itens') +
+      '</button>' +
       '</div>';
   }).join('');
 }
@@ -1614,6 +1619,31 @@ function abrirModalMesaFB(mesaId){
   setTimeout(function(){ openPayModal(); }, 300);
 }
 
+function cobrarMesa(mesaId){
+  mesaSelFB = mesasFB.find(function(m){return m.id===mesaId;});
+  if(!mesaSelFB) return;
+  var items = [];
+  try{
+    var raw = mesaSelFB.items||'[]';
+    items = typeof raw==='string' ? JSON.parse(raw) : raw;
+    if(!Array.isArray(items)) items=[];
+  }catch(e){ items=[]; }
+  if(!items.length){ alert('Sem itens nesta mesa. Cobra manualmente pelo POS.'); return; }
+  order = [];
+  uidCnt = 1;
+  items.forEach(function(it){
+    var nome  = it.nome||it.n||'?';
+    var preco = parseFloat(it.preco||it.p||0);
+    var qtd   = parseInt(it.qtd||it.q||1);
+    if(!nome) return;
+    order.push({uid:uidCnt++, id:uidCnt, n:nome, p:preco, q:qtd});
+  });
+  window._mesaAFechar = mesaSelFB;
+  renderOrder();
+  switchView('pos');
+  setTimeout(function(){ openPayModal(); }, 200);
+}
+
 function fecharModalMesa(){
   document.getElementById('mesa-modal-bg').classList.remove('on');
   mesaSelFB = null;
@@ -1657,7 +1687,7 @@ function fecharContaMesaFB(){
   if(!items.length){ alert('Sem itens nesta mesa.'); return; }
   // Converter para formato order do POS
   order = items.map(function(it, idx){
-    return {uid: uidCnt++, id: it.id||('m'+idx), n: it.nome||it.n||'?', p: it.preco||it.p||0, q: it.q||1};
+    return {uid: uidCnt++, id: it.id||('m'+idx), n: it.nome||it.n||'?', p: parseFloat(it.preco||it.p||0), q: parseInt(it.qtd||it.q||1)};
   });
   // Guardar referência da mesa para fechar após pagamento
   window._mesaAFechar = mesaSelFB;
@@ -1716,6 +1746,9 @@ function switchView(v){
     } else if(v==="pos"||v==="gest"){
       view.style.display   = "flex";
       view.style.overflowY = "hidden";
+    } else if(v==="mesas"){
+      view.style.display       = "flex";
+      view.style.flexDirection = "column";
     } else {
       view.style.display   = "block";
     }
