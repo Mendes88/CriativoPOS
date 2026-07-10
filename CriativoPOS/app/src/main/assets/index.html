@@ -129,16 +129,16 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
   /* MESAS FIREBASE */
   #vmesas{padding:12px;box-sizing:border-box;overflow-y:auto;background:#f8f8f8;min-height:100%;}
   .mesas-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-  .mesas-tit{font-size:15px;font-weight:700;color:#111111;}
+  .mesas-tit{font-size:18px;font-weight:700;color:#111111;}
   .mesas-estado{font-size:11px;color:#777777;background:#ffffff;padding:3px 10px;border-radius:10px;}
   .mesas-grid{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:10px;}
   .mesa-card{background:#ffffff !important;border-radius:12px;border:2px solid #EF9F27;padding:14px 12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.4);}
   .mesa-card.aberta{border-color:#EF9F27;}
   .mesa-card:active{transform:scale(.96);}
-  .mesa-card-nome{font-size:17px;font-weight:800;color:#111111;letter-spacing:.3px;}
-  .mesa-card-func{font-size:11px;color:#EF9F27;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
-  .mesa-card-total{font-size:22px;font-weight:800;color:#2e7d32;margin-top:4px;}
-  .mesa-card-tempo{font-size:10px;color:#999999;display:flex;justify-content:space-between;margin-top:2px;}
+  .mesa-card-nome{font-size:22px;font-weight:800;color:#111111;letter-spacing:.3px;}
+  .mesa-card-func{font-size:14px;color:#EF9F27;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+  .mesa-card-total{font-size:26px;font-weight:800;color:#2e7d32;margin-top:6px;}
+  .mesa-card-tempo{font-size:13px;color:#999999;display:flex;justify-content:space-between;margin-top:4px;}
   .mesa-card-vazia{font-size:11px;color:#999999;margin-top:4px;}
   .mesa-modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:9000;align-items:flex-end;justify-content:center;}
   .mesa-modal-bg.on{display:flex;}
@@ -1561,7 +1561,7 @@ function renderMesasFB(){
       '<div class="mesa-card-total">' + EUR(m.total||0) + '</div>' +
       '<div class="mesa-card-tempo"><span>🕐 ' + tempo + '</span><span>' + nItens + ' itens</span></div>' +
       '<button onclick="cobrarMesa(\'' + escJs(m.id) + '\')" ' +
-        'style="margin-top:10px;padding:10px;width:100%;border:none;border-radius:8px;background:#EF9F27;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">' +
+        'style="margin-top:12px;padding:12px;width:100%;border:none;border-radius:8px;background:#EF9F27;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">' +
         (temItens ? '💳 Fechar conta' : '⚠️ Sem itens') +
       '</button>' +
       '</div>';
