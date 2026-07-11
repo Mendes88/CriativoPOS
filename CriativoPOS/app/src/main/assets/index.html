@@ -1619,6 +1619,8 @@ function abrirModalMesaFB(mesaId){
   setTimeout(function(){ openPayModal(); }, 300);
 }
 
+var _mesaParaCobrar = null;
+
 function cobrarMesa(mesaId){
   mesaSelFB = mesasFB.find(function(m){return m.id===mesaId;});
   if(!mesaSelFB) return;
@@ -1628,7 +1630,47 @@ function cobrarMesa(mesaId){
     items = typeof raw==='string' ? JSON.parse(raw) : raw;
     if(!Array.isArray(items)) items=[];
   }catch(e){ items=[]; }
-  if(!items.length){ alert('Sem itens nesta mesa. Cobra manualmente pelo POS.'); return; }
+  if(!items.length){
+    // Sem itens - ir directamente para POS manual
+    window._mesaAFechar = mesaSelFB;
+    switchView('pos');
+    return;
+  }
+  // Mostrar modal de confirmacao com lista de artigos
+  _mesaParaCobrar = {mesa: mesaSelFB, items: items};
+  document.getElementById('mam-titulo').textContent = mesaSelFB.nome || mesaSelFB.id;
+  document.getElementById('mam-subtitulo').textContent = (mesaSelFB.funcionario||mesaSelFB.func||'--') + ' — ' + (mesaSelFB.tempo||'--');
+  var lista = document.getElementById('mam-lista');
+  lista.innerHTML = '';
+  var total = 0;
+  items.forEach(function(it){
+    var nome  = it.nome||it.n||'?';
+    var preco = parseFloat(it.preco||it.p||0);
+    var qtd   = parseInt(it.qtd||it.q||1);
+    var subtotal = preco * qtd;
+    total += subtotal;
+    var div = document.createElement('div');
+    div.className = 'mam-item';
+    div.innerHTML = '<span class="mam-item-qtd">'+qtd+'x</span>' +
+      '<span style="flex:1;margin:0 8px;">'+escH(nome)+'</span>' +
+      '<span class="mam-item-val">'+EUR(subtotal)+'</span>';
+    lista.appendChild(div);
+  });
+  document.getElementById('mam-total').textContent = EUR(total);
+  document.getElementById('modal-artigos-mesa').classList.add('on');
+}
+
+function fecharModalArtigos(){
+  document.getElementById('modal-artigos-mesa').classList.remove('on');
+  _mesaParaCobrar = null;
+}
+
+function confirmarCobrarMesa(){
+  document.getElementById('modal-artigos-mesa').classList.remove('on');
+  if(!_mesaParaCobrar) return;
+  var items = _mesaParaCobrar.items;
+  mesaSelFB = _mesaParaCobrar.mesa;
+  _mesaParaCobrar = null;
   order = [];
   uidCnt = 1;
   items.forEach(function(it){
@@ -1643,7 +1685,7 @@ function cobrarMesa(mesaId){
   switchView('pos');
   setTimeout(function(){
     openPayModal();
-    setDocType('recibo'); // mesas -> sempre recibo
+    setDocType('recibo');
   }, 200);
 }
 
@@ -8762,6 +8804,25 @@ function drawQR(canvas, text, size){
 }
 
 </script>
+  <!-- Modal confirmacao artigos mesa -->
+  <div id="modal-artigos-mesa">
+    <div class="mam-box">
+      <div>
+        <div class="mam-titulo" id="mam-titulo">Mesa</div>
+        <div class="mam-subtitulo" id="mam-subtitulo"></div>
+      </div>
+      <div class="mam-lista" id="mam-lista"></div>
+      <div class="mam-total">
+        <span>Total</span>
+        <span id="mam-total">0,00 EUR</span>
+      </div>
+      <div class="mam-btns">
+        <button class="mam-btn-cancel" onclick="fecharModalArtigos()">Cancelar</button>
+        <button class="mam-btn-cobrar" onclick="confirmarCobrarMesa()">Cobrar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal removido - fluxo vai directo para cobrarMesa() -->
 </body>
 </html>
