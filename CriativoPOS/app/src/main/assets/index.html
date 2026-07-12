@@ -1582,7 +1582,9 @@ function renderMesasFB(){
   grid.innerHTML = lista.map(function(m){
     var items = [];
     try{ items = JSON.parse(m.items||'[]'); }catch(e){}
-    var nItens = items.reduce(function(s,i){return s+(parseInt(i.qtd||i.q||1));},0);
+    var nItens = items.reduce(function(s,i){
+      return s + parseInt(i.qtd||i.q||i.quantidade||i.qty||1);
+    },0);
     var tempo = mesaTempoStr(m.enviado_caixa_em||m.abertoEm);
     var temItens = items.length > 0;
     return '<div class="mesa-card aberta">' +
