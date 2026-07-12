@@ -1691,8 +1691,8 @@ function confirmarCobrarMesa(){
   items.forEach(function(it){
     var nome  = it.nome||it.n||'?';
     var preco = parseFloat(it.preco||it.p||0);
-    var qtd   = parseInt(it.qtd||it.q||1);
-    if(!nome) return;
+    var qtd   = parseInt(it.qtd||it.q||it.quantidade||1);
+    if(!nome || nome==='?') return;
     order.push({uid:uidCnt++, id:uidCnt, n:nome, p:preco, q:qtd});
   });
   window._mesaAFechar = mesaSelFB;
@@ -1701,7 +1701,7 @@ function confirmarCobrarMesa(){
   setTimeout(function(){
     openPayModal();
     setDocType('recibo');
-  }, 200);
+  }, 300);
 }
 
 function fecharModalMesa(){
