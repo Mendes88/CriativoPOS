@@ -1271,14 +1271,29 @@ window.addEventListener('unhandledrejection', function(e){
 //  DATA
 // ═══════════════════════════════════════════════════════════
 const COLORS=["#BA7517","#1D9E75","#D85A30","#185FA5","#993556","#639922","#5F3DC4","#C05621"];
-let CATS=["Entradas","Sopas","Carnes","Peixes","Bebidas","Sobremesas"];
+let CATS=["Comidas"];
 let ITEMS={
-  "Entradas":[{id:1,n:"Pão com Manteiga",p:1.50},{id:2,n:"Tábua de Queijos",p:8.50},{id:3,n:"Presunto Serrano",p:7.00},{id:4,n:"Chouriço Assado",p:5.50},{id:5,n:"Alheiras Grelhadas",p:6.50}],
-  "Sopas":[{id:10,n:"Caldo Verde",p:2.50},{id:11,n:"Sopa do Dia",p:2.00},{id:12,n:"Canja de Galinha",p:3.00}],
-  "Carnes":[{id:20,n:"Bife da Vazia",p:14.00},{id:21,n:"Frango Churrasco",p:9.50},{id:22,n:"Costeleta de Porco",p:11.00},{id:23,n:"Entrecosto",p:13.00},{id:24,n:"Bife do Lombo",p:18.00}],
-  "Peixes":[{id:30,n:"Bacalhau Assado",p:15.00},{id:31,n:"Bacalhau à Brás",p:12.00},{id:32,n:"Salmão Grelhado",p:14.50},{id:33,n:"Dourada Assada",p:13.00}],
-  "Bebidas":[{id:40,n:"Água 0,5L",p:1.00},{id:41,n:"Coca-Cola",p:2.00},{id:42,n:"Imperial",p:1.80},{id:43,n:"Vinho Branco",p:5.00},{id:44,n:"Vinho Tinto",p:5.50},{id:45,n:"Café",p:0.80}],
-  "Sobremesas":[{id:50,n:"Mousse Chocolate",p:3.50},{id:51,n:"Pudim Flan",p:3.00},{id:52,n:"Arroz Doce",p:2.50},{id:53,n:"Leite Creme",p:3.00},{id:54,n:"Fruta da Época",p:2.00}]
+  "Comidas":[
+    {id:1,n:"SANDES LEITAO",p:7.00},
+    {id:2,n:"CALDO VERDE",p:3.00},
+    {id:3,n:"PREGO NO PRATO",p:15.00},
+    {id:4,n:"PREGO NO PAO",p:6.00},
+    {id:5,n:"LEITAO DOSE",p:18.00},
+    {id:6,n:"BIFANA",p:4.00},
+    {id:7,n:"MOELAS",p:6.00},
+    {id:8,n:"BIFANA NO PRATO",p:12.50},
+    {id:9,n:"ALHEIRA NO PRATO",p:11.00},
+    {id:10,n:"PICA-PAU",p:7.00},
+    {id:11,n:"CAMARAO A GUILHO",p:12.50},
+    {id:12,n:"AMEIJOA A BOLHAO PATO",p:12.00},
+    {id:13,n:"BRAS DE LEITAO",p:13.00},
+    {id:14,n:"PAO",p:1.00},
+    {id:15,n:"CABECA DE LEITAO",p:5.00},
+    {id:16,n:"DOSE BATATA",p:2.50},
+    {id:17,n:"CHOURICA ACADA",p:8.50},
+    {id:18,n:"PAO E AZEITONAS",p:1.50},
+    {id:19,n:"OVO ESTRELADO",p:1.00}
+  ]
 };
 let users=[
   {id:1,nome:"Administrador",un:"admin",pin:"1234",role:"admin",color:"#BA7517"}
