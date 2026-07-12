@@ -464,6 +464,21 @@ tr:last-child td{border-bottom:none;}
 
 #mbway-overlay.open{display:flex!important;}
 #mbway-overlay .qr-img{border:3px solid #1a8a37;border-radius:12px;padding:8px;background:#fff;}
+/* Modal confirmacao artigos mesa */
+#modal-artigos-mesa{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;background:rgba(0,0,0,.75);z-index:99990;}
+#modal-artigos-mesa.on{display:block;}
+.mam-centrar{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);width:90%;max-width:460px;}
+.mam-box{background:#fff;border-radius:16px;padding:20px;display:-webkit-box;display:flex;-webkit-box-orient:vertical;-webkit-box-direction:normal;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.mam-titulo{font-size:18px;font-weight:800;color:#111;border-bottom:1px solid #eee;padding-bottom:10px;}
+.mam-subtitulo{font-size:12px;color:#888;margin-top:-6px;}
+.mam-lista{overflow-y:auto;max-height:40vh;display:-webkit-box;display:flex;-webkit-box-orient:vertical;-webkit-box-direction:normal;flex-direction:column;gap:2px;}
+.mam-item{display:-webkit-box;display:flex;-webkit-box-pack:justify;justify-content:space-between;-webkit-box-align:center;align-items:center;padding:8px 0;border-bottom:.5px solid #f0f0f0;font-size:14px;color:#111;}
+.mam-item-qtd{font-weight:800;color:#EF9F27;min-width:36px;font-size:15px;}
+.mam-item-val{font-size:13px;color:#666;white-space:nowrap;}
+.mam-total{display:-webkit-box;display:flex;-webkit-box-pack:justify;justify-content:space-between;font-size:17px;font-weight:800;color:#111;border-top:2px solid #EF9F27;padding-top:12px;}
+.mam-btns{display:-webkit-box;display:flex;gap:10px;}
+.mam-btn-cancel{-webkit-box-flex:1;flex:1;padding:14px;background:#f5f5f5;border:none;border-radius:10px;color:#555;font-size:14px;cursor:pointer;font-family:system-ui;font-weight:600;}
+.mam-btn-cobrar{-webkit-box-flex:2;flex:2;padding:14px;background:#EF9F27;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:system-ui;}
 </style>
 </head>
 <body>
@@ -8821,6 +8836,7 @@ function drawQR(canvas, text, size){
 </script>
   <!-- Modal confirmacao artigos mesa -->
   <div id="modal-artigos-mesa">
+    <div class="mam-centrar">
     <div class="mam-box">
       <div>
         <div class="mam-titulo" id="mam-titulo">Mesa</div>
@@ -8835,6 +8851,7 @@ function drawQR(canvas, text, size){
         <button class="mam-btn-cancel" onclick="fecharModalArtigos()">Cancelar</button>
         <button class="mam-btn-cobrar" onclick="confirmarCobrarMesa()">Cobrar</button>
       </div>
+    </div>
     </div>
   </div>
 
