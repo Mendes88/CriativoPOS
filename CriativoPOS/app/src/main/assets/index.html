@@ -2069,11 +2069,13 @@ function renderOrder(){
           '</div>';
         }).join('')
       : '';
+    var qLabel = o.q > 1 ? '<span style="background:#EF9F27;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:5px;margin-right:4px;">'+o.q+'x</span>' : '';
     return '<div class="order-row" id="orow-'+o.uid+'" style="flex-direction:column;align-items:stretch;gap:2px;user-select:none;-webkit-user-select:none;">'+
       '<div style="display:flex;align-items:center;gap:4px;">'+
+        qLabel+
         '<span class="order-name" style="flex:1;">'+o.n+'</span>'+
         '<button class="qty-btn" onclick="chgQty('+o.uid+',-1)" style="background:#fee2e2;color:#c62828;border-color:#fca5a5;">✕</button>'+
-        '<span class="order-price">'+EUR(o.p)+'</span>'+
+        '<span class="order-price">'+EUR(o.q*o.p)+'</span>'+
       '</div>'+
       noteLine+
     '</div>';
