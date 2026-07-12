@@ -1675,18 +1675,21 @@ function cobrarMesa(mesaId){
   var lista = document.getElementById('mam-lista');
   lista.innerHTML = '';
   var total = 0;
+  // Expandir items individualmente no modal
   items.forEach(function(it){
     var nome  = it.nome||it.n||'?';
     var preco = parseFloat(it.preco||it.p||0);
     var qtd   = parseInt(it.qtd||it.q||1);
-    var subtotal = preco * qtd;
-    total += subtotal;
-    var div = document.createElement('div');
-    div.className = 'mam-item';
-    div.innerHTML = '<span class="mam-item-qtd">'+qtd+'x</span>' +
-      '<span style="flex:1;margin:0 8px;">'+escH(nome)+'</span>' +
-      '<span class="mam-item-val">'+EUR(subtotal)+'</span>';
-    lista.appendChild(div);
+    total += preco * qtd;
+    // Criar uma linha por unidade
+    for(var i = 0; i < qtd; i++){
+      var div = document.createElement('div');
+      div.className = 'mam-item';
+      div.innerHTML =
+        '<span style="flex:1;">'+escH(nome)+'</span>' +
+        '<span class="mam-item-val">'+EUR(preco)+'</span>';
+      lista.appendChild(div);
+    }
   });
   document.getElementById('mam-total').textContent = EUR(total);
   document.getElementById('modal-artigos-mesa').classList.add('on');
