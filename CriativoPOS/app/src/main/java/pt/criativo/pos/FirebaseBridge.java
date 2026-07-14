@@ -678,6 +678,55 @@ public class FirebaseBridge {
             .addOnFailureListener(e -> emitir("fbErro", "carregarMenu: " + (e.getMessage() != null ? e.getMessage() : "erro")));
     }
 
+    /** Busca pedidos activos de uma mesa para o POS Caixa */
+    @JavascriptInterface
+    public void buscarPedidosMesa(String mesaId) {
+        db.collection("pedidos")
+            .whereEqualTo("mesaId", mesaId)
+            .get()
+            .addOnSuccessListener(snapshots -> {
+                try {
+                    // Agregar todos os items de todos os pedidos activos
+                    java.util.Map<String, double[]> agregados = new java.util.LinkedHashMap<>();
+                    for (com.google.firebase.firestore.DocumentSnapshot doc : snapshots.getDocuments()) {
+                        java.util.Map<String, Object> data = doc.getData();
+                        if (data == null) continue;
+                        String estado = String.valueOf(data.getOrDefault("estado", "pendente"));
+                        if ("tratado".equals(estado) || "bloqueado".equals(estado)) continue;
+                        String itemsStr = data.getOrDefault("items", "[]").toString();
+                        try {
+                            org.json.JSONArray arr = new org.json.JSONArray(itemsStr);
+                            for (int i = 0; i < arr.length(); i++) {
+                                org.json.JSONObject it = arr.getJSONObject(i);
+                                String nome = it.optString("n", it.optString("nome", "?"));
+                                double preco = it.optDouble("p", it.optDouble("preco", 0));
+                                int qtd = it.optInt("q", it.optInt("qtd", 1));
+                                String key = nome + "|" + preco;
+                                if (!agregados.containsKey(key)) agregados.put(key, new double[]{preco, 0});
+                                agregados.get(key)[1] += qtd;
+                            }
+                        } catch (Exception ex) { /* ignorar */ }
+                    }
+                    // Construir JSON de items agregados
+                    org.json.JSONArray resultado = new org.json.JSONArray();
+                    for (java.util.Map.Entry<String, double[]> entry : agregados.entrySet()) {
+                        String nome = entry.getKey().split("\|")[0];
+                        double preco = entry.getValue()[0];
+                        int qtd = (int) entry.getValue()[1];
+                        org.json.JSONObject obj = new org.json.JSONObject();
+                        obj.put("n", nome);
+                        obj.put("p", preco);
+                        obj.put("q", qtd);
+                        resultado.put(obj);
+                    }
+                    emitir("fbPedidosMesaCaixa", mesaId + "|" + resultado.toString());
+                } catch (Exception e) {
+                    Log.e("CriativoFB", "buscarPedidosMesa: " + e.getMessage());
+                }
+            })
+            .addOnFailureListener(e -> Log.e("CriativoFB", "buscarPedidosMesa: " + e.getMessage()));
+    }
+
     /** Criar mesa no Firestore — estado em_servico (não visível na caixa ainda) */
     @JavascriptInterface
     public void criarMesa(String mesaId, String payloadJson) {
