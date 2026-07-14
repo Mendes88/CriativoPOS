@@ -1620,12 +1620,15 @@ function renderBadgesFuncionarios(grid){
     if(!grupos[func]) grupos[func]=[];
     grupos[func].push(m);
   });
+  var SBADGE = 'background:#1a1a1a;border:2px solid #EF9F27;border-radius:12px;padding:20px 16px;cursor:pointer;text-align:center;';
+  var SNOME  = 'font-size:20px;font-weight:800;color:#EF9F27;margin-bottom:6px;';
+  var SCOUNT = 'font-size:13px;color:#888;';
   var html = Object.keys(grupos).map(function(func){
     var mesas = grupos[func];
     var totalFunc = mesas.reduce(function(s,m){return s+(parseFloat(m.total)||0);},0);
-    return '<div class="func-badge" onclick="seleccionarFunc(\'' + escJs(func) + '\')">'+
-      '<div class="func-badge-nome">'+escH(func)+'</div>'+
-      '<div class="func-badge-count">'+mesas.length+' mesa'+(mesas.length>1?'s':'')+' &middot; '+EUR(totalFunc)+'</div>'+
+    return '<div style="'+SBADGE+'" onclick="seleccionarFunc(\'' + escJs(func) + '\')">'+
+      '<div style="'+SNOME+'">'+escH(func)+'</div>'+
+      '<div style="'+SCOUNT+'">'+mesas.length+' mesa'+(mesas.length>1?'s':'')+' &middot; '+EUR(totalFunc)+'</div>'+
     '</div>';
   }).join('');
   grid.innerHTML = html;
