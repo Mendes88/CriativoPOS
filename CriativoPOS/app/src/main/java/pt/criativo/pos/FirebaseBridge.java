@@ -686,10 +686,12 @@ public class FirebaseBridge {
             .get()
             .addOnSuccessListener(snapshots -> {
                 try {
-                    // Agregar todos os items de todos os pedidos activos
-                    Map<String, double[]> agregados = new java.util.LinkedHashMap<>();
+                    JSONArray resultado = new JSONArray();
+                    // HashMap simples: nome -> [preco, qtd]
+                    HashMap<String, Double> precos = new HashMap<>();
+                    HashMap<String, Integer> qtds = new HashMap<>();
                     for (com.google.firebase.firestore.DocumentSnapshot doc : snapshots.getDocuments()) {
-                        java.util.Map<String, Object> data = doc.getData();
+                        Map<String, Object> data = doc.getData();
                         if (data == null) continue;
                         String estado = String.valueOf(data.getOrDefault("estado", "pendente"));
                         if ("tratado".equals(estado) || "bloqueado".equals(estado)) continue;
@@ -702,17 +704,15 @@ public class FirebaseBridge {
                                 double preco = it.optDouble("p", it.optDouble("preco", 0));
                                 int qtd = it.optInt("q", it.optInt("qtd", 1));
                                 String key = nome + "|" + preco;
-                                if (!agregados.containsKey(key)) agregados.put(key, new double[]{preco, 0});
-                                agregados.get(key)[1] += qtd;
+                                precos.put(key, preco);
+                                qtds.put(key, (qtds.containsKey(key) ? qtds.get(key) : 0) + qtd);
                             }
                         } catch (Exception ex) { /* ignorar */ }
                     }
-                    // Construir JSON de items agregados
-                    JSONArray resultado = new JSONArray();
-                    for (Map.Entry<String, double[]> entry : agregados.entrySet()) {
-                        String nome = entry.getKey().split("\|")[0];
-                        double preco = entry.getValue()[0];
-                        int qtd = (int) entry.getValue()[1];
+                    for (String key : qtds.keySet()) {
+                        String nome = key.split("\|")[0];
+                        double preco = precos.containsKey(key) ? precos.get(key) : 0;
+                        int qtd = qtds.get(key);
                         JSONObject obj = new JSONObject();
                         obj.put("n", nome);
                         obj.put("p", preco);
