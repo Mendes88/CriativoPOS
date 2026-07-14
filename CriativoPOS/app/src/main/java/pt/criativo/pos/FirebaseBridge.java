@@ -687,7 +687,7 @@ public class FirebaseBridge {
             .addOnSuccessListener(snapshots -> {
                 try {
                     // Agregar todos os items de todos os pedidos activos
-                    java.util.Map<String, double[]> agregados = new java.util.LinkedHashMap<>();
+                    Map<String, double[]> agregados = new java.util.LinkedHashMap<>();
                     for (com.google.firebase.firestore.DocumentSnapshot doc : snapshots.getDocuments()) {
                         java.util.Map<String, Object> data = doc.getData();
                         if (data == null) continue;
@@ -695,9 +695,9 @@ public class FirebaseBridge {
                         if ("tratado".equals(estado) || "bloqueado".equals(estado)) continue;
                         String itemsStr = data.getOrDefault("items", "[]").toString();
                         try {
-                            org.json.JSONArray arr = new org.json.JSONArray(itemsStr);
+                            JSONArray arr = new JSONArray(itemsStr);
                             for (int i = 0; i < arr.length(); i++) {
-                                org.json.JSONObject it = arr.getJSONObject(i);
+                                JSONObject it = arr.getJSONObject(i);
                                 String nome = it.optString("n", it.optString("nome", "?"));
                                 double preco = it.optDouble("p", it.optDouble("preco", 0));
                                 int qtd = it.optInt("q", it.optInt("qtd", 1));
@@ -708,12 +708,12 @@ public class FirebaseBridge {
                         } catch (Exception ex) { /* ignorar */ }
                     }
                     // Construir JSON de items agregados
-                    org.json.JSONArray resultado = new org.json.JSONArray();
-                    for (java.util.Map.Entry<String, double[]> entry : agregados.entrySet()) {
+                    JSONArray resultado = new JSONArray();
+                    for (Map.Entry<String, double[]> entry : agregados.entrySet()) {
                         String nome = entry.getKey().split("\|")[0];
                         double preco = entry.getValue()[0];
                         int qtd = (int) entry.getValue()[1];
-                        org.json.JSONObject obj = new org.json.JSONObject();
+                        JSONObject obj = new JSONObject();
                         obj.put("n", nome);
                         obj.put("p", preco);
                         obj.put("q", qtd);
