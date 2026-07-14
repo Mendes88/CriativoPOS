@@ -1623,7 +1623,7 @@ function renderBadgesFuncionarios(grid){
   var html = Object.keys(grupos).map(function(func){
     var mesas = grupos[func];
     var totalFunc = mesas.reduce(function(s,m){return s+(parseFloat(m.total)||0);},0);
-    return '<div class="func-badge" onclick="seleccionarFunc(''+escJs(func)+'')">'+
+    return '<div class="func-badge" onclick="seleccionarFunc(\'' + escJs(func) + '\')">'+
       '<div class="func-badge-nome">'+escH(func)+'</div>'+
       '<div class="func-badge-count">'+mesas.length+' mesa'+(mesas.length>1?'s':'')+' &middot; '+EUR(totalFunc)+'</div>'+
     '</div>';
