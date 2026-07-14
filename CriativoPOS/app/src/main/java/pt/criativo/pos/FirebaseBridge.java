@@ -397,9 +397,9 @@ public class FirebaseBridge {
             mesasListener.remove();
             mesasListener = null;
         }
-        // Filtrar mesas aguarda_pagamento para o POS Caixa
+        // Trazer mesas em_servico E aguarda_pagamento
         mesasListener = db.collection(COL_MESAS)
-            .whereEqualTo("estado", "aguarda_pagamento")
+            .whereIn("estado", java.util.Arrays.asList("em_servico", "aguarda_pagamento"))
             .addSnapshotListener((snapshots, e) -> {
                 if (e != null) {
                     emitir("fbErro", "mesas: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()));
@@ -416,6 +416,7 @@ public class FirebaseBridge {
                         m.put("funcionario", d.getOrDefault("funcionario", "").toString());
                         m.put("func",        d.getOrDefault("funcionario", "").toString());
                         m.put("total",       d.getOrDefault("total",       0));
+                        m.put("estado",      d.getOrDefault("estado",      "em_servico").toString());
                         // Enviar items para o POS Caixa poder cobrar correctamente
                         m.put("items",       d.getOrDefault("items",       "[]").toString());
                         Object ab = d.containsKey("abertoEm") ? d.get("abertoEm") : d.get("aberta_em");
