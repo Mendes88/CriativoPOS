@@ -1733,13 +1733,39 @@ function abrirPagamentoParcial(mesaId){
 
   var items = [];
   try{ items = typeof m.items==='string' ? JSON.parse(m.items) : (m.items||[]); }catch(e){}
+  // Filtrar items validos
+  items = items.filter(function(it){ return (it.nome||it.n) && parseInt(it.qtd||it.q||1) > 0; });
 
   if(!items.length){
-    alert('Sem itens nesta mesa. Cobra manualmente pelo POS.');
-    return;
+    // Sem items no documento da mesa - ir buscar dos pedidos directamente
+    _mesaParcial = m;
+    if(typeof AndroidFB !== 'undefined'){
+      try{ AndroidFB.buscarPedidosMesa(mesaId); }catch(e){}
+    }
+    return; // aguardar fbPedidosMesaCaixa
   }
 
-  // Agregar items por nome
+  _abrirModalComItems(m, items);
+}
+
+// Listener para quando pedidos chegam do Firestore
+window.addEventListener('fbPedidosMesaCaixa', function(e){
+  try{
+    var parts = (e.detail||'').split('|');
+    var mesaId = parts[0];
+    var itemsJson = parts.slice(1).join('|');
+    var items = JSON.parse(itemsJson||'[]');
+    var m = _mesaParcial || mesasFB.find(function(x){return x.id===mesaId;});
+    if(!m || !items.length){
+      alert('Sem pedidos encontrados nesta mesa.');
+      return;
+    }
+    _abrirModalComItems(m, items);
+  }catch(ex){ console.error('fbPedidosMesaCaixa:', ex); }
+});
+
+function _abrirModalComItems(m, items){
+  // Agregar items por nome+preco
   var agregados = {};
   items.forEach(function(it){
     var nome = it.nome||it.n||'?';
@@ -1752,7 +1778,6 @@ function abrirPagamentoParcial(mesaId){
 
   _mesaParcial = m;
   _itensMesaTotal = Object.values(agregados);
-  // Iniciar com todas as quantidades seleccionadas
   _itensParcial = _itensMesaTotal.map(function(it){
     return {nome:it.nome, preco:it.preco, qtdTotal:it.qtdTotal, qtdSel:it.qtdTotal};
   });
