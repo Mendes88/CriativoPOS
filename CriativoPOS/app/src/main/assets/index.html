@@ -1599,34 +1599,72 @@ function mesaTempoStr(abertoEm){
   return Math.floor(diff/60) + 'h' + (diff%60 ? (diff%60) + 'm' : '');
 }
 
+var _funcSeleccionado = null;
+
 function renderMesasFB(){
   var grid = document.getElementById('mesas-grid');
   if(!grid) return;
   if(!mesasFB.length){
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaaaaa;font-size:13px;">Sem mesas a aguardar pagamento</div>';
+    _funcSeleccionado = null;
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaaaaa;font-size:13px;">Sem mesas abertas</div>';
     return;
   }
-  var lista = mesasFB.slice().sort(function(a,b){ return (a.abertoEm||0)-(b.abertoEm||0); });
-  grid.innerHTML = lista.map(function(m){
-    var items = [];
-    try{ items = JSON.parse(m.items||'[]'); }catch(e){}
-    var nItens = items.reduce(function(s,i){
-      return s + parseInt(i.qtd||i.q||i.quantidade||i.qty||1);
-    },0);
-    var tempo = mesaTempoStr(m.enviado_caixa_em||m.abertoEm);
-    var temItens = items.length > 0;
-    return '<div class="mesa-card aberta">' +
-      '<div class="mesa-card-nome">' + escH(m.nome||m.id) + '</div>' +
-      '<div class="mesa-card-func">👤 ' + escH(m.funcionario||m.func||'—') + '</div>' +
-      '<div class="mesa-card-total">' + EUR(m.total||0) + '</div>' +
-      '<div class="mesa-card-tempo"><span>🕐 ' + tempo + '</span><span>' + nItens + ' itens</span></div>' +
-      '<button onclick="cobrarMesa(\'' + escJs(m.id) + '\')" ' +
-        'style="margin-top:12px;padding:12px;width:100%;border:none;border-radius:8px;background:#EF9F27;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">' +
-        (temItens ? '💳 Fechar conta' : '⚠️ Sem itens') +
-      '</button>' +
-      '</div>';
-  }).join('');
+  if(_funcSeleccionado){ renderMesasFuncSeleccionado(grid); }
+  else { renderBadgesFuncionarios(grid); }
 }
+
+function renderBadgesFuncionarios(grid){
+  var grupos = {};
+  mesasFB.forEach(function(m){
+    var func = m.funcionario||m.func||'Sem nome';
+    if(!grupos[func]) grupos[func]=[];
+    grupos[func].push(m);
+  });
+  var html = Object.keys(grupos).map(function(func){
+    var mesas = grupos[func];
+    var totalFunc = mesas.reduce(function(s,m){return s+(parseFloat(m.total)||0);},0);
+    return '<div class="func-badge" onclick="seleccionarFunc(''+escJs(func)+'')">'+
+      '<div class="func-badge-nome">'+escH(func)+'</div>'+
+      '<div class="func-badge-count">'+mesas.length+' mesa'+(mesas.length>1?'s':'')+' &middot; '+EUR(totalFunc)+'</div>'+
+    '</div>';
+  }).join('');
+  grid.innerHTML = html;
+}
+
+function seleccionarFunc(func){
+  _funcSeleccionado = func;
+  renderMesasFB();
+}
+
+function renderMesasFuncSeleccionado(grid){
+  var mesas = mesasFB.filter(function(m){
+    return (m.funcionario||m.func||'Sem nome') === _funcSeleccionado;
+  }).sort(function(a,b){ return (a.abertoEm||0)-(b.abertoEm||0); });
+  var html = '<div style="grid-column:1/-1;margin-bottom:8px;">'+
+    '<button class="func-badge-back" onclick="_funcSeleccionado=null;renderMesasFB()">&#8592; Todos</button>'+
+    '<div style="font-size:16px;font-weight:700;color:#EF9F27;">'+escH(_funcSeleccionado)+'</div>'+
+  '</div>';
+  html += mesas.map(function(m){
+    var items=[];
+    try{ items=typeof m.items==='string'?JSON.parse(m.items):(m.items||[]);}catch(e){}
+    var nItens=items.reduce(function(s,i){return s+parseInt(i.qtd||i.q||1);},0);
+    var tempo=mesaTempoStr(m.enviado_caixa_em||m.abertoEm);
+    var estado=m.estado||'em_servico';
+    var cor=estado==='aguarda_pagamento'?'#2e7d32':'#EF9F27';
+    var aviso=estado==='em_servico'?'<div style="font-size:11px;color:#e65100;margin-top:4px;">&#9888; Mesa em servico</div>':'';
+    return '<div class="mesa-card aberta" style="border-color:'+cor+'">'+
+      '<div class="mesa-card-nome">'+escH(m.nome||m.id)+'</div>'+
+      '<div class="mesa-card-total">'+EUR(m.total||0)+'</div>'+
+      '<div class="mesa-card-tempo"><span>&#128336; '+tempo+'</span><span>'+nItens+' itens</span></div>'+
+      aviso+
+      '<button onclick="abrirPagamentoParcial(''+escJs(m.id)+'')" style="margin-top:12px;padding:12px;width:100%;border:none;border-radius:8px;background:'+cor+';color:#fff;font-size:15px;font-weight:700;cursor:pointer;">'+
+        (nItens>0?'&#128179; Cobrar':'&#9888; Sem itens')+
+      '</button>'+
+    '</div>';
+  }).join('');
+  grid.innerHTML = html;
+}
+
 
 function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escJs(s){ return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
@@ -1677,6 +1715,114 @@ function abrirModalMesaFB(mesaId){
   showToast('🍽 '+(mesaSelFB.nome||mesaId)+' · '+(mesaSelFB.funcionario||'')+' · '+nItens+' itens');
   // Abrir modal de pagamento directamente
   setTimeout(function(){ openPayModal(); }, 300);
+}
+
+// === PAGAMENTO PARCIAL ===
+var _mesaParcial = null;      // mesa em pagamento parcial
+var _itensParcial = [];       // items com quantidades seleccionadas
+var _itensMesaTotal = [];     // items originais da mesa
+
+function abrirPagamentoParcial(mesaId){
+  var m = mesasFB.find(function(x){return x.id===mesaId;});
+  if(!m) return;
+
+  // Se mesa em_servico, pedir confirmacao
+  if((m.estado||'em_servico') === 'em_servico'){
+    if(!confirm('Esta mesa nao foi fechada pelo empregado. Confirmas o pagamento?')) return;
+  }
+
+  var items = [];
+  try{ items = typeof m.items==='string' ? JSON.parse(m.items) : (m.items||[]); }catch(e){}
+
+  if(!items.length){
+    alert('Sem itens nesta mesa. Cobra manualmente pelo POS.');
+    return;
+  }
+
+  // Agregar items por nome
+  var agregados = {};
+  items.forEach(function(it){
+    var nome = it.nome||it.n||'?';
+    var preco = parseFloat(it.preco||it.p||0);
+    var qtd = parseInt(it.qtd||it.q||1);
+    var k = nome+'|'+preco;
+    if(!agregados[k]) agregados[k] = {nome:nome, preco:preco, qtdTotal:0};
+    agregados[k].qtdTotal += qtd;
+  });
+
+  _mesaParcial = m;
+  _itensMesaTotal = Object.values(agregados);
+  // Iniciar com todas as quantidades seleccionadas
+  _itensParcial = _itensMesaTotal.map(function(it){
+    return {nome:it.nome, preco:it.preco, qtdTotal:it.qtdTotal, qtdSel:it.qtdTotal};
+  });
+
+  renderModalParcial();
+  document.getElementById('modal-parcial').classList.add('on');
+}
+
+function renderModalParcial(){
+  if(!_mesaParcial) return;
+  document.getElementById('mp-titulo').textContent = _mesaParcial.nome||_mesaParcial.id;
+  var lista = document.getElementById('mp-lista');
+  lista.innerHTML = _itensParcial.map(function(it,i){
+    var subtotal = it.preco * it.qtdSel;
+    return '<div class="mp-item">'+
+      '<div class="mp-item-nome">'+escH(it.nome)+'<br><span class="mp-item-preco">'+EUR(it.preco)+' un.</span></div>'+
+      '<button class="mp-qtd-btn" onclick="mpQtd('+i+',-1)">&#8722;</button>'+
+      '<span class="mp-qtd-val">'+it.qtdSel+'</span>'+
+      '<button class="mp-qtd-btn" onclick="mpQtd('+i+',1)">+</button>'+
+      '<span style="font-size:13px;color:#EF9F27;font-weight:700;min-width:60px;text-align:right;">'+EUR(subtotal)+'</span>'+
+    '</div>';
+  }).join('');
+  var totalSel = _itensParcial.reduce(function(s,it){return s+it.preco*it.qtdSel;},0);
+  document.getElementById('mp-total-val').textContent = EUR(totalSel);
+}
+
+function mpQtd(idx, delta){
+  if(!_itensParcial[idx]) return;
+  var it = _itensParcial[idx];
+  it.qtdSel = Math.max(0, Math.min(it.qtdTotal, it.qtdSel + delta));
+  renderModalParcial();
+}
+
+function fecharModalParcial(){
+  document.getElementById('modal-parcial').classList.remove('on');
+  _mesaParcial = null;
+  _itensParcial = [];
+}
+
+function confirmarParcial(){
+  if(!_mesaParcial) return;
+  var itensCobrar = _itensParcial.filter(function(it){return it.qtdSel > 0;});
+  if(!itensCobrar.length){ alert('Selecciona pelo menos um artigo.'); return; }
+
+  var totalCobrar = itensCobrar.reduce(function(s,it){return s+it.preco*it.qtdSel;},0);
+  var itensSaldo = _itensParcial.filter(function(it){return it.qtdSel < it.qtdTotal;})
+    .map(function(it){return {n:it.nome, p:it.preco, q:it.qtdTotal-it.qtdSel};});
+
+  var mesaId = _mesaParcial.id;
+  var mesaNome = _mesaParcial.nome||_mesaParcial.id;
+  var mesaFunc = _mesaParcial.funcionario||_mesaParcial.func||'';
+
+  // Carregar artigos no order para cobrar
+  order = [];
+  uidCnt = 1;
+  itensCobrar.forEach(function(it){
+    order.push({uid:uidCnt++, id:uidCnt, n:it.nome, p:it.preco, q:it.qtdSel});
+  });
+
+  window._mesaAFechar = _mesaParcial;
+  window._itensSaldo = itensSaldo;
+  window._totalSaldo = _itensParcial.reduce(function(s,it){return s+it.preco*(it.qtdTotal-it.qtdSel);},0);
+
+  fecharModalParcial();
+  renderOrder();
+  switchView('pos');
+  setTimeout(function(){
+    openPayModal();
+    setDocType('recibo');
+  }, 300);
 }
 
 var _mesaParaCobrar = null;
@@ -2272,11 +2418,22 @@ function confirmPay(){
       return Object.values(grouped).concat(individual);
     })(),total:tot,met:payMethod,troco,nif,nifNome,fatCat:'Alimentação / Donativo / Apoio',split:(splitPessoas>1?splitPessoas:0),user:(CU?CU.nome:'—')||"",detail:detailItems,docType:docType};
   sales.push(sale);curSale=sale;saveSales();
-  // Fechar mesa no Firebase se veio de uma mesa
+  // Fechar ou actualizar mesa no Firebase
   if(window._mesaAFechar && typeof AndroidFB !== 'undefined'){
     try{
-      AndroidFB.fecharMesa(window._mesaAFechar.id, String(tot));
+      var itensSaldo = window._itensSaldo||[];
+      var totalSaldo = window._totalSaldo||0;
+      if(itensSaldo.length > 0 && totalSaldo > 0){
+        // Pagamento parcial - actualizar mesa com saldo restante
+        var itemsSaldoStr = JSON.stringify(itensSaldo.map(function(it){return {n:it.n||it.nome,p:it.p||it.preco,q:it.q||it.qtd};}));
+        AndroidFB.actualizarMesa(window._mesaAFechar.id, itemsSaldoStr, String(totalSaldo));
+      } else {
+        // Pagamento total - fechar mesa
+        AndroidFB.fecharMesa(window._mesaAFechar.id, String(tot));
+      }
       window._mesaAFechar = null;
+      window._itensSaldo = null;
+      window._totalSaldo = 0;
     }catch(ex){ console.error('fecharMesa:', ex); }
   }
   closePayModal();
@@ -2318,11 +2475,20 @@ function confirmPaySemImpressao(){
     })(),total:tot,met:payMethod,troco,nif,nifNome,fatCat:"Alimentação / Donativo / Apoio",
     split:(splitPessoas>1?splitPessoas:0),user:(CU?CU.nome:"—")||"",detail:detailItems,docType:docType};
   sales.push(sale);curSale=sale;saveSales();
-  // Fechar mesa no Firebase se veio de uma mesa
+  // Fechar ou actualizar mesa no Firebase
   if(window._mesaAFechar && typeof AndroidFB !== 'undefined'){
     try{
-      AndroidFB.fecharMesa(window._mesaAFechar.id, String(tot));
+      var itensSaldo2 = window._itensSaldo||[];
+      var totalSaldo2 = window._totalSaldo||0;
+      if(itensSaldo2.length > 0 && totalSaldo2 > 0){
+        var itemsSaldoStr2 = JSON.stringify(itensSaldo2.map(function(it){return {n:it.n||it.nome,p:it.p||it.preco,q:it.q||it.qtd};}));
+        AndroidFB.actualizarMesa(window._mesaAFechar.id, itemsSaldoStr2, String(totalSaldo2));
+      } else {
+        AndroidFB.fecharMesa(window._mesaAFechar.id, String(tot));
+      }
       window._mesaAFechar = null;
+      window._itensSaldo = null;
+      window._totalSaldo = 0;
     }catch(ex){ console.error('fecharMesa:', ex); }
   }
   closePayModal();
@@ -8869,6 +9035,22 @@ function drawQR(canvas, text, size){
 }
 
 </script>
+  <!-- Modal pagamento parcial -->
+  <div id="modal-parcial">
+    <div class="mp-box">
+      <div class="mp-titulo" id="mp-titulo">Mesa</div>
+      <div class="mp-lista" id="mp-lista"></div>
+      <div class="mp-total">
+        <span>A cobrar</span>
+        <span id="mp-total-val">0,00 EUR</span>
+      </div>
+      <div class="mp-btns">
+        <button class="mp-btn-cancel" onclick="fecharModalParcial()">Cancelar</button>
+        <button class="mp-btn-cobrar" onclick="confirmarParcial()">Cobrar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal confirmacao artigos mesa -->
   <div id="modal-artigos-mesa">
     <div class="mam-centrar">
