@@ -1786,7 +1786,8 @@ function _abrirModalComItems(m, items){
   });
 
   renderModalParcial();
-  document.getElementById('modal-parcial').classList.add('on');
+  var mp = document.getElementById('modal-parcial');
+  mp.style.display = 'flex';
 }
 
 function renderModalParcial(){
@@ -1815,7 +1816,7 @@ function mpQtd(idx, delta){
 }
 
 function fecharModalParcial(){
-  document.getElementById('modal-parcial').classList.remove('on');
+  document.getElementById('modal-parcial').style.display = 'none';
   _mesaParcial = null;
   _itensParcial = [];
 }
@@ -1894,16 +1895,16 @@ function cobrarMesa(mesaId){
     }
   });
   document.getElementById('mam-total').textContent = EUR(total);
-  document.getElementById('modal-artigos-mesa').classList.add('on');
+  document.getElementById('modal-artigos-mesa').style.display = 'block';
 }
 
 function fecharModalArtigos(){
-  document.getElementById('modal-artigos-mesa').classList.remove('on');
+  document.getElementById('modal-artigos-mesa').style.display = 'none';
   _mesaParaCobrar = null;
 }
 
 function confirmarCobrarMesa(){
-  document.getElementById('modal-artigos-mesa').classList.remove('on');
+  document.getElementById('modal-artigos-mesa').style.display = 'none';
   if(!_mesaParaCobrar) return;
   var items = _mesaParaCobrar.items;
   mesaSelFB = _mesaParaCobrar.mesa;
