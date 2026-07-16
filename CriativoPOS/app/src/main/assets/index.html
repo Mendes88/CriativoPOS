@@ -2463,6 +2463,11 @@ function confirmPay(){
       window._mesaAFechar = null;
       window._itensSaldo = null;
       window._totalSaldo = 0;
+      // Voltar aos badges após fechar/actualizar mesa
+      setTimeout(function(){
+        _funcSeleccionado = null;
+        renderMesasFB();
+      }, 800);
     }catch(ex){ console.error('fecharMesa:', ex); }
   }
   closePayModal();
@@ -2518,6 +2523,10 @@ function confirmPaySemImpressao(){
       window._mesaAFechar = null;
       window._itensSaldo = null;
       window._totalSaldo = 0;
+      setTimeout(function(){
+        _funcSeleccionado = null;
+        renderMesasFB();
+      }, 800);
     }catch(ex){ console.error('fecharMesa:', ex); }
   }
   closePayModal();
