@@ -1796,11 +1796,15 @@ function renderModalParcial(){
   var lista = document.getElementById('mp-lista');
   lista.innerHTML = _itensParcial.map(function(it,i){
     var subtotal = it.preco * it.qtdSel;
-    return '<div class="mp-item">'+
-      '<div class="mp-item-nome">'+escH(it.nome)+'<br><span class="mp-item-preco">'+EUR(it.preco)+' un.</span></div>'+
-      '<button class="mp-qtd-btn" onclick="mpQtd('+i+',-1)">&#8722;</button>'+
-      '<span class="mp-qtd-val">'+it.qtdSel+'</span>'+
-      '<button class="mp-qtd-btn" onclick="mpQtd('+i+',1)">+</button>'+
+    var SROW='display:-webkit-box;display:flex;-webkit-box-align:center;align-items:center;gap:8px;padding:9px 0;border-bottom:.5px solid #f0f0f0;';
+    var SNOME='-webkit-box-flex:1;flex:1;font-size:14px;color:#111;';
+    var SBTN='width:32px;height:32px;border:none;border-radius:6px;background:#f0f0f0;color:#111;font-size:18px;font-weight:700;cursor:pointer;line-height:1;';
+    var SVAL='font-size:14px;font-weight:700;color:#111;min-width:22px;text-align:center;';
+    return '<div style="'+SROW+'">'+
+      '<div style="'+SNOME+'">'+escH(it.nome)+'<br><span style="font-size:11px;color:#888;">'+EUR(it.preco)+' un.</span></div>'+
+      '<button style="'+SBTN+'" onclick="mpQtd('+i+',-1)">&#8722;</button>'+
+      '<span style="'+SVAL+'">'+it.qtdSel+'</span>'+
+      '<button style="'+SBTN+'" onclick="mpQtd('+i+',1)">+</button>'+
       '<span style="font-size:13px;color:#EF9F27;font-weight:700;min-width:60px;text-align:right;">'+EUR(subtotal)+'</span>'+
     '</div>';
   }).join('');
@@ -9074,17 +9078,17 @@ function drawQR(canvas, text, size){
 
 </script>
   <!-- Modal pagamento parcial -->
-  <div id="modal-parcial" style="display:none;">
-    <div class="mp-box">
-      <div class="mp-titulo" id="mp-titulo">Mesa</div>
-      <div class="mp-lista" id="mp-lista"></div>
-      <div class="mp-total">
+  <div id="modal-parcial" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;background:rgba(0,0,0,0.78);z-index:99995;">
+    <div style="position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);width:92%;max-width:480px;background:#fff;border-radius:16px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.35);display:-webkit-box;display:flex;-webkit-box-orient:vertical;-webkit-box-direction:normal;flex-direction:column;gap:12px;max-height:88vh;">
+      <div id="mp-titulo" style="font-size:19px;font-weight:800;color:#111;border-bottom:1px solid #eee;padding-bottom:10px;">Mesa</div>
+      <div id="mp-lista" style="overflow-y:auto;max-height:45vh;display:-webkit-box;display:flex;-webkit-box-orient:vertical;-webkit-box-direction:normal;flex-direction:column;gap:2px;"></div>
+      <div style="display:-webkit-box;display:flex;-webkit-box-pack:justify;justify-content:space-between;font-size:18px;font-weight:800;color:#111;border-top:2px solid #EF9F27;padding-top:12px;">
         <span>A cobrar</span>
         <span id="mp-total-val">0,00 EUR</span>
       </div>
-      <div class="mp-btns">
-        <button class="mp-btn-cancel" onclick="fecharModalParcial()">Cancelar</button>
-        <button class="mp-btn-cobrar" onclick="confirmarParcial()">Cobrar</button>
+      <div style="display:-webkit-box;display:flex;gap:10px;">
+        <button onclick="fecharModalParcial()" style="-webkit-box-flex:1;flex:1;padding:14px;background:#f5f5f5;border:none;border-radius:10px;color:#555;font-size:14px;font-weight:600;cursor:pointer;font-family:system-ui;">Cancelar</button>
+        <button onclick="confirmarParcial()" style="-webkit-box-flex:2;flex:2;padding:14px;background:#EF9F27;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:system-ui;">Cobrar</button>
       </div>
     </div>
   </div>
