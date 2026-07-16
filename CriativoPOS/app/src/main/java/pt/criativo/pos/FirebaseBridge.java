@@ -3,6 +3,7 @@ package pt.criativo.pos;
 import android.app.Activity;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.content.SharedPreferences;
 import android.webkit.WebView;
 
 import com.google.firebase.Timestamp;
@@ -809,6 +810,25 @@ public class FirebaseBridge {
                 }
             })
             .addOnFailureListener(e -> Log.e(TAG, "buscarPedidosMesa fail: " + e.getMessage()));
+    }
+
+    private static final String PREFS = "CriativoPOSCaixa";
+
+    @JavascriptInterface
+    public void gravarPreferencia(String chave, String valor) {
+        try {
+            SharedPreferences.Editor ed = activity.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE).edit();
+            if (valor == null || valor.isEmpty()) ed.remove(chave);
+            else ed.putString(chave, valor);
+            ed.apply();
+        } catch (Exception e) { Log.e("CriativoFB", "gravarPreferencia: " + e.getMessage()); }
+    }
+
+    @JavascriptInterface
+    public String lerPreferencia(String chave) {
+        try {
+            return activity.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE).getString(chave, "");
+        } catch (Exception e) { return ""; }
     }
 
     public void destroy() {
