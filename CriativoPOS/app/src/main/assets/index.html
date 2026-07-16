@@ -1681,7 +1681,7 @@ function renderMesasFuncSeleccionado(grid){
       '<div class="mesa-card-total">'+EUR(m.total||0)+'</div>'+
       '<div class="mesa-card-tempo"><span>&#128336; '+tempo+'</span><span>'+nItens+' itens</span></div>'+
       aviso+
-      '<button onclick="abrirPagamentoParcial(''+escJs(m.id)+'')" style="margin-top:12px;padding:12px;width:100%;border:none;border-radius:8px;background:'+cor+';color:#fff;font-size:15px;font-weight:700;cursor:pointer;">'+
+      '<button onclick="abrirPagamentoParcial(\'' + escJs(m.id) + '\')" style="margin-top:12px;padding:12px;width:100%;border:none;border-radius:8px;background:'+cor+';color:#fff;font-size:15px;font-weight:700;cursor:pointer;">'+
         (nItens>0?'&#128179; Cobrar':'&#9888; Sem itens')+
       '</button>'+
     '</div>';
