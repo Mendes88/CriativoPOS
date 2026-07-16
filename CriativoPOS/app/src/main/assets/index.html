@@ -131,7 +131,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
   .mesas-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .mesas-tit{font-size:18px;font-weight:700;color:#111111;}
   .mesas-estado{font-size:11px;color:#777777;background:#ffffff;padding:3px 10px;border-radius:10px;}
-  .mesas-grid{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:10px;}
+  .mesas-grid{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:10px;padding-bottom:20px;}
   .mesa-card{background:#ffffff !important;border-radius:12px;border:2px solid #EF9F27;padding:14px 12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.4);}
   .mesa-card.aberta{border-color:#EF9F27;}
   .mesa-card:active{transform:scale(.96);}
@@ -832,7 +832,7 @@ window.addEventListener('unhandledrejection', function(e){
   </div>
 
   <!-- GESTÃO -->
-  <div id="vmesas" style="background:#f8f8f8;height:100%;padding:12px;box-sizing:border-box;color:#111111;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div id="vmesas" style="background:#f8f8f8;position:absolute;top:0;left:0;right:0;bottom:0;padding:12px;box-sizing:border-box;color:#111111;overflow-y:auto;-webkit-overflow-scrolling:touch;">
     <div class="mesas-hdr">
       <span class="mesas-tit">🍽 Mesas</span>
       <span class="mesas-estado" id="mesas-estado">A ligar...</span>
@@ -1117,6 +1117,16 @@ window.addEventListener('unhandledrejection', function(e){
             </label>
           </div>
           <div style="font-size:10px;color:#c62828;">&#9888;&#65039; A importação substitui os dados actuais desta máquina.</div>
+        </div>
+
+        <div style="background:#fff0f0;border-radius:8px;padding:11px 13px;display:flex;flex-direction:column;gap:8px;border:1px solid #ffcdd2;">
+          <div style="font-size:11px;font-weight:600;color:#c62828;">&#128465; Limpeza de Dados Firebase</div>
+          <div style="font-size:11px;color:#888888;">Elimina pedidos e mesas da base de dados. Use apenas entre eventos.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" onclick="confirmarLimpeza('turno')" style="padding:8px 14px;background:#e65100;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;">&#128465; Limpar Turno</button>
+            <button type="button" onclick="confirmarLimpeza('tudo')" style="padding:8px 14px;background:#c62828;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;">&#9888; Reset Completo</button>
+          </div>
+          <div style="font-size:10px;color:#c62828;">Limpar Turno: remove pedidos e mesas fechadas. Reset Completo: remove tudo incluindo mesas abertas.</div>
         </div>
       </div>
 
