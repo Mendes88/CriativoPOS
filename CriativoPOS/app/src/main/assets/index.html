@@ -1368,7 +1368,15 @@ let modMode=null,modData={},detailItems=true,uidCnt=1,docType='talao',orderNum=1
 let config={appHeight:0,defaultDocType:'talao',postoName:'',restName:'Restaurante',nif:'123 456 789',phone:'232 123 456',address:'Viseu, Portugal',footerMsg:'Obrigado pela visita!',footerMsg2:'',logo:null,timeout:15,printerType:'bluetooth',printerIP:'192.168.1.100',printerPort:'9100',printerWidth:80,printerCols:46,mbwayPhone:''};
 let btDevice=null,btChar=null;
 let relTab="resumo",artSort="revenue",selDate=today(),dateMode="today",customFrom="",customTo="";
-let fundo=50,closings=[],curSale=null;
+let closings=[],curSale=null;
+// Restaurar fundo de maneio persistido
+let fundo = 50;
+try{
+  var _f = null;
+  if(typeof AndroidFB !== 'undefined') _f = AndroidFB.lerPreferencia('fundo_maneio');
+  if(!_f) _f = localStorage.getItem('fundo_maneio');
+  if(_f && parseFloat(_f) >= 0) fundo = parseFloat(_f);
+}catch(ex){}
 let nid=100;
 let sales=[];
 let favs=[];
@@ -3130,7 +3138,12 @@ function saveModal(){
     // Handled by pendingSave() directly
     closeModal(); renderOrder(); return;
   }
-  else if(modMode==="fundo"){const v=parseFloat(v1);if(isNaN(v)||v<0)return;fundo=v;renderCaixa();}
+  else if(modMode==="fundo"){const v=parseFloat(v1);if(isNaN(v)||v<0)return;fundo=v;
+    try{
+      if(typeof AndroidFB !== 'undefined') AndroidFB.gravarPreferencia('fundo_maneio', String(v));
+      localStorage.setItem('fundo_maneio', String(v));
+    }catch(ex){}
+    renderCaixa();}
   else if(modMode==="addUser"){if(!v1){alert("Introduz um nome.");return;}if(!v2||v2.length!==4||!/^\d{4}$/.test(v2)){alert("PIN deve ter 4 dígitos.");return;}users.push({id:nuid++,nome:v1,un:v1.split(" ")[0].toLowerCase(),pin:v2,role:v3||"operador",color:modData.color||COLORS[0]});renderUtil();renderLogin();}
   else if(modMode==="editUser"){const u=users.find(x=>x.id===modData.uid);if(!u)return;if(!v1){alert("Introduz um nome.");return;}if(v2&&(v2.length!==4||!/^\d{4}$/.test(v2))){alert("PIN deve ter 4 dígitos ou deixa vazio.");return;}const admCnt=users.filter(x=>x.role==="admin").length;if(u.id===(CU?CU.id:0)&&u.role==="admin"&&v3!=="admin"&&admCnt<=1){alert("Não podes remover o único administrador!");return;}u.nome=v1;if(v2)u.pin=v2;u.role=v3;u.color=modData.color||u.color;if(CU&&CU.id===u.id){CU={...u};updateUserBox();}renderUtil();renderLogin();}
   closeModal();
