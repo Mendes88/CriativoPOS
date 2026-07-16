@@ -4860,7 +4860,7 @@ function buildRelatorioESC(){
   esc.row('TOTAL',EURESC(tV),true);
   esc.sep();
   esc.bold(1).textLine('TOP ARTIGOS').bold(0);
-  arts.slice(0,15).forEach(function(a,i){
+  arts.forEach(function(a,i){
     esc.row((i+1)+'. '+escNorm(a.n).substring(0,esc.cols-12)+' ('+a.qty+'x)',EURESC(a.rev));
   });
   esc.sep();
