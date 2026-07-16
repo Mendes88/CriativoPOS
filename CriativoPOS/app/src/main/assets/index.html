@@ -131,8 +131,8 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
   .mesas-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .mesas-tit{font-size:18px;font-weight:700;color:#111111;}
   .mesas-estado{font-size:11px;color:#777777;background:#ffffff;padding:3px 10px;border-radius:10px;}
-  .mesas-grid{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:10px;padding-bottom:20px;}
-  .mesa-card{background:#ffffff !important;border-radius:12px;border:2px solid #EF9F27;padding:14px 12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+  .mesas-grid{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:10px;padding-bottom:20px;width:100%;}
+  .mesa-card{background:#ffffff !important;border-radius:12px;border:2px solid #EF9F27;padding:14px 12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.4);min-width:0;}
   .mesa-card.aberta{border-color:#EF9F27;}
   .mesa-card:active{transform:scale(.96);}
   .mesa-card-nome{font-size:22px;font-weight:800;color:#111111;letter-spacing:.3px;}
@@ -832,7 +832,7 @@ window.addEventListener('unhandledrejection', function(e){
   </div>
 
   <!-- GESTÃO -->
-  <div id="vmesas" style="background:#f8f8f8;position:absolute;top:0;left:0;right:0;bottom:0;padding:12px;box-sizing:border-box;color:#111111;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div id="vmesas" style="background:#f8f8f8;padding:12px;box-sizing:border-box;color:#111111;">
     <div class="mesas-hdr">
       <span class="mesas-tit">🍽 Mesas</span>
       <span class="mesas-estado" id="mesas-estado">A ligar...</span>
@@ -2066,8 +2066,8 @@ function switchView(v){
       view.style.display   = "flex";
       view.style.overflowY = "hidden";
     } else if(v==="mesas"){
-      view.style.display       = "flex";
-      view.style.flexDirection = "column";
+      view.style.display       = "block";
+      view.style.overflowY     = "auto";
     } else {
       view.style.display   = "block";
     }
