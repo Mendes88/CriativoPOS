@@ -831,6 +831,63 @@ public class FirebaseBridge {
         } catch (Exception e) { return ""; }
     }
 
+    /** Limpa pedidos e mesas fechadas do turno */
+    @JavascriptInterface
+    public void limparTurno() {
+        // Apagar pedidos com estado tratado/bloqueado
+        db.collection("pedidos")
+            .whereIn("estado", java.util.Arrays.asList("tratado", "bloqueado"))
+            .get()
+            .addOnSuccessListener(snaps -> {
+                com.google.firebase.firestore.WriteBatch batch = db.batch();
+                for (com.google.firebase.firestore.DocumentSnapshot doc : snaps.getDocuments()) {
+                    batch.delete(doc.getReference());
+                }
+                // Apagar mesas fechadas
+                db.collection("mesas")
+                    .whereEqualTo("estado", "fechado")
+                    .get()
+                    .addOnSuccessListener(snaps2 -> {
+                        for (com.google.firebase.firestore.DocumentSnapshot doc : snaps2.getDocuments()) {
+                            batch.delete(doc.getReference());
+                        }
+                        batch.commit()
+                            .addOnSuccessListener(v -> emitir("fbLimpezaConcluida", "turno"))
+                            .addOnFailureListener(e -> emitir("fbLimpezaErro", e.getMessage()));
+                    });
+            })
+            .addOnFailureListener(e -> emitir("fbLimpezaErro", e.getMessage()));
+    }
+
+    /** Limpa todos os pedidos e mesas */
+    @JavascriptInterface
+    public void limparTodosDados() {
+        com.google.firebase.firestore.WriteBatch batch = db.batch();
+        // Apagar pedidos
+        db.collection("pedidos").get()
+            .addOnSuccessListener(snaps -> {
+                for (com.google.firebase.firestore.DocumentSnapshot doc : snaps.getDocuments()) {
+                    batch.delete(doc.getReference());
+                }
+                // Apagar mesas
+                db.collection("mesas").get()
+                    .addOnSuccessListener(snaps2 -> {
+                        for (com.google.firebase.firestore.DocumentSnapshot doc : snaps2.getDocuments()) {
+                            batch.delete(doc.getReference());
+                        }
+                        // Resetar contador
+                        java.util.Map<String, Object> reset = new java.util.HashMap<>();
+                        reset.put("total", 0);
+                        reset.put("fecho_em", null);
+                        batch.set(db.collection("contadores").document("turno_actual"), reset);
+                        batch.commit()
+                            .addOnSuccessListener(v -> emitir("fbLimpezaConcluida", "tudo"))
+                            .addOnFailureListener(e -> emitir("fbLimpezaErro", e.getMessage()));
+                    });
+            })
+            .addOnFailureListener(e -> emitir("fbLimpezaErro", e.getMessage()));
+    }
+
     public void destroy() {
         pararKDS();
         pararListenerMesas();
