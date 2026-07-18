@@ -888,6 +888,59 @@ public class FirebaseBridge {
             .addOnFailureListener(e -> emitir("fbLimpezaErro", e.getMessage()));
     }
 
+    /** Verifica se ha pedidos em curso (em_preparacao ou pronto) numa mesa */
+    @JavascriptInterface
+    public void verificarPedidosEmCurso(String mesaId) {
+        db.collection("pedidos")
+            .whereEqualTo("mesaId", mesaId)
+            .get()
+            .addOnSuccessListener(snaps -> {
+                try {
+                    int emCurso = 0;
+                    for (com.google.firebase.firestore.DocumentSnapshot doc : snaps.getDocuments()) {
+                        java.util.Map<String, Object> data = doc.getData();
+                        if (data == null) continue;
+                        String estado = String.valueOf(data.getOrDefault("estado", "pendente"));
+                        String estadoCoz = String.valueOf(data.getOrDefault("estado_cozinha", "pendente"));
+                        String estadoBar = String.valueOf(data.getOrDefault("estado_bar", "pendente"));
+                        if ("em_preparacao".equals(estado) || "pronto".equals(estado) ||
+                            "em_preparacao".equals(estadoCoz) || "pronto".equals(estadoCoz) ||
+                            "em_preparacao".equals(estadoBar) || "pronto".equals(estadoBar)) {
+                            emCurso++;
+                        }
+                    }
+                    org.json.JSONObject obj = new org.json.JSONObject();
+                    obj.put("emCurso", emCurso > 0);
+                    obj.put("count", emCurso);
+                    emitir("fbPedidosEmCurso", obj.toString());
+                } catch (Exception e) {
+                    Log.e("CriativoFB", "verificarPedidosEmCurso: " + e.getMessage());
+                }
+            })
+            .addOnFailureListener(e -> Log.e("CriativoFB", "verificarPedidosEmCurso: " + e.getMessage()));
+    }
+
+    /** Elimina mesa e todos os seus pedidos */
+    @JavascriptInterface
+    public void eliminarMesa(String mesaId) {
+        com.google.firebase.firestore.WriteBatch batch = db.batch();
+        // Apagar pedidos da mesa
+        db.collection("pedidos")
+            .whereEqualTo("mesaId", mesaId)
+            .get()
+            .addOnSuccessListener(snaps -> {
+                for (com.google.firebase.firestore.DocumentSnapshot doc : snaps.getDocuments()) {
+                    batch.delete(doc.getReference());
+                }
+                // Apagar documento da mesa
+                batch.delete(db.collection("mesas").document(mesaId));
+                batch.commit()
+                    .addOnSuccessListener(v -> emitir("fbMesaEliminada", mesaId))
+                    .addOnFailureListener(e -> emitir("fbErro", "eliminarMesa: " + e.getMessage()));
+            })
+            .addOnFailureListener(e -> emitir("fbErro", "eliminarMesa: " + e.getMessage()));
+    }
+
     public void destroy() {
         pararKDS();
         pararListenerMesas();
