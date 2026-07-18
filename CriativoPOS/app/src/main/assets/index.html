@@ -1705,9 +1705,12 @@ function renderMesasFuncSeleccionado(grid){
       '<div class="mesa-card-total">'+EUR(m.total||0)+'</div>'+
       '<div class="mesa-card-tempo"><span>&#128336; '+tempo+'</span><span>'+nItens+' itens</span></div>'+
       aviso+
-      '<button onclick="abrirPagamentoParcial(\'' + escJs(m.id) + '\')" style="margin-top:12px;padding:12px;width:100%;border:none;border-radius:8px;background:'+cor+';color:#fff;font-size:15px;font-weight:700;cursor:pointer;">'+
-        (nItens>0?'&#128179; Cobrar':(parseFloat(m.total||0)>0?'&#128179; Cobrar':'&#9888; Sem itens'))+
-      '</button>'+
+      '<div style="display:flex;gap:8px;margin-top:12px;">'+
+        '<button onclick="abrirPagamentoParcial(\'' + escJs(m.id) + '\')" style="flex:3;padding:12px;border:none;border-radius:8px;background:'+cor+';color:#fff;font-size:15px;font-weight:700;cursor:pointer;">'+
+          (nItens>0?'&#128179; Cobrar':(parseFloat(m.total||0)>0?'&#128179; Cobrar':'&#9888; Sem itens'))+
+        '</button>'+
+        '<button onclick="iniciarEliminarMesa(\'' + escJs(m.id) + '\', \'' + escJs(m.nome||m.id) + '\')" style="flex:1;padding:12px;border:none;border-radius:8px;background:#c62828;color:#fff;font-size:15px;font-weight:700;cursor:pointer;" title="Eliminar mesa">&#128465;</button>'+
+      '</div>'+
     '</div>';
   }).join('');
 }
@@ -1763,6 +1766,72 @@ function abrirModalMesaFB(mesaId){
   // Abrir modal de pagamento directamente
   setTimeout(function(){ openPayModal(); }, 300);
 }
+
+// === ELIMINAR MESA ===
+var _mesaParaEliminar = null;
+var _eliminarFase = 0; // 0=inicial, 1=primeira confirmacao, 2=segunda confirmacao
+
+function iniciarEliminarMesa(mesaId, mesaNome){
+  _mesaParaEliminar = {id: mesaId, nome: mesaNome};
+  _eliminarFase = 1;
+  document.getElementById('elim-msg').textContent = 'Tens a certeza que queres eliminar a mesa "' + mesaNome + '"?';
+  document.getElementById('elim-aviso').style.display = 'none';
+  document.getElementById('btn-elim-conf').textContent = 'Sim, eliminar';
+  document.getElementById('btn-elim-conf').onclick = confirmarEliminar1;
+  document.getElementById('modal-eliminar').style.display = 'block';
+}
+
+function confirmarEliminar1(){
+  // Verificar se ha pedidos em curso no KDS
+  if(typeof AndroidFB !== 'undefined'){
+    try{ AndroidFB.verificarPedidosEmCurso(_mesaParaEliminar.id); }catch(e){ confirmarEliminar2(); }
+  } else {
+    confirmarEliminar2();
+  }
+}
+
+window.addEventListener('fbPedidosEmCurso', function(e){
+  try{
+    var data = JSON.parse(e.detail||'{}');
+    if(data.emCurso){
+      // Ha pedidos em preparacao ou prontos
+      var aviso = document.getElementById('elim-aviso');
+      aviso.textContent = '&#9888; Ha ' + data.count + ' pedido(s) em preparacao ou prontos no KDS. Se eliminares, a cozinha perde essa informacao.';
+      aviso.style.display = 'block';
+      document.getElementById('elim-msg').textContent = 'ATENCAO: Esta mesa tem pedidos em curso!';
+      document.getElementById('btn-elim-conf').textContent = 'Eliminar mesmo assim';
+      document.getElementById('btn-elim-conf').onclick = confirmarEliminar2;
+    } else {
+      confirmarEliminar2();
+    }
+  }catch(ex){ confirmarEliminar2(); }
+});
+
+function confirmarEliminar2(){
+  // Segunda confirmacao
+  document.getElementById('elim-msg').textContent = 'Esta accao e irreversivel. A mesa e todos os seus pedidos serao eliminados.';
+  document.getElementById('elim-aviso').style.display = 'none';
+  document.getElementById('btn-elim-conf').textContent = '&#128465; Eliminar definitivamente';
+  document.getElementById('btn-elim-conf').onclick = executarEliminarMesa;
+}
+
+function executarEliminarMesa(){
+  if(!_mesaParaEliminar) return;
+  document.getElementById('modal-eliminar').style.display = 'none';
+  if(typeof AndroidFB !== 'undefined'){
+    try{
+      AndroidFB.eliminarMesa(_mesaParaEliminar.id);
+      showToast('Mesa ' + _mesaParaEliminar.nome + ' eliminada');
+    }catch(e){ showToast('Erro ao eliminar: ' + e.message); }
+  }
+  _mesaParaEliminar = null;
+}
+
+window.addEventListener('fbMesaEliminada', function(e){
+  _funcSeleccionado = null;
+  renderMesasFB();
+  showToast('&#10003; Mesa eliminada com sucesso');
+});
 
 // === PAGAMENTO PARCIAL ===
 var _mesaParcial = null;      // mesa em pagamento parcial
@@ -9141,6 +9210,19 @@ function drawQR(canvas, text, size){
 }
 
 </script>
+  <!-- Modal eliminar mesa -->
+  <div id="modal-eliminar" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:99996;">
+    <div style="position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);width:92%;max-width:400px;background:#fff;border-radius:16px;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,.4);">
+      <div style="font-size:18px;font-weight:800;color:#c62828;margin-bottom:6px;">&#128465; Eliminar Mesa</div>
+      <div id="elim-msg" style="font-size:14px;color:#555;margin-bottom:8px;"></div>
+      <div id="elim-aviso" style="display:none;font-size:12px;color:#c62828;background:#fff0f0;border-radius:8px;padding:10px;margin-bottom:12px;"></div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('modal-eliminar').style.display='none'" style="flex:1;padding:13px;background:#f5f5f5;border:none;border-radius:10px;color:#555;font-size:14px;font-weight:600;cursor:pointer;">Cancelar</button>
+        <button id="btn-elim-conf" style="flex:1;padding:13px;background:#c62828;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal pagamento parcial -->
   <div id="modal-parcial" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;background:rgba(0,0,0,0.78);z-index:99995;">
     <div style="position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);width:92%;max-width:480px;background:#fff;border-radius:16px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.35);display:-webkit-box;display:flex;-webkit-box-orient:vertical;-webkit-box-direction:normal;flex-direction:column;gap:12px;max-height:88vh;">
