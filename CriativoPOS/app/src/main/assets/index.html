@@ -1627,6 +1627,17 @@ function renderMesasFB(){
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaaaaa;font-size:13px;">Sem mesas abertas</div>';
     return;
   }
+  // Para mesas sem items mas com total, ir buscar automaticamente
+  if(typeof AndroidFB !== 'undefined'){
+    mesasFB.forEach(function(m){
+      var items = [];
+      try{ items = typeof m.items==='string' ? JSON.parse(m.items) : (m.items||[]); }catch(e){}
+      var nItens = items.filter(function(it){return (it.nome||it.n)&&parseInt(it.qtd||it.q||1)>0;}).length;
+      if(nItens === 0 && parseFloat(m.total||0) > 0){
+        try{ AndroidFB.buscarPedidosMesa(m.id); }catch(ex){}
+      }
+    });
+  }
   if(_funcSeleccionado){ renderMesasFuncSeleccionado(grid); }
   else { renderBadgesFuncionarios(grid); }
 }
@@ -1682,17 +1693,20 @@ function renderMesasFuncSeleccionado(grid){
     var items=[];
     try{ items=typeof m.items==='string'?JSON.parse(m.items):(m.items||[]);}catch(e){}
     var nItens=items.reduce(function(s,i){return s+parseInt(i.qtd||i.q||1);},0);
+    // Se sem items mas com total, assinalar
+    var semItems = nItens===0 && parseFloat(m.total||0)>0;
     var tempo=mesaTempoStr(m.enviado_caixa_em||m.abertoEm);
     var estado=m.estado||'em_servico';
     var cor=estado==='aguarda_pagamento'?'#2e7d32':'#EF9F27';
     var aviso=estado==='em_servico'?'<div style="font-size:11px;color:#e65100;margin-top:4px;">&#9888; Mesa em servico</div>':'';
+    if(semItems) aviso += '<div style="font-size:11px;color:#1565c0;margin-top:2px;">&#8635; A carregar artigos...</div>';
     return '<div class="mesa-card aberta" style="border-color:'+cor+'">'+
       '<div class="mesa-card-nome">'+escH(m.nome||m.id)+'</div>'+
       '<div class="mesa-card-total">'+EUR(m.total||0)+'</div>'+
       '<div class="mesa-card-tempo"><span>&#128336; '+tempo+'</span><span>'+nItens+' itens</span></div>'+
       aviso+
       '<button onclick="abrirPagamentoParcial(\'' + escJs(m.id) + '\')" style="margin-top:12px;padding:12px;width:100%;border:none;border-radius:8px;background:'+cor+';color:#fff;font-size:15px;font-weight:700;cursor:pointer;">'+
-        (nItens>0?'&#128179; Cobrar':'&#9888; Sem itens')+
+        (nItens>0?'&#128179; Cobrar':(parseFloat(m.total||0)>0?'&#128179; Cobrar':'&#9888; Sem itens'))+
       '</button>'+
     '</div>';
   }).join('');
@@ -1768,7 +1782,7 @@ function abrirPagamentoParcial(mesaId){
   _mesaParcial = m;
   var itemsMesa = [];
   try{ itemsMesa = typeof m.items==='string' ? JSON.parse(m.items) : (m.items||[]); }catch(e){}
-  itemsMesa = itemsMesa.filter(function(it){ return (it.nome||it.n||it.nome) && parseInt(it.qtd||it.q||1) > 0; });
+  itemsMesa = itemsMesa.filter(function(it){ return (it.nome||it.n) && parseFloat(it.preco||it.p||0) >= 0 && parseInt(it.qtd||it.q||1) > 0; });
 
   if(itemsMesa.length > 0){
     // Ja tem items no documento da mesa - usar directamente (saldo apos pagamentos parciais)
@@ -1790,12 +1804,25 @@ window.addEventListener('fbPedidosMesaCaixa', function(e){
     var mesaId = parts[0];
     var itemsJson = parts.slice(1).join('|');
     var items = JSON.parse(itemsJson||'[]');
+    // Actualizar items na mesa local para evitar buscar de novo
+    var mIdx = mesasFB.findIndex(function(x){return x.id===mesaId;});
+    if(mIdx >= 0 && items.length > 0){
+      mesasFB[mIdx].items = itemsJson;
+    }
     var m = _mesaParcial || mesasFB.find(function(x){return x.id===mesaId;});
-    if(!m || !items.length){
-      alert('Sem pedidos encontrados nesta mesa.');
+    if(!m){ return; }
+    if(!items.length){
+      // Sem pedidos - re-renderizar sem abrir modal
+      renderMesasFB();
       return;
     }
-    _abrirModalComItems(m, items);
+    // Se ha modal pendente, abrir
+    if(_mesaParcial && _mesaParcial.id === mesaId){
+      _abrirModalComItems(m, items);
+    } else {
+      // Actualizar display sem abrir modal
+      renderMesasFB();
+    }
   }catch(ex){ console.error('fbPedidosMesaCaixa:', ex); }
 });
 
