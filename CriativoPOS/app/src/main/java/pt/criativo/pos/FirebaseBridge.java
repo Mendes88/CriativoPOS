@@ -942,6 +942,28 @@ public class FirebaseBridge {
             .addOnFailureListener(e -> emitir("fbErro", "eliminarMesa: " + e.getMessage()));
     }
 
+    /** Grava total_original na primeira vez que a mesa e aberta para cobrar */
+    @JavascriptInterface
+    public void gravarTotalOriginal(String mesaId, String totalOriginalStr) {
+        try {
+            double totalOriginal = Double.parseDouble(totalOriginalStr);
+            if (totalOriginal <= 0) return;
+            // Verificar se ja tem total_original antes de gravar
+            db.collection("mesas").document(mesaId).get()
+                .addOnSuccessListener(doc -> {
+                    if (!doc.exists()) return;
+                    Object existing = doc.getData().get("total_original");
+                    if (existing != null && ((Number) existing).doubleValue() > 0) return;
+                    // Nao tem - gravar agora
+                    db.collection("mesas").document(mesaId)
+                        .update("total_original", totalOriginal)
+                        .addOnFailureListener(e -> Log.e("CriativoFB", "gravarTotalOriginal: " + e.getMessage()));
+                });
+        } catch (Exception e) {
+            Log.e("CriativoFB", "gravarTotalOriginal: " + e.getMessage());
+        }
+    }
+
     /** Actualiza mesa apos pagamento parcial com total_original e total_pago */
     @JavascriptInterface
     public void actualizarMesaParcial(String mesaId, String itemsJson, String saldoStr, String totalOriginalStr, String totalPagoStr) {
