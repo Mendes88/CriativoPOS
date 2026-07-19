@@ -964,6 +964,31 @@ public class FirebaseBridge {
         }
     }
 
+    /** Busca dados frescos de uma mesa (total_pago, total_original, items) */
+    @JavascriptInterface
+    public void buscarDadosMesa(String mesaId) {
+        db.collection("mesas").document(mesaId).get()
+            .addOnSuccessListener(doc -> {
+                if (!doc.exists()) return;
+                try {
+                    java.util.Map<String, Object> data = doc.getData();
+                    org.json.JSONObject obj = new org.json.JSONObject();
+                    obj.put("id",             doc.getId());
+                    obj.put("total",          data.getOrDefault("total",          0));
+                    obj.put("total_pago",     data.getOrDefault("total_pago",     0));
+                    obj.put("total_original", data.getOrDefault("total_original", 0));
+                    obj.put("items",          data.getOrDefault("items",          "[]").toString());
+                    obj.put("nome",           data.getOrDefault("nome",           "").toString());
+                    obj.put("estado",         data.getOrDefault("estado",         "em_servico").toString());
+                    obj.put("funcionario",    data.getOrDefault("funcionario",    "").toString());
+                    emitir("fbDadosMesa", obj.toString());
+                } catch (Exception e) {
+                    Log.e("CriativoFB", "buscarDadosMesa: " + e.getMessage());
+                }
+            })
+            .addOnFailureListener(e -> Log.e("CriativoFB", "buscarDadosMesa: " + e.getMessage()));
+    }
+
     /** Grava total_pago manualmente quando introduzido pelo caixa */
     @JavascriptInterface
     public void gravarTotalPago(String mesaId, String totalPagoStr) {
