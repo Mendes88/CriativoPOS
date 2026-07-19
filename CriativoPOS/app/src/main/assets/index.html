@@ -1853,24 +1853,44 @@ function abrirPagamentoParcial(mesaId){
     if(!confirm('Esta mesa nao foi fechada pelo empregado. Confirmas o pagamento?')) return;
   }
 
-  // Usar items do documento da mesa (ja tem saldo apos pagamento parcial)
+  // Ir buscar dados frescos da mesa do Firestore (total_pago e total_original actualizados)
+  if(typeof AndroidFB !== 'undefined'){
+    try{ AndroidFB.buscarDadosMesa(mesaId); return; }catch(e){}
+  }
+  // Fallback sem AndroidFB
+  _abrirModalComMesa(m);
+}
+
+function _abrirModalComMesa(m){
   _mesaParcial = m;
   var itemsMesa = [];
   try{ itemsMesa = typeof m.items==='string' ? JSON.parse(m.items) : (m.items||[]); }catch(e){}
   itemsMesa = itemsMesa.filter(function(it){ return (it.nome||it.n) && parseFloat(it.preco||it.p||0) >= 0 && parseInt(it.qtd||it.q||1) > 0; });
 
   if(itemsMesa.length > 0){
-    // Ja tem items no documento da mesa - usar directamente (saldo apos pagamentos parciais)
     _abrirModalComItems(m, itemsMesa);
   } else if(typeof AndroidFB !== 'undefined'){
-    // Sem items no documento - ir buscar aos pedidos (primeira vez)
-    try{ AndroidFB.buscarPedidosMesa(mesaId); }catch(e){
-      alert('Sem pedidos encontrados nesta mesa.');
-    }
-  } else {
-    alert('Sem pedidos encontrados nesta mesa.');
+    try{ AndroidFB.buscarPedidosMesa(m.id); }catch(e){}
   }
 }
+
+// Listener para dados frescos da mesa (total_pago e total_original actualizados)
+window.addEventListener('fbDadosMesa', function(e){
+  try{
+    var dados = JSON.parse(e.detail||'{}');
+    if(!dados.id) return;
+    // Actualizar mesasFB com dados frescos
+    var idx = mesasFB.findIndex(function(x){return x.id===dados.id;});
+    if(idx >= 0){
+      mesasFB[idx].total_pago     = parseFloat(dados.total_pago||0);
+      mesasFB[idx].total_original = parseFloat(dados.total_original||0);
+      mesasFB[idx].total          = parseFloat(dados.total||mesasFB[idx].total||0);
+      mesasFB[idx].items          = dados.items || mesasFB[idx].items;
+    }
+    var m = idx >= 0 ? mesasFB[idx] : dados;
+    _abrirModalComMesa(m);
+  }catch(ex){ console.error('fbDadosMesa:', ex); }
+});
 
 // Listener para quando pedidos chegam do Firestore
 window.addEventListener('fbPedidosMesaCaixa', function(e){
