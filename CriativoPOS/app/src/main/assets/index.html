@@ -878,11 +878,12 @@ window.addEventListener('unhandledrejection', function(e){
         <button class="dnav-btn" onclick="shiftDate(-1)">◀</button>
         <span class="dnav-lbl" id="dnav-lbl">Hoje</span>
         <button class="dnav-btn" onclick="shiftDate(1)">▶</button>
-        <button class="dquick on" id="dq-today"     onclick="setQuick('today')">Hoje</button>
+        <button class="dquick on" id="dq-turno"     onclick="setQuick('turno')">&#128197; Turno</button>
+        <button class="dquick"    id="dq-today"     onclick="setQuick('today')">Hoje</button>
         <button class="dquick"    id="dq-yesterday" onclick="setQuick('yesterday')">Ontem</button>
         <button class="dquick"    id="dq-week"      onclick="setQuick('week')">Semana</button>
         <button class="dquick"    id="dq-month"     onclick="setQuick('month')">Mês</button>
-        <button class="dquick"    id="dq-custom"    onclick="toggleCustomRange()">📅 Intervalo</button>
+        <button class="dquick"    id="dq-custom"    onclick="toggleCustomRange()">&#128197; Intervalo</button>
       </div>
       <div style="display:flex;gap:6px;">
         <button onclick="printRelatorio()" style="padding:5px 12px;font-size:11px;border-radius:8px;border:none;background:#BA7517;color:#111111;cursor:pointer;font-weight:500;white-space:nowrap;">🖨️ Relatório</button>
@@ -1377,7 +1378,7 @@ let modMode=null,modData={},detailItems=true,uidCnt=1,docType='talao',orderNum=1
 (function(){ var d=localStorage.getItem('crpos_detail'); if(d==='0') detailItems=false; })();
 let config={appHeight:0,defaultDocType:'talao',postoName:'',restName:'Restaurante',nif:'123 456 789',phone:'232 123 456',address:'Viseu, Portugal',footerMsg:'Obrigado pela visita!',footerMsg2:'',logo:null,timeout:15,printerType:'bluetooth',printerIP:'192.168.1.100',printerPort:'9100',printerWidth:80,printerCols:46,mbwayPhone:''};
 let btDevice=null,btChar=null;
-let relTab="resumo",artSort="revenue",selDate=today(),dateMode="today",customFrom="",customTo="";
+let relTab="resumo",artSort="revenue",selDate=today(),dateMode="turno",customFrom="",customTo="";
 let closings=[],curSale=null;
 // Restaurar fundo de maneio persistido
 let fundo = 50;
@@ -3697,7 +3698,8 @@ function printRelatorio(){
 
   // Period label
   var per;
-  if(dateMode==="custom"&&customFrom&&customTo){
+  if(dateMode==="turno"){ per="Turno actual"; }
+  else if(dateMode==="custom"&&customFrom&&customTo){
     per=dFmt(customFrom)+" a "+dFmt(customTo);
   } else if(selDate==="WEEK"){
     per=dFmt(weekStart())+" a "+dFmt(today());
@@ -3843,7 +3845,8 @@ function setRelTab(t){relTab=t;["resumo","artigos","arquivo","consolidado"].forE
 function setArtSort(s){artSort=s;renderRel();}
 function setQuick(q){
   dateMode=q;
-  if(q==="today")    selDate=today();
+  if(q==="turno")    selDate=today(); // turno usa salesSinceFecho()
+  else if(q==="today")    selDate=today();
   else if(q==="yesterday") selDate=dOff(-1);
   else if(q==="week")  selDate="WEEK";
   else if(q==="month") selDate="MONTH";
@@ -3851,7 +3854,7 @@ function setQuick(q){
   var cr=document.getElementById("custom-range-row");
   if(cr) cr.style.display="none";
   // Update quick buttons
-  ["today","yesterday","week","month","custom"].forEach(function(x){
+  ["turno","today","yesterday","week","month","custom"].forEach(function(x){
     var btn=document.getElementById("dq-"+x);
     if(btn) btn.className="dquick"+(x===q?" on":"");
   });
@@ -3882,6 +3885,7 @@ function updateDNavLbl(){
   el.textContent=dFmt(selDate);
 }
 function filteredSales(){
+  if(dateMode==="turno")  return salesSinceFecho(); // vendas desde ultimo fecho de caixa
   if(dateMode==="custom" && customFrom && customTo) return getSales(customFrom,customTo);
   if(selDate==="WEEK")   return getSales(weekStart(),today());
   if(selDate==="MONTH")  return getSales(monthStart(),today());
@@ -3891,6 +3895,11 @@ function filteredSales(){
 
 function filteredClosings(){
   var from, to;
+  if(dateMode==="turno"){
+    // So o fecho actual (se existir)
+    var lf = lastFecho();
+    return lf ? [lf] : [];
+  }
   if(dateMode==="custom" && customFrom && customTo){
     from=customFrom; to=customTo;
   } else if(selDate==="WEEK"){
