@@ -1919,6 +1919,20 @@ function _abrirModalComItems(m, items){
     return {nome:it.nome, preco:it.preco, qtdTotal:it.qtdTotal, qtdSel:it.qtdTotal};
   });
 
+  // Se total_original ainda nao existe no Firestore, gravar agora
+  // total_original = total actual (saldo) + total ja pago
+  var totalPagoExistente = parseFloat(m.total_pago||0);
+  var totalAtual = parseFloat(m.total||0);
+  if(!parseFloat(m.total_original||0) && typeof AndroidFB !== 'undefined'){
+    var totalOriginalCalculado = totalAtual + totalPagoExistente;
+    if(totalOriginalCalculado > 0){
+      try{
+        AndroidFB.gravarTotalOriginal(m.id, String(totalOriginalCalculado));
+        _mesaParcial.total_original = totalOriginalCalculado;
+      }catch(ex){}
+    }
+  }
+
   renderModalParcial();
   var mp = document.getElementById('modal-parcial');
   mp.style.display = 'flex';
