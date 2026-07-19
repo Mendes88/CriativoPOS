@@ -2772,7 +2772,8 @@ function confirmPaySemImpressao(){
       var totalSaldo2 = window._totalSaldo||0;
       if(itensSaldo2.length > 0 && totalSaldo2 > 0){
         var itemsSaldoStr2 = JSON.stringify(itensSaldo2.map(function(it){return {n:it.n||it.nome,p:it.p||it.preco,q:it.q||it.qtd};}));
-        AndroidFB.actualizarMesa(window._mesaAFechar.id, itemsSaldoStr2, String(totalSaldo2));
+        var totalPagoNovo2 = (window._totalPagoAnterior||0) + tot;
+        AndroidFB.actualizarMesaParcial(window._mesaAFechar.id, itemsSaldoStr2, String(totalSaldo2), String(window._totalOriginal||0), String(totalPagoNovo2));
       } else {
         AndroidFB.fecharMesa(window._mesaAFechar.id, String(tot));
       }
