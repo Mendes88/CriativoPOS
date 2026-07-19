@@ -416,10 +416,11 @@ public class FirebaseBridge {
                         m.put("nome",        d.getOrDefault("nome",        "").toString());
                         m.put("funcionario", d.getOrDefault("funcionario", "").toString());
                         m.put("func",        d.getOrDefault("funcionario", "").toString());
-                        m.put("total",       d.getOrDefault("total",       0));
-                        m.put("estado",      d.getOrDefault("estado",      "em_servico").toString());
-                        // Enviar items para o POS Caixa poder cobrar correctamente
-                        m.put("items",       d.getOrDefault("items",       "[]").toString());
+                        m.put("total",          d.getOrDefault("total",          0));
+                        m.put("total_original", d.getOrDefault("total_original", d.getOrDefault("total", 0)));
+                        m.put("total_pago",     d.getOrDefault("total_pago",     0));
+                        m.put("estado",         d.getOrDefault("estado",         "em_servico").toString());
+                        m.put("items",          d.getOrDefault("items",          "[]").toString());
                         Object ab = d.containsKey("abertoEm") ? d.get("abertoEm") : d.get("aberta_em");
                         if (ab instanceof Timestamp) {
                             long min = (System.currentTimeMillis() / 1000
@@ -939,6 +940,27 @@ public class FirebaseBridge {
                     .addOnFailureListener(e -> emitir("fbErro", "eliminarMesa: " + e.getMessage()));
             })
             .addOnFailureListener(e -> emitir("fbErro", "eliminarMesa: " + e.getMessage()));
+    }
+
+    /** Actualiza mesa apos pagamento parcial com total_original e total_pago */
+    @JavascriptInterface
+    public void actualizarMesaParcial(String mesaId, String itemsJson, String saldoStr, String totalOriginalStr, String totalPagoStr) {
+        try {
+            double saldo        = Double.parseDouble(saldoStr);
+            double totalOriginal = Double.parseDouble(totalOriginalStr);
+            double totalPago    = Double.parseDouble(totalPagoStr);
+            java.util.Map<String, Object> update = new java.util.HashMap<>();
+            if (!itemsJson.equals("[]")) update.put("items", itemsJson);
+            update.put("total",          saldo);
+            update.put("total_original", totalOriginal);
+            update.put("total_pago",     totalPago);
+            update.put("atualizado_em",  com.google.firebase.Timestamp.now());
+            db.collection("mesas").document(mesaId)
+                .update(update)
+                .addOnFailureListener(e -> Log.e("CriativoFB", "actualizarMesaParcial: " + e.getMessage()));
+        } catch (Exception e) {
+            Log.e("CriativoFB", "actualizarMesaParcial: " + (e.getMessage() != null ? e.getMessage() : "erro"));
+        }
     }
 
     public void destroy() {
