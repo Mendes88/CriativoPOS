@@ -964,6 +964,19 @@ public class FirebaseBridge {
         }
     }
 
+    /** Grava total_pago manualmente quando introduzido pelo caixa */
+    @JavascriptInterface
+    public void gravarTotalPago(String mesaId, String totalPagoStr) {
+        try {
+            double totalPago = Double.parseDouble(totalPagoStr);
+            db.collection("mesas").document(mesaId)
+                .update("total_pago", totalPago)
+                .addOnFailureListener(e -> Log.e("CriativoFB", "gravarTotalPago: " + e.getMessage()));
+        } catch (Exception e) {
+            Log.e("CriativoFB", "gravarTotalPago: " + e.getMessage());
+        }
+    }
+
     /** Actualiza mesa apos pagamento parcial com total_original e total_pago */
     @JavascriptInterface
     public void actualizarMesaParcial(String mesaId, String itemsJson, String saldoStr, String totalOriginalStr, String totalPagoStr) {
