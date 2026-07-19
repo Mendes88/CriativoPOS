@@ -1703,7 +1703,12 @@ function renderMesasFuncSeleccionado(grid){
     if(semItems) aviso += '<div style="font-size:11px;color:#1565c0;margin-top:2px;">&#8635; A carregar artigos...</div>';
     return '<div class="mesa-card aberta" style="border-color:'+cor+'">'+
       '<div class="mesa-card-nome">'+escH(m.nome||m.id)+'</div>'+
-      '<div class="mesa-card-total">'+EUR(m.total||0)+'</div>'+
+      '<div class="mesa-card-total">'+
+        (parseFloat(m.total_pago||0) > 0
+          ? EUR(m.total||0)+' <span style="font-size:11px;color:#888;">de '+EUR((parseFloat(m.total_original||0)||parseFloat(m.total||0)+parseFloat(m.total_pago||0)))+'</span>'
+          : EUR(m.total||0))+
+      '</div>'+
+      (parseFloat(m.total_pago||0) > 0 ? '<div style="font-size:11px;color:#2e7d32;margin-bottom:2px;">Pago: '+EUR(m.total_pago||0)+'</div>' : '')+
       '<div class="mesa-card-tempo"><span>&#128336; '+tempo+'</span><span>'+nItens+' itens</span></div>'+
       aviso+
       '<div style="display:flex;gap:8px;margin-top:12px;">'+
@@ -1921,7 +1926,24 @@ function _abrirModalComItems(m, items){
 
 function renderModalParcial(){
   if(!_mesaParcial) return;
-  document.getElementById('mp-titulo').textContent = _mesaParcial.nome||_mesaParcial.id;
+  var totalOrig = parseFloat(_mesaParcial.total_original||0) || (parseFloat(_mesaParcial.total||0) + parseFloat(_mesaParcial.total_pago||0));
+  var totalPago = parseFloat(_mesaParcial.total_pago||0);
+  var titExt = totalPago > 0 ? ' — Pago: '+EUR(totalPago)+' de '+EUR(totalOrig) : '';
+  document.getElementById('mp-titulo').textContent = (_mesaParcial.nome||_mesaParcial.id) + titExt;
+  // Mostrar subtitulo com contexto
+  var subDiv = document.getElementById('mp-subtitulo');
+  if(!subDiv){
+    subDiv = document.createElement('div');
+    subDiv.id = 'mp-subtitulo';
+    subDiv.style.cssText = 'font-size:12px;color:#888;margin-top:-6px;';
+    document.getElementById('mp-titulo').parentNode.insertBefore(subDiv, document.getElementById('mp-lista'));
+  }
+  if(totalPago > 0){
+    subDiv.innerHTML = 'Total original: <b>'+EUR(totalOrig)+'</b> &nbsp;|&nbsp; Pago: <b style="color:#2e7d32;">'+EUR(totalPago)+'</b> &nbsp;|&nbsp; Restante: <b style="color:#c62828;">'+EUR(parseFloat(_mesaParcial.total||0))+'</b>';
+    subDiv.style.display = 'block';
+  } else {
+    subDiv.style.display = 'none';
+  }
   var lista = document.getElementById('mp-lista');
   lista.innerHTML = _itensParcial.map(function(it,i){
     var subtotal = it.preco * it.qtdSel;
@@ -1966,6 +1988,11 @@ function confirmarParcial(){
   var mesaId = _mesaParcial.id;
   var mesaNome = _mesaParcial.nome||_mesaParcial.id;
   var mesaFunc = _mesaParcial.funcionario||_mesaParcial.func||'';
+  // Total original e total já pago
+  var totalOrigActual = parseFloat(_mesaParcial.total_original||0) || (parseFloat(_mesaParcial.total||0) + parseFloat(_mesaParcial.total_pago||0));
+  var totalPagoActual = parseFloat(_mesaParcial.total_pago||0);
+  window._totalOriginal = totalOrigActual;
+  window._totalPagoAnterior = totalPagoActual;
 
   // Carregar artigos no order para cobrar
   order = [];
@@ -2588,7 +2615,8 @@ function confirmPay(){
       if(itensSaldo.length > 0 && totalSaldo > 0){
         // Pagamento parcial - actualizar mesa com saldo restante
         var itemsSaldoStr = JSON.stringify(itensSaldo.map(function(it){return {n:it.n||it.nome,p:it.p||it.preco,q:it.q||it.qtd};}));
-        AndroidFB.actualizarMesa(window._mesaAFechar.id, itemsSaldoStr, String(totalSaldo));
+        var totalPagoNovo = (window._totalPagoAnterior||0) + tot;
+        AndroidFB.actualizarMesaParcial(window._mesaAFechar.id, itemsSaldoStr, String(totalSaldo), String(window._totalOriginal||0), String(totalPagoNovo));
       } else {
         // Pagamento total - fechar mesa
         AndroidFB.fecharMesa(window._mesaAFechar.id, String(tot));
