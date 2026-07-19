@@ -15,7 +15,7 @@
 
     <application
         android:icon="@mipmap/ic_launcher"
-        android:label="Criativo POS"
+        android:label="Criativo Caixa"
         android:hardwareAccelerated="true"
         android:allowBackup="false"
         android:usesCleartextTraffic="true"
