@@ -1926,24 +1926,32 @@ function _abrirModalComItems(m, items){
 
 function renderModalParcial(){
   if(!_mesaParcial) return;
-  var totalOrig = parseFloat(_mesaParcial.total_original||0) || (parseFloat(_mesaParcial.total||0) + parseFloat(_mesaParcial.total_pago||0));
+  // Calcular total original a partir dos items (soma de todos os artigos x preco x qtd total)
+  var totalDeItems = _itensParcial.reduce(function(s,it){return s + it.preco * it.qtdTotal;}, 0);
   var totalPago = parseFloat(_mesaParcial.total_pago||0);
-  var titExt = totalPago > 0 ? ' — Pago: '+EUR(totalPago)+' de '+EUR(totalOrig) : '';
-  document.getElementById('mp-titulo').textContent = (_mesaParcial.nome||_mesaParcial.id) + titExt;
-  // Mostrar subtitulo com contexto
+  // Total original: se ja temos no Firestore usamos, senao calculamos pelos items
+  var totalOrig = parseFloat(_mesaParcial.total_original||0);
+  if(totalOrig <= 0) totalOrig = totalDeItems + totalPago;
+  if(totalOrig <= 0) totalOrig = parseFloat(_mesaParcial.total||0) + totalPago;
+  var totalRestante = parseFloat(_mesaParcial.total||0);
+  document.getElementById('mp-titulo').textContent = _mesaParcial.nome||_mesaParcial.id;
+  // Subtitulo com contexto completo - sempre visivel se ha total
   var subDiv = document.getElementById('mp-subtitulo');
   if(!subDiv){
     subDiv = document.createElement('div');
     subDiv.id = 'mp-subtitulo';
-    subDiv.style.cssText = 'font-size:12px;color:#888;margin-top:-6px;';
+    subDiv.style.cssText = 'font-size:12px;color:#555;margin-top:-4px;padding-bottom:8px;border-bottom:1px solid #eee;margin-bottom:4px;';
     document.getElementById('mp-titulo').parentNode.insertBefore(subDiv, document.getElementById('mp-lista'));
   }
   if(totalPago > 0){
-    subDiv.innerHTML = 'Total original: <b>'+EUR(totalOrig)+'</b> &nbsp;|&nbsp; Pago: <b style="color:#2e7d32;">'+EUR(totalPago)+'</b> &nbsp;|&nbsp; Restante: <b style="color:#c62828;">'+EUR(parseFloat(_mesaParcial.total||0))+'</b>';
-    subDiv.style.display = 'block';
+    subDiv.innerHTML =
+      'Total: <b>'+EUR(totalOrig)+'</b> &nbsp;|&nbsp; '+
+      'Pago: <b style="color:#2e7d32;">'+EUR(totalPago)+'</b> &nbsp;|&nbsp; '+
+      'Restante: <b style="color:#c62828;">'+EUR(totalRestante)+'</b>';
   } else {
-    subDiv.style.display = 'none';
+    subDiv.innerHTML = 'Total: <b>'+EUR(totalOrig)+'</b>';
   }
+  subDiv.style.display = 'block';
   var lista = document.getElementById('mp-lista');
   lista.innerHTML = _itensParcial.map(function(it,i){
     var subtotal = it.preco * it.qtdSel;
@@ -1989,8 +1997,16 @@ function confirmarParcial(){
   var mesaNome = _mesaParcial.nome||_mesaParcial.id;
   var mesaFunc = _mesaParcial.funcionario||_mesaParcial.func||'';
   // Total original e total já pago
-  var totalOrigActual = parseFloat(_mesaParcial.total_original||0) || (parseFloat(_mesaParcial.total||0) + parseFloat(_mesaParcial.total_pago||0));
   var totalPagoActual = parseFloat(_mesaParcial.total_pago||0);
+  // total_original: se ja existe no Firestore usa esse, senao e total actual + o que ja foi pago
+  var totalOrigActual = parseFloat(_mesaParcial.total_original||0);
+  if(totalOrigActual <= 0){
+    // Primeira vez - total original = total actual (saldo) + total ja pago
+    totalOrigActual = parseFloat(_mesaParcial.total||0) + totalPagoActual;
+  }
+  // Adicionar o valor dos artigos seleccionados agora ao total original se ainda nao estava
+  var valorACobrar = _itensParcial.reduce(function(s,it){return s+it.preco*it.qtdSel;},0);
+  if(totalOrigActual <= 0) totalOrigActual = parseFloat(_mesaParcial.total||0);
   window._totalOriginal = totalOrigActual;
   window._totalPagoAnterior = totalPagoActual;
 
