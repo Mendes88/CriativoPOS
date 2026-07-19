@@ -1919,18 +1919,22 @@ function _abrirModalComItems(m, items){
     return {nome:it.nome, preco:it.preco, qtdTotal:it.qtdTotal, qtdSel:it.qtdTotal};
   });
 
-  // Se total_original ainda nao existe no Firestore, gravar agora
-  // total_original = total actual (saldo) + total ja pago
   var totalPagoExistente = parseFloat(m.total_pago||0);
   var totalAtual = parseFloat(m.total||0);
-  if(!parseFloat(m.total_original||0) && typeof AndroidFB !== 'undefined'){
-    var totalOriginalCalculado = totalAtual + totalPagoExistente;
-    if(totalOriginalCalculado > 0){
-      try{
-        AndroidFB.gravarTotalOriginal(m.id, String(totalOriginalCalculado));
-        _mesaParcial.total_original = totalOriginalCalculado;
-      }catch(ex){}
-    }
+
+  // Se nao ha total_original mas ha total_pago, calcular automaticamente
+  if(!parseFloat(m.total_original||0) && totalPagoExistente > 0 && typeof AndroidFB !== 'undefined'){
+    var totalOrigCalc = totalAtual + totalPagoExistente;
+    try{
+      AndroidFB.gravarTotalOriginal(m.id, String(totalOrigCalc));
+      _mesaParcial.total_original = totalOrigCalc;
+    }catch(ex){}
+  }
+
+  // Se nao ha total_original nem total_pago, perguntar ao caixa se e pagamento parcial
+  if(!parseFloat(m.total_original||0) && totalPagoExistente <= 0){
+    // Mostrar modal normalmente - o total sera gravado como original quando for feito o 1o pagamento parcial
+    _mesaParcial.total_original = 0; // sera calculado em renderModalParcial pelos items
   }
 
   renderModalParcial();
@@ -1949,18 +1953,25 @@ function renderModalParcial(){
   if(totalOrig <= 0) totalOrig = parseFloat(_mesaParcial.total||0) + totalPago;
   var totalRestante = parseFloat(_mesaParcial.total||0);
   document.getElementById('mp-titulo').textContent = _mesaParcial.nome||_mesaParcial.id;
-  // Subtitulo com contexto completo
   var subDiv = document.getElementById('mp-subtitulo');
   if(subDiv){
-    if(totalPago > 0){
+    if(totalPago > 0 && totalOrig > totalRestante){
+      // Pagamento parcial com contexto completo
       subDiv.innerHTML =
         'Total: <b>'+EUR(totalOrig)+'</b> &nbsp;|&nbsp; '+
         'Pago: <b style="color:#2e7d32;">'+EUR(totalPago)+'</b> &nbsp;|&nbsp; '+
         'Restante: <b style="color:#c62828;">'+EUR(totalRestante)+'</b>';
+      subDiv.style.display = 'block';
+    } else if(totalPago <= 0){
+      // Sem pagamento parcial anterior - campo para introduzir total original se necessario
+      subDiv.innerHTML =
+        'Total da mesa: <b>'+EUR(totalRestante)+'</b>' +
+        ' &nbsp;<button onclick="pedirTotalOriginal()" style="font-size:11px;padding:2px 8px;background:#f0f0f0;border:1px solid #ddd;border-radius:4px;cursor:pointer;color:#555;">Houve pagamento parcial?</button>';
+      subDiv.style.display = 'block';
     } else {
-      subDiv.innerHTML = 'Total da mesa: <b>'+EUR(totalOrig)+'</b>';
+      subDiv.innerHTML = 'Total da mesa: <b>'+EUR(totalRestante)+'</b>';
+      subDiv.style.display = 'block';
     }
-    subDiv.style.display = 'block';
   }
   var lista = document.getElementById('mp-lista');
   lista.innerHTML = _itensParcial.map(function(it,i){
@@ -1985,6 +1996,28 @@ function mpQtd(idx, delta){
   if(!_itensParcial[idx]) return;
   var it = _itensParcial[idx];
   it.qtdSel = Math.max(0, Math.min(it.qtdTotal, it.qtdSel + delta));
+  renderModalParcial();
+}
+
+function pedirTotalOriginal(){
+  var totalActual = parseFloat(_mesaParcial.total||0);
+  var resposta = prompt('Qual foi o total original desta mesa antes dos pagamentos parciais?
+(Valor actual: '+EUR(totalActual)+')', String(totalActual));
+  if(!resposta) return;
+  var totalOrig = parseFloat(resposta.replace(',','.'));
+  if(isNaN(totalOrig) || totalOrig <= totalActual){
+    alert('O total original deve ser maior que o saldo actual ('+EUR(totalActual)+')');
+    return;
+  }
+  var totalPago = totalOrig - totalActual;
+  _mesaParcial.total_original = totalOrig;
+  _mesaParcial.total_pago = totalPago;
+  if(typeof AndroidFB !== 'undefined'){
+    try{
+      AndroidFB.gravarTotalOriginal(_mesaParcial.id, String(totalOrig));
+      AndroidFB.gravarTotalPago(_mesaParcial.id, String(totalPago));
+    }catch(ex){}
+  }
   renderModalParcial();
 }
 
