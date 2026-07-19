@@ -4058,8 +4058,14 @@ function printConsolidado(){
     '<style>body{font-family:Arial,sans-serif;padding:20px;font-size:13px;}@media print{body{padding:0;}}</style>'+
     '</head><body>'+postoHdr+el.innerHTML+'</body></html>';
   var win=window.open('','_blank','width=860,height=700');
-  if(win){win.document.write(html);win.document.close();setTimeout(function(){win.print();},350);}
-  else{showInlineReport(html,'Consolidado');}
+  if(canPrintDirect()){
+    printDirect(buildConsolidadoESC()).then(function(ok){
+      if(!ok){ if(win){win.document.write(html);win.document.close();setTimeout(function(){win.print();},350);} else{showInlineReport(html,'Consolidado');} }
+    });
+  } else {
+    if(win){win.document.write(html);win.document.close();setTimeout(function(){win.print();},350);}
+    else{showInlineReport(html,'Consolidado');}
+  }
 }
 
 function relPosto(){
@@ -4270,9 +4276,15 @@ footer{margin-top:18px;text-align:center;font-size:9px;color:#888888666;border-t
 <tr class="tr-tot"><td></td><td>TOTAL</td><td style="text-align:right;">${tqty}</td><td style="text-align:right;">—</td><td style="text-align:right;color:#7A3B0A;">${EUR(tot)}</td><td style="text-align:right;">100%</td><td></td></tr>
 </tbody></table>
 <footer>Criativo POS · Relatório por Artigo · ${per} · ${(CU?CU.nome:'—')||"—"} · ${dFmt(today())} ${hora}</footer></body></html>`;
-  const win=window.open("","_blank","width=860,height=640");
-  if(win){win.document.write(html);win.document.close();setTimeout(()=>win.print(),350);}
-  else{showInlineReport(html,'Relatório por Artigo');}
+  if(canPrintDirect()){
+    printDirect(buildArtigosESC()).then(function(ok){
+      if(!ok){ const win=window.open("","_blank","width=860,height=640"); if(win){win.document.write(html);win.document.close();setTimeout(()=>win.print(),350);} else{showInlineReport(html,'Relatorio por Artigo');} }
+    });
+  } else {
+    const win=window.open("","_blank","width=860,height=640");
+    if(win){win.document.write(html);win.document.close();setTimeout(()=>win.print(),350);}
+    else{showInlineReport(html,'Relatório por Artigo');}
+  }
 }
 
 // ═══ UTILIZADORES ═══════════════════════════════════════
@@ -4693,6 +4705,108 @@ function printFallback(html,w,h,title){
   var win=window.open('','_blank','width='+(w||400)+',height='+(h||600));
   if(win){win.document.write(html);win.document.close();setTimeout(function(){win.print();},350);}
   else{showInlineReport(html,title);}
+}
+
+
+function buildArtigosESC(){
+  var sl = filteredSales();
+  var map = {};
+  sl.forEach(function(s){ s.items.forEach(function(it){
+    if(!map[it.n]) map[it.n]={n:it.n,qty:0,rev:0,p:it.p};
+    map[it.n].qty+=it.q; map[it.n].rev+=it.q*it.p;
+  });});
+  var arts = Object.values(map).sort(function(a,b){return b.rev-a.rev;});
+  var tot = sl.reduce(function(s,x){return s+x.total;},0);
+  var tqty = arts.reduce(function(s,a){return s+a.qty;},0);
+  var now = new Date();
+  var hora = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  var per = dateMode==='turno'?'Turno actual':(selDate==='WEEK'?dFmt(weekStart())+' a '+dFmt(today()):dFmt(selDate));
+
+  var esc = new ESCBuilder(); esc.init();
+  esc.centerBold('ARTIGOS VENDIDOS');
+  if(config.postoName) esc.centerBold(escNorm(config.postoName));
+  if(config.restName)  esc.center(escNorm(config.restName));
+  esc.sep();
+  esc.center('Periodo: '+per);
+  esc.center('Emitido: '+dFmt(today())+' '+hora);
+  if(CU) esc.center('Operador: '+escNorm(CU.nome));
+  esc.sep();
+  esc.row('Total vendas', EURESC(tot));
+  esc.row('Total unidades', String(tqty));
+  esc.row('Artigos distintos', String(arts.length));
+  esc.row('Pedidos', String(sl.length));
+  esc.sep();
+  esc.bold(1).textLine('ARTIGO           QTD    TOTAL').bold(0);
+  esc.sep();
+  arts.forEach(function(a, i){
+    var nome = escNorm(a.n).substring(0, esc.cols - 14);
+    var pct = tot > 0 ? ' '+(a.rev/tot*100).toFixed(0)+'%' : '';
+    esc.row((i+1)+'. '+nome+' ('+a.qty+'x)', EURESC(a.rev));
+  });
+  esc.sep();
+  esc.row('TOTAL ('+tqty+'un)', EURESC(tot), true);
+  esc.sep();
+  esc.center('*** FIM ***');
+  esc.lf(3).cut();
+  return esc;
+}
+
+function buildConsolidadoESC(){
+  // Consolidado: resumo de todos os fechos do periodo
+  var sl = filteredSales();
+  var fc = filteredClosings();
+  var now = new Date();
+  var hora = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  var per = dateMode==='turno'?'Turno actual':(selDate==='WEEK'?dFmt(weekStart())+' a '+dFmt(today()):dFmt(selDate));
+
+  var tot = sl.reduce(function(s,x){return s+x.total;},0);
+  var tN = sl.filter(function(s){return s.met==='d';}).reduce(function(a,s){return a+s.total;},0);
+  var tC = sl.filter(function(s){return s.met==='c';}).reduce(function(a,s){return a+s.total;},0);
+  var tM = sl.filter(function(s){return s.met==='m';}).reduce(function(a,s){return a+s.total;},0);
+
+  var map = {};
+  sl.forEach(function(s){ s.items.forEach(function(it){
+    if(!map[it.n]) map[it.n]={n:it.n,qty:0,rev:0};
+    map[it.n].qty+=it.q; map[it.n].rev+=it.q*it.p;
+  });});
+  var arts = Object.values(map).sort(function(a,b){return b.rev-a.rev;});
+
+  var esc = new ESCBuilder(); esc.init();
+  esc.centerBold('RELATORIO CONSOLIDADO');
+  if(config.postoName) esc.centerBold(escNorm(config.postoName));
+  if(config.restName)  esc.center(escNorm(config.restName));
+  if(config.nif)       esc.center('NIF '+config.nif);
+  esc.sep();
+  esc.center('Periodo: '+per);
+  esc.center('Emitido: '+dFmt(today())+' '+hora);
+  if(CU) esc.center('Operador: '+escNorm(CU.nome));
+  esc.sep();
+  esc.bold(1).textLine('RESUMO DE VENDAS').bold(0);
+  esc.row('Total pedidos', String(sl.length));
+  esc.row('Ticket medio', EURESC(sl.length ? tot/sl.length : 0));
+  esc.sep();
+  esc.bold(1).textLine('POR METODO').bold(0);
+  esc.row('Numerario', EURESC(tN));
+  esc.row('Cartao', EURESC(tC));
+  esc.row('MB Way', EURESC(tM));
+  esc.row('TOTAL', EURESC(tot), true);
+  esc.sep();
+  if(fc.length){
+    esc.bold(1).textLine('FECHOS DE CAIXA').bold(0);
+    fc.forEach(function(f){
+      esc.row(dFmt(f.date)+' '+f.hora, EURESC(f.totV));
+    });
+    esc.sep();
+  }
+  esc.bold(1).textLine('TOP 10 ARTIGOS').bold(0);
+  arts.slice(0,10).forEach(function(a,i){
+    var nome = escNorm(a.n).substring(0, esc.cols - 12);
+    esc.row((i+1)+'. '+nome+' ('+a.qty+'x)', EURESC(a.rev));
+  });
+  esc.sep();
+  esc.center('*** FIM DO CONSOLIDADO ***');
+  esc.lf(3).cut();
+  return esc;
 }
 
 function buildConfirmESC(s){
