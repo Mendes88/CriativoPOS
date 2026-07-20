@@ -1848,10 +1848,7 @@ function abrirPagamentoParcial(mesaId){
   var m = mesasFB.find(function(x){return x.id===mesaId;});
   if(!m) return;
 
-  // Se mesa em_servico, pedir confirmacao
-  if((m.estado||'em_servico') === 'em_servico'){
-    if(!confirm('Esta mesa nao foi fechada pelo empregado. Confirmas o pagamento?')) return;
-  }
+  // Se mesa em_servico - continuar directamente (modal de confirmacao se necessario)
 
   // Ir buscar dados frescos da mesa do Firestore (total_pago e total_original actualizados)
   if(typeof AndroidFB !== 'undefined'){
@@ -6098,6 +6095,40 @@ function requestFullscreen(){
   }, 300);
 }
 
+// === LIMPEZA FIREBASE ===
+var _tipoLimpeza = null;
+var _mesaParaConfirmar = null;
+
+function confirmarLimpeza(tipo){
+  _tipoLimpeza = tipo;
+  var msg = tipo === 'tudo'
+    ? 'Tens a certeza que queres eliminar TODOS os pedidos e mesas?
+Esta accao e irreversivel.'
+    : 'Tens a certeza que queres eliminar os pedidos e mesas fechadas?
+Esta accao e irreversivel.';
+  document.getElementById('limpar-msg').textContent = msg;
+  document.getElementById('btn-limpar-conf').onclick = function(){ executarLimpeza(_tipoLimpeza); };
+  document.getElementById('modal-limpar').style.display = 'block';
+}
+
+function executarLimpeza(tipo){
+  document.getElementById('modal-limpar').style.display = 'none';
+  if(typeof AndroidFB !== 'undefined'){
+    try{
+      if(tipo === 'tudo') AndroidFB.limparTodosDados();
+      else AndroidFB.limparTurno();
+      showToast('A limpar dados...');
+    }catch(ex){ showToast('Erro: '+ex.message); }
+  }
+}
+
+window.addEventListener('fbLimpezaConcluida', function(e){
+  showToast('✓ Dados eliminados com sucesso');
+});
+
+window.addEventListener('fbLimpezaErro', function(e){
+  showToast('Erro ao eliminar: '+(e.detail||''));
+});
 function showToast(msg){
   const t=document.getElementById("toast");
   t.textContent=msg;t.classList.add("show");
