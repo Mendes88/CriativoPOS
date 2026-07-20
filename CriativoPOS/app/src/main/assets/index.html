@@ -1848,11 +1848,17 @@ function abrirPagamentoParcial(mesaId){
   var m = mesasFB.find(function(x){return x.id===mesaId;});
   if(!m) return;
 
-  // Se mesa em_servico - continuar directamente (modal de confirmacao se necessario)
-
   // Ir buscar dados frescos da mesa do Firestore (total_pago e total_original actualizados)
   if(typeof AndroidFB !== 'undefined'){
-    try{ AndroidFB.buscarDadosMesa(mesaId); return; }catch(e){}
+    try{
+      // Timeout de seguranca: se fbDadosMesa nao chegar em 3s, abrir com dados locais
+      window._fbDadosMesaTimer = setTimeout(function(){
+        dbgLog('fbDadosMesa timeout - usando dados locais','inf');
+        _abrirModalComMesa(m);
+      }, 3000);
+      AndroidFB.buscarDadosMesa(mesaId);
+      return;
+    }catch(e){}
   }
   // Fallback sem AndroidFB
   _abrirModalComMesa(m);
@@ -1874,6 +1880,8 @@ function _abrirModalComMesa(m){
 // Listener para dados frescos da mesa (total_pago e total_original actualizados)
 window.addEventListener('fbDadosMesa', function(e){
   try{
+    // Limpar timeout de seguranca
+    if(window._fbDadosMesaTimer){ clearTimeout(window._fbDadosMesaTimer); window._fbDadosMesaTimer = null; }
     var dados = JSON.parse(e.detail||'{}');
     if(!dados.id) return;
     // Actualizar mesasFB com dados frescos
