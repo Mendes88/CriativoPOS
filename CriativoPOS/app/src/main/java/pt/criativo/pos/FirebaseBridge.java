@@ -748,15 +748,36 @@ public class FirebaseBridge {
     public void fecharMesa(String mesaId, String totalStr) {
         try {
             double total = Double.parseDouble(totalStr);
-            java.util.Map<String, Object> update = new java.util.HashMap<>();
-            update.put("estado",     "fechada");
-            update.put("total",      total);
-            update.put("fechado_em", com.google.firebase.Timestamp.now());
+            com.google.firebase.firestore.WriteBatch batch = db.batch();
 
-            db.collection("mesas").document(mesaId)
-                .update(update)
-                .addOnSuccessListener(v -> emitir("fbMesaFechada", mesaId))
-                .addOnFailureListener(e -> emitir("fbErro", "fecharMesa: " + (e.getMessage() != null ? e.getMessage() : "erro")));
+            // Fechar mesa
+            java.util.Map<String, Object> updateMesa = new java.util.HashMap<>();
+            updateMesa.put("estado",     "fechada");
+            updateMesa.put("total",      total);
+            updateMesa.put("fechado_em", com.google.firebase.Timestamp.now());
+            batch.update(db.collection("mesas").document(mesaId), updateMesa);
+
+            // Marcar todos os pedidos da mesa como tratado
+            db.collection("pedidos")
+                .whereEqualTo("mesaId", mesaId)
+                .get()
+                .addOnSuccessListener(snaps -> {
+                    for (com.google.firebase.firestore.DocumentSnapshot doc : snaps.getDocuments()) {
+                        String est = String.valueOf(doc.getData().getOrDefault("estado", ""));
+                        if (!"tratado".equals(est)) {
+                            batch.update(doc.getReference(), "estado", "tratado");
+                        }
+                    }
+                    batch.commit()
+                        .addOnSuccessListener(v -> emitir("fbMesaFechada", mesaId))
+                        .addOnFailureListener(e -> emitir("fbErro", "fecharMesa: " + (e.getMessage() != null ? e.getMessage() : "erro")));
+                })
+                .addOnFailureListener(e -> {
+                    // Se falhar a busca de pedidos, fechar mesa na mesma
+                    batch.commit()
+                        .addOnSuccessListener(v -> emitir("fbMesaFechada", mesaId))
+                        .addOnFailureListener(e2 -> emitir("fbErro", "fecharMesa: " + (e2.getMessage() != null ? e2.getMessage() : "erro")));
+                });
         } catch (Exception e) {
             emitir("fbErro", "fecharMesa: " + (e.getMessage() != null ? e.getMessage() : "erro"));
         }
