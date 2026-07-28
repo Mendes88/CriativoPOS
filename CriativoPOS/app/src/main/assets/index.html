@@ -5910,31 +5910,46 @@ function doBackup(auto){
 // ═══ EXPORT CSV (admin only) ═════════════════════════════
 function exportCSV(){
   if(!CU||CU.role!=="admin"){alert("Apenas o administrador pode exportar dados.");return;}
-  const sl=filteredSales();
-  const rows=[["Nº","Data","Hora","Artigos","Qtd Total","Total €","Método","NIF","Nome Cliente","Operador","Detalhe Artigos"]];
+  var sl = filteredSales();
+  var per = dateMode==='turno'?'Turno':(selDate==='WEEK'?'Semana':dFmt(selDate));
+
+  // Agregar artigos vendidos
+  var mapa = {};
   sl.forEach(function(s){
-    const artigos=s.items.map(function(i){return i.q+"x "+i.n;}).join(" | ");
-    const qtd=s.items.reduce(function(a,i){return a+i.q;},0);
-    rows.push([
-      String(s.id).padStart(4,"0"),
-      dFmt(s.date),
-      s.time,
-      '"'+artigos+'"',
-      qtd,
-      s.total.toFixed(2),
-      PML(s.met),
-      s.nif||"",
-      s.nifNome||"",
-      s.user||"",
-      '"'+s.items.map(function(i){return i.n+" €"+i.p.toFixed(2)+" x"+i.q;}).join("; ")+'"'
-    ]);
+    s.items.forEach(function(it){
+      var k = (it.n||it.nome||'?')+'|'+(it.p||it.preco||0);
+      if(!mapa[k]) mapa[k]={nome:it.n||it.nome||'?',preco:parseFloat(it.p||it.preco||0),qtd:0,total:0};
+      var q = parseInt(it.q||it.qtd||1);
+      mapa[k].qtd+=q; mapa[k].total+=q*parseFloat(it.p||it.preco||0);
+    });
   });
-  const csv=rows.map(function(r){return r.join(",");}).join("\n");
-  const bom="\uFEFF"; // UTF-8 BOM for Excel
-  const blob=new Blob([bom+csv],{type:"text/csv;charset=utf-8;"});
-  downloadBlob(blob, "CriativoPOS_vendas_"+today()+".csv");
-  showToast("✓ CSV exportado com "+sl.length+" registos");
+
+  var arts = Object.values(mapa).sort(function(a,b){return b.total-a.total;});
+  var totalGeral = arts.reduce(function(s,a){return s+a.total;},0);
+  var qtdGeral   = arts.reduce(function(s,a){return s+a.qtd;},0);
+
+  var rows = [
+    ['"CRIATIVO POS - Artigos Vendidos"'],
+    ['"Periodo: '+per+'"'],
+    ['"Exportado: '+dFmt(today())+'"'],
+    [],
+    ['Artigo','Preco Unitario','Quantidade','Total','% Vendas']
+  ];
+
+  arts.forEach(function(a){
+    var pct = totalGeral>0?(a.total/totalGeral*100).toFixed(1)+'%':'0%';
+    rows.push(['"'+a.nome+'"',a.preco.toFixed(2).replace('.',','),a.qtd,a.total.toFixed(2).replace('.',','),pct]);
+  });
+
+  rows.push([]);
+  rows.push(['"TOTAL"','',qtdGeral,totalGeral.toFixed(2).replace('.',','),'100%']);
+
+  var csv = rows.map(function(r){return r.join(';');}).join('\n');
+  var blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  downloadBlob(blob,'CriativoPOS_artigos_'+today()+'.csv');
+  showToast('\u2713 CSV exportado: '+arts.length+' artigos, '+sl.length+' vendas');
 }
+
 
 // ═══ DIVIDIR CONTA ═══════════════════════════════════════
 
