@@ -1395,6 +1395,55 @@ let noteChips=['Sem sal','Sem molho','Sem salada','Mal passado','Bem passado','M
 ;
 
 function getSales(a,b){return sales.filter(s=>s.date>=a&&s.date<=b);}
+
+// Filtragem por fechos de caixa (independente da meia-noite)
+// Um "periodo" e o intervalo entre dois fechos consecutivos
+function getSalesByFechos(fechoInicio, fechoFim){
+  // fechoInicio = {date, hora} ou null (inicio dos tempos)
+  // fechoFim    = {date, hora} ou null (ate agora)
+  return sales.filter(function(s){
+    var sTs = s.date + 'T' + (s.time||'00:00');
+    var apos  = !fechoInicio || sTs > (fechoInicio.date + 'T' + fechoInicio.hora);
+    var antes = !fechoFim    || sTs <= (fechoFim.date    + 'T' + fechoFim.hora);
+    return apos && antes;
+  });
+}
+
+// Obter o N-esimo fecho a contar do fim (0=ultimo, 1=penultimo, ...)
+function getNthFecho(n){
+  return closings.length > n ? closings[closings.length - 1 - n] : null;
+}
+
+// Vendas do "dia" anterior = entre penultimo e ultimo fecho
+function salesDiaAnterior(){
+  var ultimo    = getNthFecho(0);
+  var penultimo = getNthFecho(1);
+  if(!ultimo) return []; // sem fechos nao ha dia anterior
+  return getSalesByFechos(penultimo, ultimo);
+}
+
+// Vendas dos ultimos N fechos (N "dias" de evento)
+function salesUltimosNFechos(n){
+  if(closings.length === 0) return sales.slice();
+  var fechoInicio = getNthFecho(Math.min(n, closings.length) - 1);
+  var penultimoDoRange = closings.length > n ? getNthFecho(n) : null;
+  return getSalesByFechos(penultimoDoRange, null); // ate agora
+}
+
+// Vendas entre duas datas de fecho (por data do fecho, nao da venda)
+function salesEntreDatas(dataInicio, dataFim){
+  // Encontrar fechos dentro do intervalo
+  var fechosDentro = closings.filter(function(f){ return f.date >= dataInicio && f.date <= dataFim; });
+  if(fechosDentro.length === 0) return salesSinceFecho(); // sem fechos no intervalo
+  // Fecho anterior ao primeiro do intervalo
+  var idxPrimeiro = closings.indexOf(fechosDentro[0]);
+  var fechoAntes  = idxPrimeiro > 0 ? closings[idxPrimeiro - 1] : null;
+  // Ultimo fecho do intervalo
+  var fechoUltimo = fechosDentro[fechosDentro.length - 1];
+  // Se ainda ha turno aberto apos o ultimo fecho do intervalo, incluir
+  var incluirAberto = (dataFim >= today());
+  return getSalesByFechos(fechoAntes, incluirAberto ? null : fechoUltimo);
+}
 function todaySales(){return getSales(today(),today());}
 
 // ═══ LOGIN ═══════════════════════════════════════════════
@@ -3827,7 +3876,8 @@ function printRelatorio(){
 
   // Period label
   var per;
-  if(dateMode==="turno"){ per="Turno actual"; }
+  if(dateMode==="turno"||dateMode==="today"){ per="Desde ultimo fecho"; }
+  else if(dateMode==="yesterday"){ per="Periodo anterior"; }
   else if(dateMode==="custom"&&customFrom&&customTo){
     per=dFmt(customFrom)+" a "+dFmt(customTo);
   } else if(selDate==="WEEK"){
@@ -4014,11 +4064,13 @@ function updateDNavLbl(){
   el.textContent=dFmt(selDate);
 }
 function filteredSales(){
-  if(dateMode==="turno")  return salesSinceFecho(); // vendas desde ultimo fecho de caixa
-  if(dateMode==="custom" && customFrom && customTo) return getSales(customFrom,customTo);
-  if(selDate==="WEEK")   return getSales(weekStart(),today());
-  if(selDate==="MONTH")  return getSales(monthStart(),today());
-  return getSales(selDate,selDate);
+  if(dateMode==="turno")     return salesSinceFecho(); // turno actual (desde ultimo fecho)
+  if(dateMode==="yesterday") return salesDiaAnterior(); // entre penultimo e ultimo fecho
+  if(dateMode==="custom" && customFrom && customTo) return salesEntreDatas(customFrom, customTo);
+  if(selDate==="WEEK")  return salesEntreDatas(weekStart(), today());
+  if(selDate==="MONTH") return salesEntreDatas(monthStart(), today());
+  if(dateMode==="today") return salesSinceFecho(); // hoje = desde ultimo fecho (pode passar meia-noite)
+  return salesEntreDatas(selDate, selDate);
 }
 
 
