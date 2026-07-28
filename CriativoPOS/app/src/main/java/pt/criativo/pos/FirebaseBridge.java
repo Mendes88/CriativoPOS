@@ -1010,6 +1010,17 @@ public class FirebaseBridge {
             .addOnFailureListener(e -> Log.e("CriativoFB", "buscarDadosMesa: " + e.getMessage()));
     }
 
+    /** Grava PIN de activacao no Firebase para os Smartphones lerem */
+    @JavascriptInterface
+    public void gravarPinActivacao(String pin) {
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("pin", pin);
+        data.put("updated_at", com.google.firebase.Timestamp.now());
+        db.collection("config").document("activacao").set(data)
+            .addOnSuccessListener(v -> Log.d("CriativoFB", "PIN gravado"))
+            .addOnFailureListener(e -> Log.e("CriativoFB", "gravarPinActivacao: " + e.getMessage()));
+    }
+
     /** Grava total_pago manualmente quando introduzido pelo caixa */
     @JavascriptInterface
     public void gravarTotalPago(String mesaId, String totalPagoStr) {
