@@ -957,6 +957,18 @@ window.addEventListener('unhandledrejection', function(e){
         <button class="btn-ok" type="button" onclick="saveCfgBasic()" style="align-self:flex-start;padding:8px 20px;">&#128190; Guardar</button>
       </div>
 
+      <!-- PIN ACTIVACAO -->
+      <div style="background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:14px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#854F0B;text-transform:uppercase;letter-spacing:.5px;">&#128274; PIN de Activacao de Pedidos</div>
+        <div style="font-size:12px;color:#777;">Usado pelo funcionario para activar pedidos de pre-pagamento via QR Code.</div>
+        <div class="field">
+          <label>PIN (4 digitos)</label>
+          <input id="cfg-pin" type="number" inputmode="numeric" maxlength="4" placeholder="ex: 1234"
+            style="width:140px;font-size:20px;font-weight:700;letter-spacing:8px;text-align:center;">
+        </div>
+        <button class="btn-ok" type="button" onclick="saveCfgPin()" style="align-self:flex-start;padding:8px 20px;">&#128190; Guardar PIN</button>
+      </div>
+
       <!-- TALAO -->
       <div style="background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:14px;display:flex;flex-direction:column;gap:10px;">
         <div style="font-size:12px;font-weight:600;color:#854F0B;text-transform:uppercase;letter-spacing:.5px;">&#128204; Mensagem no Talão</div>
@@ -5750,6 +5762,7 @@ function renderCfg(){
     "cfg-name":    config.restName    || "",
     "cfg-posto":   config.postoName  || "",
     "cfg-nif":     config.nif         || "",
+    "cfg-pin":     lerPreferencia('pin_activacao') || "",
     "cfg-phone":   config.phone       ,
     "cfg-mbway":   config.mbwayPhone  || "",
     "cfg-doctype": config.defaultDocType || "talao",
@@ -5865,6 +5878,23 @@ function saveCfgBasic(){
   saveSales();
   showToast("✓ Dados guardados");
 }
+function saveCfgPin(){
+  var pin = (document.getElementById('cfg-pin').value||'').trim();
+  if(pin.length !== 4 || !/^\d{4}$/.test(pin)){
+    showToast('PIN tem de ter exactamente 4 digitos');
+    return;
+  }
+  // Gravar localmente
+  if(typeof AndroidFB !== 'undefined'){
+    try{ AndroidFB.gravarPreferencia('pin_activacao', pin); }catch(e){}
+  }
+  // Gravar no Firebase para os Smartphones lerem
+  if(typeof AndroidFB !== 'undefined'){
+    try{ AndroidFB.gravarPinActivacao(pin); }catch(e){}
+  }
+  showToast('✓ PIN de activacao guardado');
+}
+
 function saveCfgMsg(){
   config.footerMsg=document.getElementById("cfg-msg1").value.trim()||"Obrigado pela visita!";
   config.footerMsg2=document.getElementById("cfg-msg2").value.trim();
