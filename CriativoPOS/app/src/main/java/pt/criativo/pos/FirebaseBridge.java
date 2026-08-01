@@ -1010,6 +1010,28 @@ public class FirebaseBridge {
             .addOnFailureListener(e -> Log.e("CriativoFB", "buscarDadosMesa: " + e.getMessage()));
     }
 
+    /** Grava pedido pendente no Firebase para activacao por QR no Smartphone */
+    @JavascriptInterface
+    public void gravarPedidoPendente(String itemsJson, String totalStr, String numero, String mesa) {
+        try {
+            double total = Double.parseDouble(totalStr);
+            java.util.Map<String, Object> pedido = new java.util.HashMap<>();
+            pedido.put("items",      itemsJson);
+            pedido.put("total",      total);
+            pedido.put("numero",     numero);
+            pedido.put("mesa",       mesa != null ? mesa : "");
+            pedido.put("estado",     "aguarda_activacao");
+            pedido.put("tipo",       "balcao");
+            pedido.put("criado_em",  com.google.firebase.Timestamp.now());
+
+            db.collection("pedidos_pendentes").document("senha_" + numero).set(pedido)
+                .addOnSuccessListener(v -> Log.d("CriativoFB", "Pedido pendente: #" + numero))
+                .addOnFailureListener(e -> Log.e("CriativoFB", "gravarPedidoPendente: " + e.getMessage()));
+        } catch (Exception e) {
+            Log.e("CriativoFB", "gravarPedidoPendente: " + e.getMessage());
+        }
+    }
+
     /** Grava PIN de activacao no Firebase para os Smartphones lerem */
     @JavascriptInterface
     public void gravarPinActivacao(String pin) {
