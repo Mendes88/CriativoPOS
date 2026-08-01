@@ -2796,6 +2796,20 @@ function confirmPay(){
       return Object.values(grouped).concat(individual);
     })(),total:tot,met:payMethod,troco,nif,nifNome,fatCat:'Alimentação / Donativo / Apoio',split:(splitPessoas>1?splitPessoas:0),user:(CU?CU.nome:'—')||"",detail:detailItems,docType:docType};
   sales.push(sale);curSale=sale;saveSales();
+
+  // Se modo pre-pagamento, gravar pedido pendente no Firebase para activacao por QR
+  var _modoTrab = '';
+  if(typeof AndroidFB !== 'undefined'){ try{ _modoTrab = AndroidFB.lerPreferencia('modo_trabalho'); }catch(e){} }
+  if(_modoTrab === 'pre' && typeof AndroidFB !== 'undefined'){
+    try{
+      var _itemsJson = JSON.stringify(sale.items.map(function(i){
+        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||'cozinha'};
+      }));
+      var _numStr = String(sale.orderNum).padStart(4,'0');
+      AndroidFB.gravarPedidoPendente(_itemsJson, String(sale.total), _numStr, '');
+    }catch(ex){ console.error('gravarPedidoPendente:', ex); }
+  }
+
   // Fechar ou actualizar mesa no Firebase
   if(window._mesaAFechar && typeof AndroidFB !== 'undefined'){
     try{
@@ -2859,6 +2873,20 @@ function confirmPaySemImpressao(){
     })(),total:tot,met:payMethod,troco,nif,nifNome,fatCat:"Alimentação / Donativo / Apoio",
     split:(splitPessoas>1?splitPessoas:0),user:(CU?CU.nome:"—")||"",detail:detailItems,docType:docType};
   sales.push(sale);curSale=sale;saveSales();
+
+  // Se modo pre-pagamento, gravar pedido pendente no Firebase para activacao por QR
+  var _modoTrab = '';
+  if(typeof AndroidFB !== 'undefined'){ try{ _modoTrab = AndroidFB.lerPreferencia('modo_trabalho'); }catch(e){} }
+  if(_modoTrab === 'pre' && typeof AndroidFB !== 'undefined'){
+    try{
+      var _itemsJson = JSON.stringify(sale.items.map(function(i){
+        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||'cozinha'};
+      }));
+      var _numStr = String(sale.orderNum).padStart(4,'0');
+      AndroidFB.gravarPedidoPendente(_itemsJson, String(sale.total), _numStr, '');
+    }catch(ex){ console.error('gravarPedidoPendente:', ex); }
+  }
+
   // Fechar ou actualizar mesa no Firebase
   if(window._mesaAFechar && typeof AndroidFB !== 'undefined'){
     try{
