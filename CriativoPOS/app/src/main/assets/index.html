@@ -6207,10 +6207,8 @@ var _mesaParaConfirmar = null;
 function confirmarLimpeza(tipo){
   _tipoLimpeza = tipo;
   var msg = tipo === 'tudo'
-    ? 'Tens a certeza que queres eliminar TODOS os pedidos e mesas?
-Esta accao e irreversivel.'
-    : 'Tens a certeza que queres eliminar os pedidos e mesas fechadas?
-Esta accao e irreversivel.';
+    ? 'Tens a certeza que queres eliminar TODOS os pedidos e mesas? Esta accao e irreversivel.'
+    : 'Tens a certeza que queres eliminar os pedidos e mesas fechadas? Esta accao e irreversivel.';
   document.getElementById('limpar-msg').textContent = msg;
   document.getElementById('btn-limpar-conf').onclick = function(){ executarLimpeza(_tipoLimpeza); };
   document.getElementById('modal-limpar').style.display = 'block';
