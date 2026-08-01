@@ -957,6 +957,28 @@ window.addEventListener('unhandledrejection', function(e){
         <button class="btn-ok" type="button" onclick="saveCfgBasic()" style="align-self:flex-start;padding:8px 20px;">&#128190; Guardar</button>
       </div>
 
+      <!-- MODO DE TRABALHO -->
+      <div style="background:#fff;border-radius:10px;border:2px solid #EF9F27;padding:14px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;font-weight:600;color:#854F0B;text-transform:uppercase;letter-spacing:.5px;">&#9881; Modo de Trabalho</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <label style="display:flex;align-items:center;gap:10px;padding:12px;border:2px solid #ddd;border-radius:10px;cursor:pointer;" id="modo-label-pos">
+            <input type="radio" name="modo-trabalho" value="pos" id="modo-pos" onchange="saveModoTrabalho('pos')" style="width:18px;height:18px;">
+            <div>
+              <div style="font-size:14px;font-weight:700;">&#128203; Pos-pagamento</div>
+              <div style="font-size:12px;color:#777;">Empregados abrem mesas no Smartphone. Caixa cobra no fim.</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:12px;border:2px solid #ddd;border-radius:10px;cursor:pointer;" id="modo-label-pre">
+            <input type="radio" name="modo-trabalho" value="pre" id="modo-pre" onchange="saveModoTrabalho('pre')" style="width:18px;height:18px;">
+            <div>
+              <div style="font-size:14px;font-weight:700;">&#128269; Pre-pagamento com QR</div>
+              <div style="font-size:12px;color:#777;">Caixa cobra antecipadamente. Empregado activa pedido via QR no Smartphone.</div>
+            </div>
+          </label>
+        </div>
+        <div id="modo-actual" style="font-size:12px;color:#2e7d32;font-weight:600;"></div>
+      </div>
+
       <!-- PIN ACTIVACAO -->
       <div style="background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:14px;display:flex;flex-direction:column;gap:10px;">
         <div style="font-size:12px;font-weight:600;color:#854F0B;text-transform:uppercase;letter-spacing:.5px;">&#128274; PIN de Activacao de Pedidos</div>
@@ -1564,6 +1586,12 @@ function doLogin(u){
   ls.style.zIndex="-1";
   document.getElementById("tb").style.display="flex";
   buildNav();updateUserBox();switchView("pos");
+  // Aplicar modo de trabalho guardado
+  var modoGuardado = '';
+  if(typeof AndroidFB !== 'undefined'){
+    try{ modoGuardado = AndroidFB.lerPreferencia('modo_trabalho'); }catch(e){}
+  }
+  if(modoGuardado) aplicarModoTrabalho(modoGuardado);
   resetTimeout();
   fitScreen();
   // Show fecho bar for operadores
@@ -5878,6 +5906,40 @@ function saveCfgBasic(){
   saveSales();
   showToast("✓ Dados guardados");
 }
+function saveModoTrabalho(modo){
+  if(typeof AndroidFB !== 'undefined'){
+    try{ AndroidFB.gravarPreferencia('modo_trabalho', modo); }catch(e){}
+  }
+  aplicarModoTrabalho(modo);
+  var label = modo === 'pre' ? 'Pre-pagamento com QR activo' : 'Pos-pagamento activo';
+  document.getElementById('modo-actual').textContent = '✓ ' + label;
+  showToast('✓ Modo alterado. Reinicia a app para aplicar.');
+}
+
+function aplicarModoTrabalho(modo){
+  // Mostrar/esconder separador Mesas consoante o modo
+  var nbMesas = document.getElementById('nb-mesas');
+  if(nbMesas){
+    nbMesas.style.display = modo === 'pre' ? 'none' : '';
+  }
+  // Se modo pre e estamos nas mesas, ir para POS
+  if(modo === 'pre' && document.getElementById('nb-mesas') &&
+     document.getElementById('nb-mesas').classList.contains('on')){
+    switchView('pos');
+  }
+  // Actualizar radio no config
+  var radioPos = document.getElementById('modo-pos');
+  var radioPre = document.getElementById('modo-pre');
+  var labelPos = document.getElementById('modo-label-pos');
+  var labelPre = document.getElementById('modo-label-pre');
+  if(radioPos && radioPre){
+    radioPos.checked = modo !== 'pre';
+    radioPre.checked = modo === 'pre';
+    if(labelPos) labelPos.style.borderColor = modo !== 'pre' ? '#EF9F27' : '#ddd';
+    if(labelPre) labelPre.style.borderColor = modo === 'pre' ? '#EF9F27' : '#ddd';
+  }
+}
+
 function saveCfgPin(){
   var pin = (document.getElementById('cfg-pin').value||'').trim();
   if(pin.length !== 4 || !/^\d{4}$/.test(pin)){
@@ -5893,6 +5955,18 @@ function saveCfgPin(){
     try{ AndroidFB.gravarPinActivacao(pin); }catch(e){}
   }
   showToast('✓ PIN de activacao guardado');
+}
+
+function carregarModoConfig(){
+  var modo = '';
+  if(typeof AndroidFB !== 'undefined'){
+    try{ modo = AndroidFB.lerPreferencia('modo_trabalho'); }catch(e){}
+  }
+  modo = modo || 'pos';
+  aplicarModoTrabalho(modo);
+  var label = modo === 'pre' ? 'Pre-pagamento com QR activo' : 'Pos-pagamento activo';
+  var el = document.getElementById('modo-actual');
+  if(el) el.textContent = '✓ ' + label;
 }
 
 function saveCfgMsg(){
