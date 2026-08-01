@@ -5762,7 +5762,7 @@ function renderCfg(){
     "cfg-name":    config.restName    || "",
     "cfg-posto":   config.postoName  || "",
     "cfg-nif":     config.nif         || "",
-    "cfg-pin":     lerPreferencia('pin_activacao') || "",
+    "cfg-pin":     (typeof AndroidFB!=="undefined" ? (AndroidFB.lerPreferencia("pin_activacao")||"") : ""),
     "cfg-phone":   config.phone       ,
     "cfg-mbway":   config.mbwayPhone  || "",
     "cfg-doctype": config.defaultDocType || "talao",
