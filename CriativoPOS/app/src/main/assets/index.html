@@ -813,7 +813,18 @@ window.addEventListener('unhandledrejection', function(e){
       <div id="order-hdr">
         <span>Pedido</span>
         <span id="order-badge"></span>
-        <button onclick="showLastReceipts()" title="Últimos talões" style="background:transparent;border:1px solid #e0e0e0;border-radius:8px;padding:3px 8px;cursor:pointer;font-size:12px;color:#888888;margin-left:auto;">🖨️ Talões</button>
+        <!-- Toggle Balcao/Mesa -->
+        <div style="display:flex;gap:2px;margin-left:auto;margin-right:6px;background:#f0f0f0;border-radius:8px;padding:2px;">
+          <button id="toggle-balcao" onclick="setTipoEntrega('balcao')"
+            style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;background:#EF9F27;color:#111;">
+            &#127978; Balcao
+          </button>
+          <button id="toggle-mesa" onclick="setTipoEntrega('mesa')"
+            style="padding:4px 10px;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:#999;">
+            &#127859; Mesa
+          </button>
+        </div>
+        <button onclick="showLastReceipts()" title="Últimos talões" style="background:transparent;border:1px solid #e0e0e0;border-radius:8px;padding:3px 8px;cursor:pointer;font-size:12px;color:#888888;">&#128424;&#65039; Talões</button>
       </div>
       <div id="order-items"></div>
       <div id="order-totals"></div>
@@ -1407,6 +1418,22 @@ let CU=null,loginUID=null,pinBuf="";
 var mesasFB=[],mesaSelFB=null; // mesas do Firebase
 let posCat="Entradas",gestCat="Entradas";
 let order=[],payMethod="d",ordCnt=10,nifOpen=false;
+var _tipoEntrega = 'balcao'; // 'balcao' ou 'mesa'
+
+function setTipoEntrega(tipo){
+  _tipoEntrega = tipo;
+  var btnB = document.getElementById('toggle-balcao');
+  var btnM = document.getElementById('toggle-mesa');
+  if(btnB && btnM){
+    btnB.style.background = tipo === 'balcao' ? '#EF9F27' : 'transparent';
+    btnB.style.color      = tipo === 'balcao' ? '#111' : '#999';
+    btnM.style.background = tipo === 'mesa'   ? '#1565c0' : 'transparent';
+    btnM.style.color      = tipo === 'mesa'   ? '#fff' : '#999';
+  }
+  if(typeof AndroidFB !== 'undefined'){
+    try{ AndroidFB.gravarPreferencia('tipo_entrega', tipo); }catch(e){}
+  }
+}
 let modMode=null,modData={},detailItems=true,uidCnt=1,docType='talao',orderNum=1,levantamentos=[],splitPessoas=0;
 // Carregar preferência de listagem individual (predefinição: Sim)
 (function(){ var d=localStorage.getItem('crpos_detail'); if(d==='0') detailItems=false; })();
@@ -1586,6 +1613,14 @@ function doLogin(u){
   ls.style.zIndex="-1";
   document.getElementById("tb").style.display="flex";
   buildNav();updateUserBox();switchView("pos");
+  // Restaurar tipo de entrega
+  if(typeof AndroidFB !== 'undefined'){
+    try{
+      var tipoGuardado = AndroidFB.lerPreferencia('tipo_entrega');
+      if(tipoGuardado === 'mesa') setTipoEntrega('mesa');
+      else setTipoEntrega('balcao');
+    }catch(e){}
+  }
   // Aplicar modo de trabalho guardado
   var modoGuardado = '';
   if(typeof AndroidFB !== 'undefined'){
@@ -2797,10 +2832,12 @@ function confirmPay(){
     })(),total:tot,met:payMethod,troco,nif,nifNome,fatCat:'Alimentação / Donativo / Apoio',split:(splitPessoas>1?splitPessoas:0),user:(CU?CU.nome:'—')||"",detail:detailItems,docType:docType};
   sales.push(sale);curSale=sale;saveSales();
 
-  // Se modo pre-pagamento, gravar pedido pendente no Firebase para activacao por QR
+  // Se modo pre-pagamento E entrega na mesa: gravar pedido pendente no Firebase para activacao por QR
+  // Se balcao: nao precisa Firebase, pedido vai directo para KDS (sem QR)
   var _modoTrab = '';
   if(typeof AndroidFB !== 'undefined'){ try{ _modoTrab = AndroidFB.lerPreferencia('modo_trabalho'); }catch(e){} }
-  if(_modoTrab === 'pre' && typeof AndroidFB !== 'undefined'){
+  sale.tipoEntrega = _tipoEntrega; // guardar no registo de venda
+  if(_modoTrab === 'pre' && _tipoEntrega === 'mesa' && typeof AndroidFB !== 'undefined'){
     try{
       var _itemsJson = JSON.stringify(sale.items.map(function(i){
         return {n:i.n, p:i.p, q:i.q||1, d:i.destino||'cozinha'};
@@ -2808,6 +2845,15 @@ function confirmPay(){
       var _numStr = String(sale.orderNum).padStart(4,'0');
       AndroidFB.gravarPedidoPendente(_itemsJson, String(sale.total), _numStr, '');
     }catch(ex){ console.error('gravarPedidoPendente:', ex); }
+  } else if(_modoTrab === 'pre' && _tipoEntrega === 'balcao' && typeof AndroidFB !== 'undefined'){
+    // Balcao: enviar directamente para KDS sem activacao
+    try{
+      var _itemsJsonB = JSON.stringify(sale.items.map(function(i){
+        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||'cozinha'};
+      }));
+      var _numStrB = String(sale.orderNum).padStart(4,'0');
+      AndroidFB.enviarPedidoBalcao(_itemsJsonB, String(sale.total), _numStrB);
+    }catch(ex){ console.error('enviarPedidoBalcao:', ex); }
   }
 
   // Fechar ou actualizar mesa no Firebase
@@ -2874,10 +2920,12 @@ function confirmPaySemImpressao(){
     split:(splitPessoas>1?splitPessoas:0),user:(CU?CU.nome:"—")||"",detail:detailItems,docType:docType};
   sales.push(sale);curSale=sale;saveSales();
 
-  // Se modo pre-pagamento, gravar pedido pendente no Firebase para activacao por QR
+  // Se modo pre-pagamento E entrega na mesa: gravar pedido pendente no Firebase para activacao por QR
+  // Se balcao: nao precisa Firebase, pedido vai directo para KDS (sem QR)
   var _modoTrab = '';
   if(typeof AndroidFB !== 'undefined'){ try{ _modoTrab = AndroidFB.lerPreferencia('modo_trabalho'); }catch(e){} }
-  if(_modoTrab === 'pre' && typeof AndroidFB !== 'undefined'){
+  sale.tipoEntrega = _tipoEntrega; // guardar no registo de venda
+  if(_modoTrab === 'pre' && _tipoEntrega === 'mesa' && typeof AndroidFB !== 'undefined'){
     try{
       var _itemsJson = JSON.stringify(sale.items.map(function(i){
         return {n:i.n, p:i.p, q:i.q||1, d:i.destino||'cozinha'};
@@ -2885,6 +2933,15 @@ function confirmPaySemImpressao(){
       var _numStr = String(sale.orderNum).padStart(4,'0');
       AndroidFB.gravarPedidoPendente(_itemsJson, String(sale.total), _numStr, '');
     }catch(ex){ console.error('gravarPedidoPendente:', ex); }
+  } else if(_modoTrab === 'pre' && _tipoEntrega === 'balcao' && typeof AndroidFB !== 'undefined'){
+    // Balcao: enviar directamente para KDS sem activacao
+    try{
+      var _itemsJsonB = JSON.stringify(sale.items.map(function(i){
+        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||'cozinha'};
+      }));
+      var _numStrB = String(sale.orderNum).padStart(4,'0');
+      AndroidFB.enviarPedidoBalcao(_itemsJsonB, String(sale.total), _numStrB);
+    }catch(ex){ console.error('enviarPedidoBalcao:', ex); }
   }
 
   // Fechar ou actualizar mesa no Firebase
@@ -5080,7 +5137,7 @@ function buildConfirmESC(s){
     // QR Code se modo pre-pagamento
     var modoTrab = '';
     if(typeof AndroidFB !== 'undefined'){ try{ modoTrab = AndroidFB.lerPreferencia('modo_trabalho'); }catch(e){} }
-    if(modoTrab === 'pre'){
+    if(modoTrab === 'pre' && s.tipoEntrega === 'mesa'){
       var qrData = 'criativo://pedido/' + String(s.orderNum||s.id).padStart(4,'0');
       var qrBytes = [];
       for(var qi=0; qi<qrData.length; qi++) qrBytes.push(qrData.charCodeAt(qi)&0xFF);
@@ -6440,9 +6497,13 @@ function showLastReceipts(){
     html+='<div style="font-size:15px;font-weight:600;color:#854F0B;">'+EUR(s.total)+'</div>';
     html+='<div style="font-size:10px;color:#999;">'+operador+'</div>';
     html+='</div></div>';
-    html+='<div style="display:flex;gap:7px;">'+
-    '<button onclick="reprintSale('+s.id+')" style="flex:2;padding:8px;border-radius:8px;border:1px solid #BA7517;background:transparent;color:#854F0B;font-size:12px;cursor:pointer;font-weight:500;">🖨️ Reimprimir</button>'+
-    '<button onclick="deleteSale('+s.id+')" style="flex:1;padding:8px;border-radius:8px;border:1px solid #e74c3c;background:transparent;color:#c62828;font-size:12px;cursor:pointer;font-weight:500;">🗑️ Eliminar</button>'+
+    var tipoIcon = (s.tipoEntrega === 'mesa') ? '&#127859; Mesa' : '&#127978; Balcao';
+    html+='<div style="font-size:11px;color:#555;margin-bottom:6px;">Tipo: <b>'+tipoIcon+'</b></div>';
+    html+='<div style="display:flex;gap:5px;flex-wrap:wrap;">'+
+    '<button onclick="reprintSale('+s.id+')" style="flex:2;padding:7px;border-radius:8px;border:1px solid #BA7517;background:transparent;color:#854F0B;font-size:11px;cursor:pointer;font-weight:500;">&#128424; Reimprimir</button>'+
+    '<button onclick="reprintSaleAs('+s.id+','balcao')" style="flex:1;padding:7px;border-radius:8px;border:1px solid #EF9F27;background:transparent;color:#854F0B;font-size:11px;cursor:pointer;" title="Reimprimir como Balcao">&#127978;</button>'+
+    '<button onclick="reprintSaleAs('+s.id+','mesa')" style="flex:1;padding:7px;border-radius:8px;border:1px solid #1565c0;background:transparent;color:#1565c0;font-size:11px;cursor:pointer;" title="Reimprimir como Mesa">&#127859;</button>'+
+    '<button onclick="deleteSale('+s.id+')" style="flex:1;padding:7px;border-radius:8px;border:1px solid #e74c3c;background:transparent;color:#c62828;font-size:11px;cursor:pointer;">&#128465;</button>'+
     '</div>';
     html+='</div>';
   }
@@ -6457,6 +6518,34 @@ function reprintSale(id){
   curSale=s;
   document.getElementById("last-rcpt-overlay").classList.remove("open");
   showReceipt(s);
+}
+
+function reprintSaleAs(id, tipo){
+  const s=sales.find(function(x){return x.id===id;});
+  if(!s)return;
+  // Alterar tipo temporariamente para reimprimir
+  var tipoOriginal = s.tipoEntrega;
+  s.tipoEntrega = tipo;
+  if(s.detail===undefined) s.detail=true;
+  curSale=s;
+  document.getElementById("last-rcpt-overlay").classList.remove("open");
+  printConfirmation(s);
+  // Se mudou para mesa e modo pre, gravar no Firebase
+  var modoTrab = '';
+  if(typeof AndroidFB !== 'undefined'){ try{ modoTrab = AndroidFB.lerPreferencia('modo_trabalho'); }catch(e){} }
+  if(modoTrab === 'pre' && tipo === 'mesa' && typeof AndroidFB !== 'undefined'){
+    var itemsJson = JSON.stringify(s.items.map(function(i){return {n:i.n,p:i.p,q:i.q||1,d:i.destino||'cozinha'};}));
+    var numStr = String(s.orderNum).padStart(4,'0');
+    try{ AndroidFB.gravarPedidoPendente(itemsJson, String(s.total), numStr, ''); }catch(e){}
+    showToast('Pedido #'+numStr+' enviado para Firebase (entrega na mesa)');
+  } else if(modoTrab === 'pre' && tipo === 'balcao' && typeof AndroidFB !== 'undefined'){
+    var itemsJson2 = JSON.stringify(s.items.map(function(i){return {n:i.n,p:i.p,q:i.q||1,d:i.destino||'cozinha'};}));
+    var numStr2 = String(s.orderNum).padStart(4,'0');
+    try{ AndroidFB.enviarPedidoBalcao(itemsJson2, String(s.total), numStr2); }catch(e){}
+    showToast('Pedido #'+numStr2+' enviado para KDS (balcao)');
+  }
+  // Restaurar tipo original
+  s.tipoEntrega = tipoOriginal;
 }
 
 // ═══ CLOCK ══════════════════════════════════════════════
