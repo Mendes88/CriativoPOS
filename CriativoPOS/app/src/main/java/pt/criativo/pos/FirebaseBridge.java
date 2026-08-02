@@ -1032,6 +1032,31 @@ public class FirebaseBridge {
         }
     }
 
+    /** Envia pedido de balcao directamente para KDS (sem activacao QR) */
+    @JavascriptInterface
+    public void enviarPedidoBalcao(String itemsJson, String totalStr, String numero) {
+        try {
+            double total = Double.parseDouble(totalStr);
+            java.util.Map<String, Object> pedido = new java.util.HashMap<>();
+            pedido.put("items",      itemsJson);
+            pedido.put("total",      total);
+            pedido.put("numero",     numero);
+            pedido.put("mesa",       "Balcao");
+            pedido.put("estado",     "pendente");
+            pedido.put("tipo",       "balcao");
+            pedido.put("criado_em",  com.google.firebase.Timestamp.now());
+
+            db.collection("pedidos").add(pedido)
+                .addOnSuccessListener(ref -> {
+                    emitir("fbPedidoBalcaoEnviado", ref.getId());
+                    Log.d("CriativoFB", "Pedido balcao enviado KDS: " + ref.getId());
+                })
+                .addOnFailureListener(e -> Log.e("CriativoFB", "enviarPedidoBalcao: " + e.getMessage()));
+        } catch (Exception e) {
+            Log.e("CriativoFB", "enviarPedidoBalcao: " + e.getMessage());
+        }
+    }
+
     /** Grava PIN de activacao no Firebase para os Smartphones lerem */
     @JavascriptInterface
     public void gravarPinActivacao(String pin) {
