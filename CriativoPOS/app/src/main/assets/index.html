@@ -4684,10 +4684,18 @@ function deleteSale(id){
   sales = sales.filter(function(x){ return x.id !== id; });
   saveSales();
 
+  // Apagar pedido pendente do Firebase se existir
+  if(typeof AndroidFB !== 'undefined'){
+    try{
+      var numStr = String(s.orderNum||s.id).padStart(4,'0');
+      AndroidFB.apagarPedidoPendente(numStr);
+    }catch(ex){}
+  }
+
   if(isCash){
-    showToast("🗑️ Talão eliminado — saldo ajustado: −" + EUR(s.total));
+    showToast("\uD83D\uDDD1\uFE0F Talao eliminado \u2014 saldo ajustado: \u2212" + EUR(s.total));
   } else {
-    showToast("🗑️ Talão eliminado");
+    showToast("\uD83D\uDDD1\uFE0F Talao eliminado");
   }
 
   if(document.getElementById("last-rcpt-overlay").classList.contains("open")){
