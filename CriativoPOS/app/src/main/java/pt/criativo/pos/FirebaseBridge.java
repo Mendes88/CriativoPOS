@@ -1057,6 +1057,15 @@ public class FirebaseBridge {
         }
     }
 
+    /** Apaga pedido pendente do Firebase quando talao e eliminado */
+    @JavascriptInterface
+    public void apagarPedidoPendente(String numero) {
+        db.collection("pedidos_pendentes").document("senha_" + numero)
+            .delete()
+            .addOnSuccessListener(v -> Log.d("CriativoFB", "Pedido pendente apagado: #" + numero))
+            .addOnFailureListener(e -> Log.e("CriativoFB", "apagarPedidoPendente: " + e.getMessage()));
+    }
+
     /** Grava PIN de activacao no Firebase para os Smartphones lerem */
     @JavascriptInterface
     public void gravarPinActivacao(String pin) {
