@@ -6027,6 +6027,8 @@ function saveCfgBasic(){
 function saveModoTrabalho(modo){
   if(typeof AndroidFB !== 'undefined'){
     try{ AndroidFB.gravarPreferencia('modo_trabalho', modo); }catch(e){}
+    // Sincronizar modo com Firebase para os Smartphones
+    try{ AndroidFB.gravarModoTrabalhoFirebase(modo); }catch(e){}
   }
   aplicarModoTrabalho(modo);
   var label = modo === 'pre' ? 'Pre-pagamento com QR activo' : 'Pos-pagamento activo';
