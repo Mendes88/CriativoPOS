@@ -5149,19 +5149,23 @@ function buildConfirmESC(s){
       var qrData = 'criativo://pedido/' + String(s.orderNum||s.id).padStart(4,'0');
       var qrBytes = [];
       for(var qi=0; qi<qrData.length; qi++) qrBytes.push(qrData.charCodeAt(qi)&0xFF);
+      // Centrar via ESC a antes do bloco QR
+      esc.push(0x1B,0x61,0x01); // align center
+      esc.lf(1);
       // QR Code ESC/POS: seleccionar modelo 2
       esc.push(0x1D,0x28,0x6B,4,0,49,65,50,0);
-      // Tamanho do modulo (6)
-      esc.push(0x1D,0x28,0x6B,3,0,49,67,6);
+      // Tamanho do modulo (7 - maior = mais facil de ler)
+      esc.push(0x1D,0x28,0x6B,3,0,49,67,7);
       // Nivel de correcao M
       esc.push(0x1D,0x28,0x6B,3,0,49,69,49);
-      // Guardar dados
+      // Guardar dados QR
       var qrLen = qrBytes.length + 3;
       esc.push(0x1D,0x28,0x6B,qrLen&0xFF,(qrLen>>8)&0xFF,49,80,48);
       qrBytes.forEach(function(b){ esc.push(b); });
-      // Imprimir QR
+      // Imprimir QR centrado
       esc.push(0x1D,0x28,0x6B,3,0,49,81,48);
-      esc.lf(1);
+      esc.lf(2);
+      esc.push(0x1B,0x61,0x00); // align left
     }
     esc.sep();
     // Artigos: nome bold esq | (preco) centro sem bold | xQty bold dir
