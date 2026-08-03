@@ -1015,16 +1015,14 @@ public class FirebaseBridge {
     public void gravarModoTrabalhoFirebase(String modo) {
         java.util.Map<String, Object> data = new java.util.HashMap<>();
         data.put("modo_trabalho", modo);
+        // Usar set com merge:true - funciona mesmo se documento nao existir
         db.collection("config").document("activacao")
-            .update(data)
-            .addOnSuccessListener(v -> Log.d("CriativoFB", "Modo gravado: " + modo))
-            .addOnFailureListener(e -> {
-                // Se documento nao existe ainda, criar
-                java.util.Map<String, Object> full = new java.util.HashMap<>();
-                full.put("modo_trabalho", modo);
-                full.put("pin", "");
-                db.collection("config").document("activacao").set(full);
-            });
+            .set(data, com.google.firebase.firestore.SetOptions.merge())
+            .addOnSuccessListener(v -> {
+                Log.d("CriativoFB", "Modo gravado no Firebase: " + modo);
+                emitir("fbModoGravado", modo);
+            })
+            .addOnFailureListener(e -> Log.e("CriativoFB", "gravarModoTrabalhoFirebase: " + e.getMessage()));
     }
 
     /** Grava pedido pendente no Firebase para activacao por QR no Smartphone */
