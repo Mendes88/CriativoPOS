@@ -1010,6 +1010,23 @@ public class FirebaseBridge {
             .addOnFailureListener(e -> Log.e("CriativoFB", "buscarDadosMesa: " + e.getMessage()));
     }
 
+    /** Actualiza modo de trabalho no Firebase para os Smartphones sincronizarem */
+    @JavascriptInterface
+    public void gravarModoTrabalhoFirebase(String modo) {
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("modo_trabalho", modo);
+        db.collection("config").document("activacao")
+            .update(data)
+            .addOnSuccessListener(v -> Log.d("CriativoFB", "Modo gravado: " + modo))
+            .addOnFailureListener(e -> {
+                // Se documento nao existe ainda, criar
+                java.util.Map<String, Object> full = new java.util.HashMap<>();
+                full.put("modo_trabalho", modo);
+                full.put("pin", "");
+                db.collection("config").document("activacao").set(full);
+            });
+    }
+
     /** Grava pedido pendente no Firebase para activacao por QR no Smartphone */
     @JavascriptInterface
     public void gravarPedidoPendente(String itemsJson, String totalStr, String numero, String mesa) {
@@ -1070,7 +1087,11 @@ public class FirebaseBridge {
     @JavascriptInterface
     public void gravarPinActivacao(String pin) {
         java.util.Map<String, Object> data = new java.util.HashMap<>();
+        // Ler modo actual para incluir no mesmo documento
+        android.content.SharedPreferences prefs = activity.getSharedPreferences("CriativoPOS", android.app.Activity.MODE_PRIVATE);
+        String modoActual = prefs.getString("modo_trabalho", "pos");
         data.put("pin", pin);
+        data.put("modo_trabalho", modoActual);
         data.put("updated_at", com.google.firebase.Timestamp.now());
         db.collection("config").document("activacao").set(data)
             .addOnSuccessListener(v -> Log.d("CriativoFB", "PIN gravado"))
