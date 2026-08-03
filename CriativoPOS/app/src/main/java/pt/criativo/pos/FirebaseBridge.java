@@ -1036,7 +1036,8 @@ public class FirebaseBridge {
             pedido.put("numero",     numero);
             pedido.put("mesa",       mesa != null ? mesa : "");
             pedido.put("estado",     "aguarda_activacao");
-            pedido.put("tipo",       "balcao");
+            pedido.put("tipo",       "pre_pagamento");
+            pedido.put("entrega",    "mesa");
             pedido.put("criado_em",  com.google.firebase.Timestamp.now());
 
             db.collection("pedidos_pendentes").document("senha_" + numero).set(pedido)
@@ -1058,7 +1059,8 @@ public class FirebaseBridge {
             pedido.put("numero",     numero);
             pedido.put("mesa",       "Balcao");
             pedido.put("estado",     "pendente");
-            pedido.put("tipo",       "balcao");
+            pedido.put("tipo",       "pre_pagamento");
+            pedido.put("entrega",    "balcao");
             pedido.put("criado_em",  com.google.firebase.Timestamp.now());
 
             db.collection("pedidos").add(pedido)
