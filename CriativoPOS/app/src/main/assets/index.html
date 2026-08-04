@@ -972,15 +972,15 @@ window.addEventListener('unhandledrejection', function(e){
       <div style="background:#fff;border-radius:10px;border:2px solid #EF9F27;padding:14px;display:flex;flex-direction:column;gap:10px;">
         <div style="font-size:12px;font-weight:600;color:#854F0B;text-transform:uppercase;letter-spacing:.5px;">&#9881; Modo de Trabalho</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <label style="display:flex;align-items:center;gap:10px;padding:12px;border:2px solid #ddd;border-radius:10px;cursor:pointer;" id="modo-label-pos">
-            <input type="radio" name="modo-trabalho" value="pos" id="modo-pos" onchange="saveModoTrabalho('pos')" style="width:18px;height:18px;">
+          <label style="display:flex;align-items:center;gap:10px;padding:12px;border:2px solid #ddd;border-radius:10px;cursor:pointer;" id="modo-label-pos" onclick="saveModoTrabalho('pos')">
+            <input type="radio" name="modo-trabalho" value="pos" id="modo-pos" style="width:18px;height:18px;">
             <div>
               <div style="font-size:14px;font-weight:700;">&#128203; Pos-pagamento</div>
               <div style="font-size:12px;color:#777;">Empregados abrem mesas no Smartphone. Caixa cobra no fim.</div>
             </div>
           </label>
-          <label style="display:flex;align-items:center;gap:10px;padding:12px;border:2px solid #ddd;border-radius:10px;cursor:pointer;" id="modo-label-pre">
-            <input type="radio" name="modo-trabalho" value="pre" id="modo-pre" onchange="saveModoTrabalho('pre')" style="width:18px;height:18px;">
+          <label style="display:flex;align-items:center;gap:10px;padding:12px;border:2px solid #ddd;border-radius:10px;cursor:pointer;" id="modo-label-pre" onclick="saveModoTrabalho('pre')">
+            <input type="radio" name="modo-trabalho" value="pre" id="modo-pre" style="width:18px;height:18px;">
             <div>
               <div style="font-size:14px;font-weight:700;">&#128269; Pre-pagamento com QR</div>
               <div style="font-size:12px;color:#777;">Caixa cobra antecipadamente. Empregado activa pedido via QR no Smartphone.</div>
