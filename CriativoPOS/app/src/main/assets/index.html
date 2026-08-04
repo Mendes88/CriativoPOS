@@ -2630,7 +2630,7 @@ function addItem(id){
   // Sempre individual — cada toque = 1 linha separada
   // Pack = N linhas individuais de uma vez
   for(var k=0;k<packQty;k++){
-    order.push({uid:uidCnt++,id:it.id,n:it.n,p:it.p,q:1});
+    order.push({uid:uidCnt++,id:it.id,n:it.n,p:it.p,q:1,destino:it.destino||it.d||'cozinha'});
   }
   renderOrder();
 }
@@ -2840,7 +2840,7 @@ function confirmPay(){
   if(_modoTrab === 'pre' && _tipoEntrega === 'mesa' && typeof AndroidFB !== 'undefined'){
     try{
       var _itemsJson = JSON.stringify(sale.items.map(function(i){
-        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||'cozinha'};
+        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||i.d||'cozinha'};
       }));
       var _numStr = String(sale.orderNum).padStart(4,'0');
       AndroidFB.gravarPedidoPendente(_itemsJson, String(sale.total), _numStr, '');
@@ -2920,7 +2920,7 @@ function confirmPaySemImpressao(){
   if(_modoTrab === 'pre' && _tipoEntrega === 'mesa' && typeof AndroidFB !== 'undefined'){
     try{
       var _itemsJson = JSON.stringify(sale.items.map(function(i){
-        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||'cozinha'};
+        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||i.d||'cozinha'};
       }));
       var _numStr = String(sale.orderNum).padStart(4,'0');
       AndroidFB.gravarPedidoPendente(_itemsJson, String(sale.total), _numStr, '');
@@ -3488,6 +3488,7 @@ function openModal(mode,arg){
       <div class="field"><label>Nome</label><input id="mf1" type="text" maxlength="40"></div>
       <div class="field"><label>Preço (€)</label><input id="mf2" type="number" min="0" step="0.01"></div>
       <div class="field"><label>Pack — nº unidades <span style="font-size:10px;color:#777777;">(opcional, ex: 10)</span></label><input id="mf3" type="number" min="1" step="1" placeholder="1"></div>
+      <div class="field"><label>Destino</label><select id="mf4"><option value="cozinha">🍳 Cozinha</option><option value="bar">🍺 Bar</option></select></div>
       <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="saveModal()">✓ Criar</button></div>`;
   } else if(mode==="editItem"){
     const it=(ITEMS[gestCat]||[]).find(x=>x.id===arg);if(!it)return;
@@ -3496,6 +3497,7 @@ function openModal(mode,arg){
       <div class="field"><label>Nome</label><input id="mf1" type="text" value="${it.n}" maxlength="40"></div>
       <div class="field"><label>Preço (€)</label><input id="mf2" type="number" value="${it.p}" min="0" step="0.01"></div>
       <div class="field"><label>Pack — nº unidades <span style="font-size:10px;color:#777777;">(opcional, ex: 10)</span></label><input id="mf3" type="number" min="1" step="1" value="${it.pack||1}" placeholder="1"></div>
+      <div class="field"><label>Destino</label><select id="mf4"><option value="cozinha"${(it.destino||'cozinha')==='cozinha'?' selected':''}>🍳 Cozinha</option><option value="bar"${it.destino==='bar'?' selected':''}>🍺 Bar</option></select></div>
       <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="saveModal()">✓ Guardar</button></div>`;
   } else if(mode==="fundo"){
     modData={};
@@ -3540,8 +3542,8 @@ function saveModal(){
 
   if(modMode==="addCat"){if(!v1)return;if(CATS.includes(v1)){alert("Já existe!");return;}CATS.push(v1);ITEMS[v1]=[];gestCat=v1;renderCatList();renderItemList();renderCats();}
   else if(modMode==="editCat"){if(!v1)return;const old=modData.cat,idx=CATS.indexOf(old);if(v1!==old&&CATS.includes(v1)){alert("Já existe!");return;}CATS[idx]=v1;ITEMS[v1]=ITEMS[old];if(v1!==old)delete ITEMS[old];if(gestCat===old)gestCat=v1;if(posCat===old)posCat=v1;saveSales();renderCatList();renderItemList();renderCats();}
-  else if(modMode==="addItem"){if(!v1||isNaN(vn)||vn<0)return;const pk3=parseInt(document.getElementById('mf3')?.value)||1;const newIt={id:nid++,n:v1,p:vn};if(pk3>1)newIt.pack=pk3;ITEMS[modData.cat].push(newIt);saveSales();renderItemList();if(posCat===modData.cat)renderGrid();}
-  else if(modMode==="editItem"){if(!v1||isNaN(vn)||vn<0)return;const pk4=parseInt(document.getElementById('mf3')?.value)||1;const it=ITEMS[modData.cat].find(x=>x.id===modData.id);if(it){it.n=v1;it.p=vn;if(pk4>1){it.pack=pk4;}else{delete it.pack;}}const oi=order.find(x=>x.id===modData.id);if(oi){oi.n=v1;oi.p=vn;renderOrder();}saveSales();renderItemList();if(posCat===modData.cat)renderGrid();}
+  else if(modMode==="addItem"){if(!v1||isNaN(vn)||vn<0)return;const pk3=parseInt(document.getElementById('mf3')?.value)||1;const dest3=(document.getElementById('mf4')||{}).value||'cozinha';const newIt={id:nid++,n:v1,p:vn,destino:dest3};if(pk3>1)newIt.pack=pk3;ITEMS[modData.cat].push(newIt);saveSales();renderItemList();if(posCat===modData.cat)renderGrid();}
+  else if(modMode==="editItem"){if(!v1||isNaN(vn)||vn<0)return;const pk4=parseInt(document.getElementById('mf3')?.value)||1;const it=ITEMS[modData.cat].find(x=>x.id===modData.id);const dest4=(document.getElementById('mf4')||{}).value||'cozinha';if(it){it.n=v1;it.p=vn;it.destino=dest4;if(pk4>1){it.pack=pk4;}else{delete it.pack;}}const oi=order.find(x=>x.id===modData.id);if(oi){oi.n=v1;oi.p=vn;renderOrder();}saveSales();renderItemList();if(posCat===modData.cat)renderGrid();}
   else if(modMode==="note"){
     // Handled by pendingSave() directly
     closeModal(); renderOrder(); return;
