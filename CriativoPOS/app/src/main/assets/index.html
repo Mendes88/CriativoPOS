@@ -3488,7 +3488,7 @@ function openModal(mode,arg){
       <div class="field"><label>Nome</label><input id="mf1" type="text" maxlength="40"></div>
       <div class="field"><label>Preço (€)</label><input id="mf2" type="number" min="0" step="0.01"></div>
       <div class="field"><label>Pack — nº unidades <span style="font-size:10px;color:#777777;">(opcional, ex: 10)</span></label><input id="mf3" type="number" min="1" step="1" placeholder="1"></div>
-      <div class="field"><label>Destino</label><select id="mf4"><option value="cozinha">🍳 Cozinha</option><option value="bar">🍺 Bar</option></select></div>
+      <div class="field"><label>Destino</label><select id="mf4"><option value="cozinha"${destinoPorCategoria(gestCat)==='cozinha'?' selected':''}>🍳 Cozinha</option><option value="bar"${destinoPorCategoria(gestCat)==='bar'?' selected':''}>🍺 Bar</option></select></div>
       <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="saveModal()">✓ Criar</button></div>`;
   } else if(mode==="editItem"){
     const it=(ITEMS[gestCat]||[]).find(x=>x.id===arg);if(!it)return;
@@ -5785,6 +5785,12 @@ function importMenu(input){
     }
     CATS  = data.cats;
     ITEMS = data.items;
+    // Aplicar destino por categoria onde estiver em falta
+    CATS.forEach(function(cat){
+      (ITEMS[cat]||[]).forEach(function(it){
+        if(!it.destino) it.destino = destinoPorCategoria(cat);
+      });
+    });
     // Reset any nid counter above max existing id
     var allIds = Object.values(ITEMS).flat().map(function(i){return i.id||0;});
     if(allIds.length) nid = Math.max.apply(null, allIds) + 1;
@@ -6417,6 +6423,17 @@ function showToast(msg){
   t.textContent=msg;t.classList.add("show");
   setTimeout(function(){t.classList.remove("show");},2500);
 }
+function destinoPorCategoria(cat){
+  var c = (cat||'').toLowerCase();
+  if(c.includes('bebida') || c.includes('bar') || c.includes('drink') ||
+     c.includes('cerveja') || c.includes('vinho') || c.includes('cafe') ||
+     c.includes('café') || c.includes('agua') || c.includes('água') ||
+     c.includes('refriger') || c.includes('sumo') || c.includes('suco')){
+    return 'bar';
+  }
+  return 'cozinha';
+}
+
 function saveSales(){
   try{
     localStorage.setItem("crpos_sales",JSON.stringify(sales));
