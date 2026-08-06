@@ -1087,13 +1087,11 @@ public class FirebaseBridge {
     @JavascriptInterface
     public void gravarPinActivacao(String pin) {
         java.util.Map<String, Object> data = new java.util.HashMap<>();
-        // Ler modo actual para incluir no mesmo documento
-        android.content.SharedPreferences prefs = activity.getSharedPreferences("CriativoPOS", android.app.Activity.MODE_PRIVATE);
-        String modoActual = prefs.getString("modo_trabalho", "pos");
         data.put("pin", pin);
-        data.put("modo_trabalho", modoActual);
         data.put("updated_at", com.google.firebase.Timestamp.now());
-        db.collection("config").document("activacao").set(data)
+        // Usar merge:true para nao sobrescrever modo_trabalho e outros campos
+        db.collection("config").document("activacao")
+            .set(data, com.google.firebase.firestore.SetOptions.merge())
             .addOnSuccessListener(v -> Log.d("CriativoFB", "PIN gravado"))
             .addOnFailureListener(e -> Log.e("CriativoFB", "gravarPinActivacao: " + e.getMessage()));
     }
