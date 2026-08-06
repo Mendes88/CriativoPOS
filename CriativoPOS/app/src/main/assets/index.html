@@ -2832,29 +2832,22 @@ function confirmPay(){
     })(),total:tot,met:payMethod,troco,nif,nifNome,fatCat:'Alimentação / Donativo / Apoio',split:(splitPessoas>1?splitPessoas:0),user:(CU?CU.nome:'—')||"",detail:detailItems,docType:docType};
   sales.push(sale);curSale=sale;saveSales();
 
-  // Se modo pre-pagamento E entrega na mesa: gravar pedido pendente no Firebase para activacao por QR
-  // Se balcao: nao precisa Firebase, pedido vai directo para KDS (sem QR)
+  // Modo pre-pagamento: gravar pedido pendente no Firebase para activacao por QR no Smartphone
+  // Balcao: cliente levanta, nao vai para KDS
+  // Mesa: Smartphone activa via QR e envia para KDS
   var _modoTrab = '';
   if(typeof AndroidFB !== 'undefined'){ try{ _modoTrab = AndroidFB.lerPreferencia('modo_trabalho'); }catch(e){} }
-  sale.tipoEntrega = _tipoEntrega; // guardar no registo de venda
+  sale.tipoEntrega = _tipoEntrega;
   if(_modoTrab === 'pre' && _tipoEntrega === 'mesa' && typeof AndroidFB !== 'undefined'){
     try{
       var _itemsJson = JSON.stringify(sale.items.map(function(i){
-        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||'cozinha'};
+        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||i.d||destinoPorNome(i.n)||'cozinha'};
       }));
       var _numStr = String(sale.orderNum).padStart(4,'0');
       AndroidFB.gravarPedidoPendente(_itemsJson, String(sale.total), _numStr, '');
     }catch(ex){ console.error('gravarPedidoPendente:', ex); }
-  } else if(_modoTrab === 'pre' && _tipoEntrega === 'balcao' && typeof AndroidFB !== 'undefined'){
-    // Balcao: enviar directamente para KDS sem activacao
-    try{
-      var _itemsJsonB = JSON.stringify(sale.items.map(function(i){
-        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||'cozinha'};
-      }));
-      var _numStrB = String(sale.orderNum).padStart(4,'0');
-      AndroidFB.enviarPedidoBalcao(_itemsJsonB, String(sale.total), _numStrB);
-    }catch(ex){ console.error('enviarPedidoBalcao:', ex); }
   }
+  // Balcao: nao envia para KDS nem Firebase - cliente levanta no balcao
 
   // Fechar ou actualizar mesa no Firebase
   if(window._mesaAFechar && typeof AndroidFB !== 'undefined'){
@@ -2920,29 +2913,22 @@ function confirmPaySemImpressao(){
     split:(splitPessoas>1?splitPessoas:0),user:(CU?CU.nome:"—")||"",detail:detailItems,docType:docType};
   sales.push(sale);curSale=sale;saveSales();
 
-  // Se modo pre-pagamento E entrega na mesa: gravar pedido pendente no Firebase para activacao por QR
-  // Se balcao: nao precisa Firebase, pedido vai directo para KDS (sem QR)
+  // Modo pre-pagamento: gravar pedido pendente no Firebase para activacao por QR no Smartphone
+  // Balcao: cliente levanta, nao vai para KDS
+  // Mesa: Smartphone activa via QR e envia para KDS
   var _modoTrab = '';
   if(typeof AndroidFB !== 'undefined'){ try{ _modoTrab = AndroidFB.lerPreferencia('modo_trabalho'); }catch(e){} }
-  sale.tipoEntrega = _tipoEntrega; // guardar no registo de venda
+  sale.tipoEntrega = _tipoEntrega;
   if(_modoTrab === 'pre' && _tipoEntrega === 'mesa' && typeof AndroidFB !== 'undefined'){
     try{
       var _itemsJson = JSON.stringify(sale.items.map(function(i){
-        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||'cozinha'};
+        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||i.d||destinoPorNome(i.n)||'cozinha'};
       }));
       var _numStr = String(sale.orderNum).padStart(4,'0');
       AndroidFB.gravarPedidoPendente(_itemsJson, String(sale.total), _numStr, '');
     }catch(ex){ console.error('gravarPedidoPendente:', ex); }
-  } else if(_modoTrab === 'pre' && _tipoEntrega === 'balcao' && typeof AndroidFB !== 'undefined'){
-    // Balcao: enviar directamente para KDS sem activacao
-    try{
-      var _itemsJsonB = JSON.stringify(sale.items.map(function(i){
-        return {n:i.n, p:i.p, q:i.q||1, d:i.destino||'cozinha'};
-      }));
-      var _numStrB = String(sale.orderNum).padStart(4,'0');
-      AndroidFB.enviarPedidoBalcao(_itemsJsonB, String(sale.total), _numStrB);
-    }catch(ex){ console.error('enviarPedidoBalcao:', ex); }
   }
+  // Balcao: nao envia para KDS nem Firebase - cliente levanta no balcao
 
   // Fechar ou actualizar mesa no Firebase
   if(window._mesaAFechar && typeof AndroidFB !== 'undefined'){
@@ -6552,12 +6538,8 @@ function reprintSaleAs(id, tipo){
     var numStr = String(s.orderNum).padStart(4,'0');
     try{ AndroidFB.gravarPedidoPendente(itemsJson, String(s.total), numStr, ''); }catch(e){}
     showToast('Pedido #'+numStr+' enviado para Firebase (entrega na mesa)');
-  } else if(modoTrab === 'pre' && tipo === 'balcao' && typeof AndroidFB !== 'undefined'){
-    var itemsJson2 = JSON.stringify(s.items.map(function(i){return {n:i.n,p:i.p,q:i.q||1,d:i.destino||'cozinha'};}));
-    var numStr2 = String(s.orderNum).padStart(4,'0');
-    try{ AndroidFB.enviarPedidoBalcao(itemsJson2, String(s.total), numStr2); }catch(e){}
-    showToast('Pedido #'+numStr2+' enviado para KDS (balcao)');
   }
+  // Balcao: nao envia para KDS
   // Restaurar tipo original
   s.tipoEntrega = tipoOriginal;
 }
