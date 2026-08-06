@@ -1613,6 +1613,12 @@ function doLogin(u){
   ls.style.zIndex="-1";
   document.getElementById("tb").style.display="flex";
   buildNav();updateUserBox();switchView("pos");
+  // No modo pre-pagamento, carregar menu do Firebase para ter destinos correctos
+  var _modoInit = '';
+  if(typeof AndroidFB !== 'undefined'){ try{ _modoInit = AndroidFB.lerPreferencia('modo_trabalho'); }catch(e){} }
+  if(_modoInit === 'pre' && typeof AndroidFB !== 'undefined'){
+    try{ AndroidFB.carregarMenu(); }catch(e){}
+  }
   // Restaurar tipo de entrega
   if(typeof AndroidFB !== 'undefined'){
     try{
@@ -6417,6 +6423,54 @@ function showToast(msg){
   t.textContent=msg;t.classList.add("show");
   setTimeout(function(){t.classList.remove("show");},2500);
 }
+// Listener do menu Firebase - actualiza destinos dos artigos locais
+window.addEventListener('fbMenuCarregado', function(e){
+  try{
+    var dados = JSON.parse(e.detail||'{}');
+    var cats  = dados.cats  || [];
+    var arts  = dados.artigos || {};
+    if(!cats.length) return;
+    cats.forEach(function(cat){
+      var catId   = cat.id;
+      var catNome = (cat.nome||catId).toLowerCase();
+      var fbArts  = arts[catId] || [];
+      // Encontrar categoria local pelo nome
+      var localCat = CATS.find(function(c){
+        return c && (c.toLowerCase()===catNome || c.toLowerCase()===catId.toLowerCase());
+      });
+      if(!localCat) return;
+      var localItems = ITEMS[localCat] || [];
+      localItems.forEach(function(localArt){
+        var fbArt = fbArts.find(function(fa){
+          return fa.nome && localArt.n &&
+                 fa.nome.trim().toUpperCase() === (localArt.n||'').trim().toUpperCase();
+        });
+        if(fbArt && fbArt.destino) localArt.destino = fbArt.destino;
+      });
+    });
+    saveSales();
+  }catch(ex){}
+});
+
+function destinoPorNome(nome){
+  var n = (nome||'').toLowerCase();
+  if(n.includes('cerveja') || n.includes('beer') ||
+     n.includes('vinho') || n.includes('wine') ||
+     n.includes('agua') || n.includes('água') ||
+     n.includes('refriger') || n.includes('cola') || n.includes('fanta') ||
+     n.includes('sprite') || n.includes('sumo') || n.includes('suco') ||
+     n.includes('cafe') || n.includes('café') || n.includes('coffee') ||
+     n.includes('cha') || n.includes('chá') ||
+     n.includes('cidra') || n.includes('gin') || n.includes('vodka') ||
+     n.includes('whisky') || n.includes('rum') || n.includes('shot') ||
+     n.includes('cocktail') || n.includes('porto') || n.includes('sangria') ||
+     n.includes('licor') || n.includes('limonada') ||
+     n.includes('imperial') || n.includes('fino') || n.includes('caneca')){
+    return 'bar';
+  }
+  return 'cozinha';
+}
+
 function saveSales(){
   try{
     localStorage.setItem("crpos_sales",JSON.stringify(sales));
