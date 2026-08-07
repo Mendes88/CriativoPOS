@@ -3,30 +3,24 @@ name: Build Criativo Smartphone APK
 on:
   workflow_dispatch:
 
-  jobs:
-    build:
-        runs-on: ubuntu-latest
-            steps:
-                  - uses: actions/checkout@v4
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-                        - uses: actions/setup-java@v4
-                                with:
-                                          java-version: '17'
-                                                    distribution: 'temurin'
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-                                                          - name: Build Release APK
-                                                                  run: |
-                                                                            cd CriativoSmartphone
-                                                                                      chmod +x gradlew
-                                                                                                ./gradlew assembleRelease \
-                                                                                                            -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/criativo-pos.keystore \
-                                                                                                                        -Pandroid.injected.signing.store.password=Criativo2024! \
-                                                                                                                                    -Pandroid.injected.signing.key.alias=criativo-pos \
-                                                                                                                                                -Pandroid.injected.signing.key.password=Criativo2024! \
-                                                                                                                                                            --no-daemon
-                                                                                                                                                            
-                                                                                                                                                                  - uses: actions/upload-artifact@v4
-                                                                                                                                                                          with:
-                                                                                                                                                                                    name: CriativoSmartphone-Release
-                                                                                                                                                                                              path: "**/*-release.apk"
-                                                                                                                                                                                              
+      - name: Build Release APK
+        run: |
+          cd CriativoSmartphone
+          chmod +x gradlew
+          ./gradlew assembleRelease -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/criativo-pos.keystore -Pandroid.injected.signing.store.password=Criativo2024! -Pandroid.injected.signing.key.alias=criativo-pos -Pandroid.injected.signing.key.password=Criativo2024! --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CriativoSmartphone-Release
+          path: "**/*-release.apk"
