@@ -2844,6 +2844,7 @@ function confirmPay(){
   var _modoTrab = '';
   if(typeof AndroidFB !== 'undefined'){ try{ _modoTrab = AndroidFB.lerPreferencia('modo_trabalho'); }catch(e){} }
   sale.tipoEntrega = _tipoEntrega;
+  showToast('Modo: '+(_modoTrab||'(vazio)')+' | Tipo: '+_tipoEntrega);
   if(_modoTrab === 'pre' && _tipoEntrega === 'mesa' && typeof AndroidFB !== 'undefined'){
     try{
       var _itemsJson = JSON.stringify(sale.items.map(function(i){
@@ -2851,7 +2852,8 @@ function confirmPay(){
       }));
       var _numStr = String(sale.orderNum).padStart(4,'0');
       AndroidFB.gravarPedidoPendente(_itemsJson, String(sale.total), _numStr, '');
-    }catch(ex){ console.error('gravarPedidoPendente:', ex); }
+      showToast('✓ Pedido pendente gravado: #'+_numStr);
+    }catch(ex){ showToast('ERRO: '+ex.message); }
   }
   // Balcao: nao envia para KDS nem Firebase - cliente levanta no balcao
 
@@ -2925,6 +2927,7 @@ function confirmPaySemImpressao(){
   var _modoTrab = '';
   if(typeof AndroidFB !== 'undefined'){ try{ _modoTrab = AndroidFB.lerPreferencia('modo_trabalho'); }catch(e){} }
   sale.tipoEntrega = _tipoEntrega;
+  showToast('Modo: '+(_modoTrab||'(vazio)')+' | Tipo: '+_tipoEntrega);
   if(_modoTrab === 'pre' && _tipoEntrega === 'mesa' && typeof AndroidFB !== 'undefined'){
     try{
       var _itemsJson = JSON.stringify(sale.items.map(function(i){
@@ -2932,7 +2935,8 @@ function confirmPaySemImpressao(){
       }));
       var _numStr = String(sale.orderNum).padStart(4,'0');
       AndroidFB.gravarPedidoPendente(_itemsJson, String(sale.total), _numStr, '');
-    }catch(ex){ console.error('gravarPedidoPendente:', ex); }
+      showToast('✓ Pedido pendente gravado: #'+_numStr);
+    }catch(ex){ showToast('ERRO: '+ex.message); }
   }
   // Balcao: nao envia para KDS nem Firebase - cliente levanta no balcao
 
