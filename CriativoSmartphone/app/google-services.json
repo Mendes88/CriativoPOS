@@ -7,9 +7,66 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:500187235617:android:b2ea22fc3b3e78185eea60",
+        "android_client_info": {
+          "package_name": "pt.criativo.kds"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHANQKhbaHhQD-p-fD7ACfNjviGw2RseI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:500187235617:android:a142eb4106262bdb5eea60",
         "android_client_info": {
           "package_name": "pt.criativo.pos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHANQKhbaHhQD-p-fD7ACfNjviGw2RseI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:500187235617:android:5ea5705d30f49ae85eea60",
+        "android_client_info": {
+          "package_name": "pt.criativo.registo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHANQKhbaHhQD-p-fD7ACfNjviGw2RseI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:500187235617:android:ef677a757a70b9205eea60",
+        "android_client_info": {
+          "package_name": "pt.criativo.smartphone"
         }
       },
       "oauth_client": [],
