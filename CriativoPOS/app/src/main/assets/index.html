@@ -2636,7 +2636,7 @@ function addItem(id){
   // Sempre individual — cada toque = 1 linha separada
   // Pack = N linhas individuais de uma vez
   for(var k=0;k<packQty;k++){
-    order.push({uid:uidCnt++,id:it.id,n:it.n,p:it.p,q:1});
+    order.push({uid:uidCnt++,id:it.id,n:it.n,p:it.p,q:1,destino:it.destino||destinoPorNome(it.n)||'cozinha'});
   }
   renderOrder();
 }
