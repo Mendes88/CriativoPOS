@@ -3509,6 +3509,7 @@ function openModal(mode,arg){
       <div class="field"><label>Nome</label><input id="mf1" type="text" value="${it.n}" maxlength="40"></div>
       <div class="field"><label>Preço (€)</label><input id="mf2" type="number" value="${it.p}" min="0" step="0.01"></div>
       <div class="field"><label>Pack — nº unidades <span style="font-size:10px;color:#777777;">(opcional, ex: 10)</span></label><input id="mf3" type="number" min="1" step="1" value="${it.pack||1}" placeholder="1"></div>
+      <div class="field"><label>Destino</label><select id="mf4"><option value="cozinha"${(it.destino||destinoPorNome(it.n||''))!=='bar'?' selected':''}>🍳 Cozinha</option><option value="bar"${(it.destino||destinoPorNome(it.n||''))==='bar'?' selected':''}>🍺 Bar</option></select></div>
       <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="saveModal()">✓ Guardar</button></div>`;
   } else if(mode==="fundo"){
     modData={};
