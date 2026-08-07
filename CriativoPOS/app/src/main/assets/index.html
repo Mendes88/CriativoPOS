@@ -3357,6 +3357,7 @@ function renderItemList(){
     itemHtml+=
       '<div class="item-row">'+
         '<span class="item-row-name">'+it.n+'</span>'+
+        '<span style="font-size:11px;color:#999;padding:2px 5px;">'+(((it.destino||destinoPorNome(it.n))==='bar')?'&#127866;':'&#127859;')+'</span>'+
         '<span class="item-row-price" style="color:'+col+';">'+EUR(it.p)+'</span>'+
         '<div style="display:flex;gap:2px;flex-shrink:0;">'+
           '<button class="icon-btn" onclick="toggleFav('+it.id+')" title="'+(favs.includes(it.id)?'Remover dos favoritos':'Adicionar aos favoritos')+'" style="'+
@@ -3552,7 +3553,7 @@ function saveModal(){
 
   if(modMode==="addCat"){if(!v1)return;if(CATS.includes(v1)){alert("Já existe!");return;}CATS.push(v1);ITEMS[v1]=[];gestCat=v1;renderCatList();renderItemList();renderCats();}
   else if(modMode==="editCat"){if(!v1)return;const old=modData.cat,idx=CATS.indexOf(old);if(v1!==old&&CATS.includes(v1)){alert("Já existe!");return;}CATS[idx]=v1;ITEMS[v1]=ITEMS[old];if(v1!==old)delete ITEMS[old];if(gestCat===old)gestCat=v1;if(posCat===old)posCat=v1;saveSales();renderCatList();renderItemList();renderCats();}
-  else if(modMode==="addItem"){if(!v1||isNaN(vn)||vn<0)return;const pk3=parseInt(document.getElementById('mf3')?.value)||1;const newIt={id:nid++,n:v1,p:vn};if(pk3>1)newIt.pack=pk3;ITEMS[modData.cat].push(newIt);saveSales();renderItemList();if(posCat===modData.cat)renderGrid();}
+  else if(modMode==="addItem"){if(!v1||isNaN(vn)||vn<0)return;const pk3=parseInt(document.getElementById('mf3')?.value)||1;const dest3=(document.getElementById('mf4')||{}).value||destinoPorCategoria(modData.cat)||'cozinha';const newIt={id:nid++,n:v1,p:vn,destino:dest3};if(pk3>1)newIt.pack=pk3;ITEMS[modData.cat].push(newIt);saveSales();renderItemList();if(posCat===modData.cat)renderGrid();}
   else if(modMode==="editItem"){if(!v1||isNaN(vn)||vn<0)return;const pk4=parseInt(document.getElementById('mf3')?.value)||1;const it=ITEMS[modData.cat].find(x=>x.id===modData.id);if(it){it.n=v1;it.p=vn;if(pk4>1){it.pack=pk4;}else{delete it.pack;}}const oi=order.find(x=>x.id===modData.id);if(oi){oi.n=v1;oi.p=vn;renderOrder();}saveSales();renderItemList();if(posCat===modData.cat)renderGrid();}
   else if(modMode==="note"){
     // Handled by pendingSave() directly
@@ -6469,7 +6470,13 @@ function destinoPorNome(nome){
      n.includes('whisky') || n.includes('rum') || n.includes('shot') ||
      n.includes('cocktail') || n.includes('porto') || n.includes('sangria') ||
      n.includes('licor') || n.includes('limonada') ||
-     n.includes('imperial') || n.includes('fino') || n.includes('caneca')){
+     n.includes('imperial') || n.includes('fino') || n.includes('caneca') ||
+     n.includes('espumante') || n.includes('prosecco') || n.includes('cava') ||
+     n.includes('champagne') || n.includes('champanhe') || n.includes('moscatel') ||
+     n.includes('sagres') || n.includes('superbock') || n.includes('heineken') ||
+     n.includes('soda') || n.includes('tonica') || n.includes('laranjada') ||
+     n.includes('compal') || n.includes('sumol') || n.includes('7up') ||
+     n.includes('ice tea') || n.includes('radler') || n.includes('cider')){
     return 'bar';
   }
   return 'cozinha';
