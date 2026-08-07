@@ -2631,7 +2631,7 @@ function renderGrid(){
 }
 
 function addItem(id){
-  const it=ITEMS?Object.values(ITEMS).flat().find(x=>x.id===id):null;if(!it)return;
+  const it=ITEMS?Object.values(ITEMS).flat().find(x=>x.id==id):null;if(!it)return; // == para aceitar string ou numero
   const packQty = (it.pack&&it.pack>1) ? it.pack : 1;
   // Sempre individual — cada toque = 1 linha separada
   // Pack = N linhas individuais de uma vez
