@@ -938,6 +938,19 @@ window.addEventListener('unhandledrejection', function(e){
 
   <!-- CONFIG - STATIC HTML -->
   <div id="vcfg" style="display:none;flex-direction:column;padding:0 0 60px 0;">
+    <!-- Reset contador de pedidos -->
+    <div style="background:#1a0a0a;border:1px solid #5a1a1a;border-radius:12px;padding:16px;margin:12px 12px 0;">
+      <div style="font-size:13px;font-weight:700;color:#f44;margin-bottom:6px;">&#9888;&#65039; Reset Contador de Pedidos</div>
+      <div style="font-size:12px;color:#888;margin-bottom:10px;">Usar apenas se houver conflito de numeros. O proximo pedido comecara no numero indicado.</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input id="reset-ordernum-val" type="number" min="1" max="9999" value="500"
+          style="width:100px;padding:8px;border:1px solid #444;border-radius:8px;background:#111;color:#fff;font-size:16px;font-weight:700;">
+        <button onclick="resetOrderNum()" style="padding:8px 16px;background:#5a1a1a;border:1px solid #f44;border-radius:8px;color:#f99;font-size:13px;cursor:pointer;font-weight:700;">
+          Aplicar
+        </button>
+        <span style="font-size:12px;color:#555;">Proximo: <b id="next-ordernum" style="color:#EF9F27;"></b></span>
+      </div>
+    </div>
     <form onsubmit="return false;" style="display:flex;flex-direction:column;gap:0;max-width:700px;margin:0 auto;padding:14px;gap:14px;">
 
       <div style="font-size:15px;font-weight:600;color:#1a1a1a;">&#9881;&#65039; Configurações</div>
@@ -5902,6 +5915,9 @@ function cfgFooter(){
 
 // ═══ RENDER CONFIG TAB ═══════════════════════════════════
 function renderCfg(){
+  // Actualizar display do próximo número
+  var el = document.getElementById('next-ordernum');
+  if(el) el.textContent = '#' + String(orderNum).padStart(4,'0');
   // Populate fields from config
   var fields = {
     "cfg-name":    config.restName    || "",
@@ -6023,6 +6039,15 @@ function saveCfgBasic(){
   saveSales();
   showToast("✓ Dados guardados");
 }
+function resetOrderNum(){
+  var val = parseInt(document.getElementById('reset-ordernum-val').value)||500;
+  if(val < 1 || val > 9999){ showToast('Número inválido (1-9999)'); return; }
+  orderNum = val;
+  localStorage.setItem('crpos_ordernum', String(orderNum));
+  document.getElementById('next-ordernum').textContent = '#' + String(orderNum).padStart(4,'0');
+  showToast('✓ Próximo pedido: #' + String(orderNum).padStart(4,'0'));
+}
+
 function saveModoTrabalho(modo){
   if(typeof AndroidFB !== 'undefined'){
     try{ AndroidFB.gravarPreferencia('modo_trabalho', modo); }catch(e){}
