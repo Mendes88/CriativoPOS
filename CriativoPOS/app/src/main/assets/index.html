@@ -6016,8 +6016,10 @@ function togglePrinterCfg(){
   var val = t.value;
   var btEl  = document.getElementById("bt-section");
   var netEl = document.getElementById("net-section");
+  var usbEl = document.getElementById("usb-section");
   if(btEl)  btEl.style.display  = (val === "bluetooth") ? "flex" : "none";
   if(netEl) netEl.style.display = (val === "network")   ? "flex" : "none";
+  if(usbEl) usbEl.style.display = (val === "usb")       ? "flex" : "none";
 }
 
 function saveCfgPrinterWidth(){
