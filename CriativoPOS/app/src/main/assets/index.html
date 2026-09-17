@@ -912,11 +912,11 @@ window.addEventListener('unhandledrejection', function(e){
       <span style="font-size:12px;font-weight:500;color:#854F0B;">📅 Intervalo personalizado:</span>
       <div style="display:flex;align-items:center;gap:6px;">
         <label style="font-size:11px;color:#888888;">De</label>
-        <input type="date" id="range-from" style="padding:5px 8px;font-size:12px;border:1px solid #ccc;border-radius:6px;background:#fff;" onchange="applyCustomRange()">
+        <input type="datetime-local" id="range-from" style="padding:5px 8px;font-size:12px;border:1px solid #ccc;border-radius:6px;background:#fff;" onchange="applyCustomRange()">
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
         <label style="font-size:11px;color:#888888;">Até</label>
-        <input type="date" id="range-to" style="padding:5px 8px;font-size:12px;border:1px solid #ccc;border-radius:6px;background:#fff;" onchange="applyCustomRange()">
+        <input type="datetime-local" id="range-to" style="padding:5px 8px;font-size:12px;border:1px solid #ccc;border-radius:6px;background:#fff;" onchange="applyCustomRange()">
       </div>
       <button onclick="applyCustomRange()" style="padding:5px 14px;font-size:11px;border-radius:7px;border:none;background:#BA7517;color:#111111;cursor:pointer;font-weight:500;">✓ Aplicar</button>
       <span id="custom-range-lbl" style="font-size:11px;color:#854F0B;font-weight:500;"></span>
@@ -1516,17 +1516,24 @@ function salesUltimosNFechos(n){
 
 // Vendas entre duas datas de fecho (por data do fecho, nao da venda)
 function salesEntreDatas(dataInicio, dataFim){
-  // Encontrar fechos dentro do intervalo
-  var fechosDentro = closings.filter(function(f){ return f.date >= dataInicio && f.date <= dataFim; });
-  if(fechosDentro.length === 0) return salesSinceFecho(); // sem fechos no intervalo
-  // Fecho anterior ao primeiro do intervalo
-  var idxPrimeiro = closings.indexOf(fechosDentro[0]);
-  var fechoAntes  = idxPrimeiro > 0 ? closings[idxPrimeiro - 1] : null;
-  // Ultimo fecho do intervalo
-  var fechoUltimo = fechosDentro[fechosDentro.length - 1];
-  // Se ainda ha turno aberto apos o ultimo fecho do intervalo, incluir
-  var incluirAberto = (dataFim >= today());
-  return getSalesByFechos(fechoAntes, incluirAberto ? null : fechoUltimo);
+  // Normalizar para comparação - suporta YYYY-MM-DD e YYYY-MM-DDTHH:MM
+  function normalizar(dt, fimDia){
+    if(!dt) return '';
+    if(dt.length === 10){
+      // Só data - adicionar hora
+      return dt + (fimDia ? 'T23:59' : 'T00:00');
+    }
+    return dt; // já tem hora
+  }
+  var dIni = normalizar(dataInicio, false);
+  var dFim = normalizar(dataFim,   true);
+
+  // Comparar vendas directamente por data+hora
+  var sl = sales.filter(function(s){
+    var dt = s.date + 'T' + (s.time||'00:00');
+    return dt >= dIni && dt <= dFim;
+  });
+  return sl;
 }
 function todaySales(){return getSales(today(),today());}
 
@@ -3951,8 +3958,12 @@ function toggleCustomRange(){
     // Pre-fill with current range or last 7 days
     var fromEl=document.getElementById("range-from");
     var toEl  =document.getElementById("range-to");
-    if(fromEl && !fromEl.value) fromEl.value=customFrom||weekStart();
-    if(toEl   && !toEl.value)   toEl.value  =customTo  ||today();
+    // Para datetime-local precisamos de formato YYYY-MM-DDTHH:MM
+    var agora = new Date();
+    var hojeStr = today(); // YYYY-MM-DD
+    var agoraStr = hojeStr + 'T' + ('0'+agora.getHours()).slice(-2) + ':' + ('0'+agora.getMinutes()).slice(-2);
+    if(fromEl && !fromEl.value) fromEl.value = customFrom || (hojeStr+'T00:00');
+    if(toEl   && !toEl.value)   toEl.value   = customTo   || agoraStr;
     // Highlight button
     ["today","yesterday","week","month"].forEach(function(x){
       var btn=document.getElementById("dq-"+x);
@@ -3971,7 +3982,7 @@ function applyCustomRange(){
     // Swap if from > to
     var tmp=fromEl.value; fromEl.value=toEl.value; toEl.value=tmp;
   }
-  customFrom=fromEl.value;
+  customFrom=fromEl.value; // pode ser YYYY-MM-DD ou YYYY-MM-DDTHH:MM
   customTo  =toEl.value;
   dateMode  ="custom";
   var lbl=document.getElementById("custom-range-lbl");
@@ -4026,7 +4037,9 @@ function printRelatorio(){
   if(dateMode==="turno"||dateMode==="today"){ per="Desde ultimo fecho"; }
   else if(dateMode==="yesterday"){ per="Periodo anterior"; }
   else if(dateMode==="custom"&&customFrom&&customTo){
-    per=dFmt(customFrom)+" a "+dFmt(customTo);
+    var _from = customFrom.replace('T',' ').substring(0,16);
+    var _to   = customTo.replace('T',' ').substring(0,16);
+    per=_from+" a "+_to;
   } else if(selDate==="WEEK"){
     per=dFmt(weekStart())+" a "+dFmt(today());
   } else if(selDate==="MONTH"){
