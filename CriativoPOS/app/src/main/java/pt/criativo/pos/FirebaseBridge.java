@@ -101,6 +101,8 @@ public class FirebaseBridge {
         db.setFirestoreSettings(settings);
         this.db = db;
         garantirContador();
+        // Inicializar USB Manager
+        usbManager = (android.hardware.usb.UsbManager) activity.getSystemService(android.content.Context.USB_SERVICE);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -836,6 +838,13 @@ public class FirebaseBridge {
 
     private static final String PREFS = "CriativoPOSCaixa";
 
+    // === USB PRINTER ===
+    private android.hardware.usb.UsbManager usbManager;
+    private android.hardware.usb.UsbDevice  usbDevice;
+    private android.hardware.usb.UsbDeviceConnection usbConnection;
+    private android.hardware.usb.UsbEndpoint usbEndpointOut;
+    private static final String USB_PERMISSION = "pt.criativo.pos.USB_PERMISSION";
+
     @JavascriptInterface
     public void gravarPreferencia(String chave, String valor) {
         try {
@@ -1081,6 +1090,146 @@ public class FirebaseBridge {
             .delete()
             .addOnSuccessListener(v -> Log.d("CriativoFB", "Pedido pendente apagado: #" + numero))
             .addOnFailureListener(e -> Log.e("CriativoFB", "apagarPedidoPendente: " + e.getMessage()));
+    }
+
+    /** Lista impressoras USB ligadas */
+    @JavascriptInterface
+    public String listarImpressorasUSB() {
+        try {
+            if (usbManager == null) return "[]";
+            org.json.JSONArray arr = new org.json.JSONArray();
+            for (android.hardware.usb.UsbDevice dev : usbManager.getDeviceList().values()) {
+                org.json.JSONObject obj = new org.json.JSONObject();
+                obj.put("name",      dev.getDeviceName());
+                obj.put("vendorId",  dev.getVendorId());
+                obj.put("productId", dev.getProductId());
+                obj.put("deviceClass", dev.getDeviceClass());
+                arr.put(obj);
+            }
+            return arr.toString();
+        } catch (Exception e) {
+            return "[]";
+        }
+    }
+
+    /** Liga à impressora USB pelo nome do dispositivo */
+    @JavascriptInterface
+    public void ligarImpressoraUSB(String deviceName) {
+        activity.runOnUiThread(() -> {
+            try {
+                if (usbManager == null) { emitir("fbUSBErro", "USB não disponível"); return; }
+
+                android.hardware.usb.UsbDevice dev = null;
+                for (android.hardware.usb.UsbDevice d : usbManager.getDeviceList().values()) {
+                    if (deviceName == null || deviceName.isEmpty() || d.getDeviceName().equals(deviceName)) {
+                        // Preferir classe 7 (impressora) ou qualquer dispositivo se só há um
+                        if (d.getDeviceClass() == 7 || dev == null) dev = d;
+                    }
+                }
+
+                if (dev == null) { emitir("fbUSBErro", "Impressora USB não encontrada"); return; }
+
+                final android.hardware.usb.UsbDevice finalDev = dev;
+
+                if (!usbManager.hasPermission(dev)) {
+                    android.app.PendingIntent pi = android.app.PendingIntent.getBroadcast(
+                        activity, 0,
+                        new android.content.Intent(USB_PERMISSION),
+                        android.app.PendingIntent.FLAG_IMMUTABLE);
+
+                    android.content.BroadcastReceiver receiver = new android.content.BroadcastReceiver() {
+                        @Override
+                        public void onReceive(android.content.Context ctx, android.content.Intent intent) {
+                            activity.unregisterReceiver(this);
+                            if (intent.getBooleanExtra(android.hardware.usb.UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                                conectarUSBInterno(finalDev);
+                            } else {
+                                emitir("fbUSBErro", "Permissão USB negada");
+                            }
+                        }
+                    };
+                    activity.registerReceiver(receiver, new android.content.IntentFilter(USB_PERMISSION),
+                        android.content.Context.RECEIVER_NOT_EXPORTED);
+                    usbManager.requestPermission(dev, pi);
+                } else {
+                    conectarUSBInterno(dev);
+                }
+            } catch (Exception e) {
+                emitir("fbUSBErro", e.getMessage());
+            }
+        });
+    }
+
+    private void conectarUSBInterno(android.hardware.usb.UsbDevice dev) {
+        try {
+            // Fechar conexão anterior
+            if (usbConnection != null) { usbConnection.close(); usbConnection = null; }
+
+            usbConnection = usbManager.openDevice(dev);
+            if (usbConnection == null) { emitir("fbUSBErro", "Não foi possível abrir dispositivo USB"); return; }
+
+            // Encontrar interface e endpoint de saída (bulk out)
+            usbDevice = dev;
+            usbEndpointOut = null;
+
+            for (int i = 0; i < dev.getInterfaceCount(); i++) {
+                android.hardware.usb.UsbInterface intf = dev.getInterface(i);
+                usbConnection.claimInterface(intf, true);
+                for (int j = 0; j < intf.getEndpointCount(); j++) {
+                    android.hardware.usb.UsbEndpoint ep = intf.getEndpoint(j);
+                    if (ep.getType() == android.hardware.usb.UsbConstants.USB_ENDPOINT_XFER_BULK
+                        && ep.getDirection() == android.hardware.usb.UsbConstants.USB_DIR_OUT) {
+                        usbEndpointOut = ep;
+                        break;
+                    }
+                }
+                if (usbEndpointOut != null) break;
+            }
+
+            if (usbEndpointOut == null) {
+                emitir("fbUSBErro", "Endpoint de saída não encontrado");
+                return;
+            }
+
+            emitir("fbUSBLigada", dev.getDeviceName());
+            Log.d("CriativoFB", "Impressora USB ligada: " + dev.getDeviceName());
+        } catch (Exception e) {
+            emitir("fbUSBErro", "Erro ao ligar USB: " + e.getMessage());
+        }
+    }
+
+    /** Envia bytes para a impressora USB */
+    @JavascriptInterface
+    public boolean imprimirUSB(String base64Data) {
+        try {
+            if (usbConnection == null || usbEndpointOut == null) {
+                emitir("fbUSBErro", "Impressora USB não ligada");
+                return false;
+            }
+            byte[] data = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT);
+            int chunkSize = usbEndpointOut.getMaxPacketSize();
+            int offset = 0;
+            while (offset < data.length) {
+                int size = Math.min(chunkSize, data.length - offset);
+                byte[] chunk = new byte[size];
+                System.arraycopy(data, offset, chunk, 0, size);
+                int sent = usbConnection.bulkTransfer(usbEndpointOut, chunk, size, 3000);
+                if (sent < 0) { emitir("fbUSBErro", "Erro ao enviar dados USB"); return false; }
+                offset += sent;
+            }
+            return true;
+        } catch (Exception e) {
+            emitir("fbUSBErro", "imprimirUSB: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /** Desliga impressora USB */
+    @JavascriptInterface
+    public void desligarUSB() {
+        if (usbConnection != null) { usbConnection.close(); usbConnection = null; }
+        usbDevice = null; usbEndpointOut = null;
+        emitir("fbUSBDesligada", "");
     }
 
     /** Grava PIN de activacao no Firebase para os Smartphones lerem */
