@@ -4315,7 +4315,7 @@ function renderConsolidado(){
   // Sort artigos by total
   var artigoRows = Object.keys(porArtigo).sort(function(a,b){
     return porArtigo[b].total - porArtigo[a].total;
-  }).slice(0,20);
+  ); // sem limite - todos os artigos
 
   el.innerHTML = relPosto()+
     // Header actions
@@ -5139,8 +5139,8 @@ function buildConsolidadoESC(){
     });
     esc.sep();
   }
-  esc.bold(1).textLine('TOP 10 ARTIGOS').bold(0);
-  arts.slice(0,10).forEach(function(a,i){
+  esc.bold(1).textLine('ARTIGOS VENDIDOS').bold(0);
+  arts.forEach(function(a,i){
     var nome = escNorm(a.n).substring(0, esc.cols - 12);
     esc.row((i+1)+'. '+nome+' ('+a.qty+'x)', EURESC(a.rev));
   });
@@ -7138,7 +7138,7 @@ function archivePastMonths(silent){
         imap[it.n].qty+=it.q; imap[it.n].rev+=it.q*it.p;
       });
     });
-    var topItems = Object.values(imap).sort(function(a,b){return b.rev-a.rev;}).slice(0,10);
+    var topItems = Object.values(imap).sort(function(a,b){return b.rev-a.rev;});
 
     // Days with sales
     var days = [...new Set(sl.map(function(s){return s.date;}))].length;
@@ -7212,7 +7212,7 @@ function renderArquivo(){
         (a.topItems.length ?
           '<div style="padding:10px 14px;">'+
             '<div style="font-size:11px;color:#777777;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">Top artigos</div>'+
-            a.topItems.slice(0,5).map(function(it,i){
+            a.topItems.map(function(it,i){
               return '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-bottom:'+(i<4?'1px solid #f5f5f5':'none')+';">'+
                 '<span>'+(i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'  ')+it.n+' ('+it.qty+'×)</span>'+
                 '<span style="color:#854F0B;font-weight:500;">'+EUR(it.rev)+'</span>'+
