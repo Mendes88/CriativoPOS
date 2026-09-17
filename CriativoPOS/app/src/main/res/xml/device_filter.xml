@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Impressoras genéricas USB (classe 7) -->
+    <usb-device class="7" />
+    <!-- Impressoras de talão comuns -->
+    <usb-device vendor-id="1208" />
+    <usb-device vendor-id="1755" />
+    <usb-device vendor-id="1659" />
+    <usb-device vendor-id="6208" />
+</resources>
