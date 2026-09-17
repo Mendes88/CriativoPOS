@@ -4315,7 +4315,7 @@ function renderConsolidado(){
   // Sort artigos by total
   var artigoRows = Object.keys(porArtigo).sort(function(a,b){
     return porArtigo[b].total - porArtigo[a].total;
-  ); // sem limite - todos os artigos
+  }); // sem limite - todos os artigos
 
   el.innerHTML = relPosto()+
     // Header actions
