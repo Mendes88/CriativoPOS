@@ -5511,26 +5511,23 @@ async function testarGaveta(){
 
 
 async function conectarUSB(){
-  if(!window.CrativoBT || !window.CrativoBT.isCapacitor()){
-    showToast("USB só disponível na APK Android");
+  if(typeof AndroidFB === 'undefined'){
+    showToast("USB so disponivel na APK Android");
     return;
   }
   try{
     showToast("A procurar impressora USB...");
-    if(typeof AndroidFB !== 'undefined'){
-      // Listar dispositivos USB disponíveis
-      var lista = JSON.parse(AndroidFB.listarImpressorasUSB());
-      if(lista.length === 0){
-        showToast("Nenhuma impressora USB encontrada. Liga o cabo USB.");
-        return;
-      }
-      // Ligar ao primeiro dispositivo (ou ao de classe 7 - impressora)
-      var impressora = lista.find(function(d){ return d.deviceClass === 7; }) || lista[0];
-      AndroidFB.ligarImpressoraUSB(impressora.name);
-      // A resposta vem via evento fbUSBLigada
-    } else {
-      showToast("USB so disponivel na APK Android");
+    var lista = JSON.parse(AndroidFB.listarImpressorasUSB());
+    showToast("Dispositivos USB: " + lista.length);
+    if(lista.length === 0){
+      showToast("Nenhuma impressora USB encontrada. Verifica o cabo USB.");
+      return;
     }
+    // Preferir classe 7 (impressora), senao pegar o primeiro
+    var impressora = lista.find(function(d){ return d.deviceClass === 7; }) || lista[0];
+    showToast("A ligar a: " + (impressora.name || impressora.vendorId));
+    AndroidFB.ligarImpressoraUSB(impressora.name);
+    // Resposta via evento fbUSBLigada ou fbUSBErro
   }catch(e){
     showToast("Erro USB: " + e.message);
   }
