@@ -668,13 +668,20 @@ window.CrativoBT = (function(){
 
     // ── USB Printing (APK only) ──────────────────────────────────
     connectUSB: async function(){
-      if(!isCapacitor()) throw new Error("USB só disponível na APK Android");
-      var P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UsbPrinter;
-      if(!P) throw new Error("Plugin USB não instalado — ver HARDWARE_SETUP.md");
+      if(typeof AndroidFB === 'undefined') throw new Error("USB só disponível na APK Android");
       await P.connect();
     },
 
     writeUSB: async function(uint8array){
+      if(typeof AndroidFB === 'undefined') throw new Error("USB só disponível na APK");
+      // Converter Uint8Array para base64
+      var binary = '';
+      var bytes = new Uint8Array(uint8array);
+      for(var i=0; i<bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+      var b64 = btoa(binary);
+      var ok = AndroidFB.imprimirUSB(b64);
+      if(!ok) throw new Error("Erro ao imprimir via USB");
+      return true;
       var P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UsbPrinter;
       if(!P) return false;
       var binary = "";
@@ -684,8 +691,7 @@ window.CrativoBT = (function(){
     },
 
     isUSBConnected: function(){
-      var P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UsbPrinter;
-      return !!(P && window._usbConnected);
+      return !!(window._usbConnected);
     },
 
     /**
@@ -4971,12 +4977,17 @@ async function logoToESC(base64, maxDots){
 async function printDirect(esc){
   var data = esc.toUint8Array ? esc.toUint8Array() : esc;
   if(config.printerType === 'usb'){
-    if(!window.CrativoBT || !window.CrativoBT.isUSBConnected()){
-      showToast('Impressora USB não ligada');
+    if(!window._usbConnected || typeof AndroidFB === 'undefined'){
+      showToast('Impressora USB nao ligada');
       return false;
     }
-    try{ return await window.CrativoBT.writeUSB(data); }
-    catch(e){ showToast('Erro USB: '+e.message); return false; }
+    try{
+      var binary = '';
+      var bytes = new Uint8Array(data);
+      for(var i=0;i<bytes.byteLength;i++) binary += String.fromCharCode(bytes[i]);
+      var b64 = btoa(binary);
+      return AndroidFB.imprimirUSB(b64);
+    }catch(e){ showToast('Erro USB: '+e.message); return false; }
   }
   if(config.printerType === 'bluetooth'){
     if(!window.CrativoBT || !window.CrativoBT.isConnected()){
@@ -5006,7 +5017,7 @@ async function printDirect(esc){
 
 function canPrintDirect(){
   if(config.printerType==='bluetooth') return !!(window.CrativoBT && window.CrativoBT.isConnected());
-  if(config.printerType==='usb')       return !!(window.CrativoBT && window.CrativoBT.isUSBConnected());
+  if(config.printerType==='usb')       return !!(window._usbConnected);
   if(config.printerType==='network')   return !!(config.printerIP);
   return false;
 }
@@ -5505,15 +5516,23 @@ async function conectarUSB(){
     return;
   }
   try{
-    showToast("🔍 A ligar impressora USB...");
-    await window.CrativoBT.connectUSB();
-    window._usbConnected = true;
-    var el = document.getElementById("usb-status");
-    if(el){ el.textContent = "✅ Impressora USB ligada"; el.style.color = "#1D9E75"; }
-    showToast("✅ Impressora USB ligada");
+    showToast("A procurar impressora USB...");
+    if(typeof AndroidFB !== 'undefined'){
+      // Listar dispositivos USB disponíveis
+      var lista = JSON.parse(AndroidFB.listarImpressorasUSB());
+      if(lista.length === 0){
+        showToast("Nenhuma impressora USB encontrada. Liga o cabo USB.");
+        return;
+      }
+      // Ligar ao primeiro dispositivo (ou ao de classe 7 - impressora)
+      var impressora = lista.find(function(d){ return d.deviceClass === 7; }) || lista[0];
+      AndroidFB.ligarImpressoraUSB(impressora.name);
+      // A resposta vem via evento fbUSBLigada
+    } else {
+      showToast("USB so disponivel na APK Android");
+    }
   }catch(e){
-    window._usbConnected = false;
-    showToast("❌ " + e.message);
+    showToast("Erro USB: " + e.message);
   }
 }
 
@@ -6051,6 +6070,19 @@ function resetOrderNum(){
   document.getElementById('next-ordernum').textContent = '#' + String(orderNum).padStart(4,'0');
   showToast('✓ Próximo pedido: #' + String(orderNum).padStart(4,'0'));
 }
+
+// Listeners USB
+window.addEventListener('fbUSBLigada', function(e){
+  window._usbConnected = true;
+  showToast('Impressora USB ligada');
+});
+window.addEventListener('fbUSBDesligada', function(){
+  window._usbConnected = false;
+  showToast('Impressora USB desligada');
+});
+window.addEventListener('fbUSBErro', function(e){
+  showToast('USB: ' + (e.detail||'erro'));
+});
 
 function saveModoTrabalho(modo){
   if(typeof AndroidFB !== 'undefined'){
