@@ -6306,7 +6306,8 @@ function exportCSV(){
   var rows = [];
 
   // Cabecalho
-  rows.push(['"'+( config.restName||config.postoName||'Criativo POS')+'"']);
+  rows.push(['"'+(config.restName||'Criativo POS')+'"']);
+  if(config.postoName) rows.push(['"Posto: '+config.postoName+'"']);
   rows.push(['"Periodo: '+per+'"']);
   rows.push(['"Exportado: '+dFmt(today())+' '+horaExport+'"']);
   rows.push([]);
