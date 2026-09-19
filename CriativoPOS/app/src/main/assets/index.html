@@ -1519,19 +1519,32 @@ function salesEntreDatas(dataInicio, dataFim){
   // Normalizar para comparação - suporta YYYY-MM-DD e YYYY-MM-DDTHH:MM
   function normalizar(dt, fimDia){
     if(!dt) return '';
+    // Remover segundos se existirem (HH:MM:SS -> HH:MM)
+    dt = dt.substring(0, 16);
     if(dt.length === 10){
       // Só data - adicionar hora
       return dt + (fimDia ? 'T23:59' : 'T00:00');
     }
-    return dt; // já tem hora
+    return dt;
   }
   var dIni = normalizar(dataInicio, false);
   var dFim = normalizar(dataFim,   true);
 
-  // Comparar vendas directamente por data+hora
+  // Extrair só a data do filtro para comparação simples quando sem hora
+  var dIniData = dIni.substring(0,10);
+  var dFimData = dFim.substring(0,10);
+  var temHoraIni = dataInicio && dataInicio.length > 10;
+  var temHoraFim = dataFim    && dataFim.length    > 10;
+
   var sl = sales.filter(function(s){
-    var dt = s.date + 'T' + (s.time||'00:00');
-    return dt >= dIni && dt <= dFim;
+    if(!s.date) return false;
+    // Se o filtro tem hora, comparar com hora
+    if(temHoraIni || temHoraFim){
+      var dt = s.date + 'T' + (s.time || '00:00');
+      return dt >= dIni && dt <= dFim;
+    }
+    // Sem hora - comparar só datas (mais seguro para dados antigos)
+    return s.date >= dIniData && s.date <= dFimData;
   });
   return sl;
 }
