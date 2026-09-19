@@ -6282,25 +6282,14 @@ function exportCSV(){
   else if(dateMode==='custom'&&customFrom&&customTo) per=customFrom.substring(0,16)+' a '+customTo.substring(0,16);
   else per=dFmt(selDate);
 
-  // === ARTIGOS VENDIDOS ===
+  // Agregar artigos vendidos
   var mapa = {};
-  var totDinheiro=0, totCartao=0, totMBWay=0, totOutro=0;
-
   sl.forEach(function(s){
-    // Totais por metodo de pagamento
-    var tot = parseFloat(s.total||0);
-    var m = s.method||s.payMethod||'d';
-    if(m==='d') totDinheiro+=tot;
-    else if(m==='c') totCartao+=tot;
-    else if(m==='m') totMBWay+=tot;
-    else totOutro+=tot;
-
-    // Artigos
     s.items.forEach(function(it){
       var nome  = it.n||it.nome||'?';
       var preco = parseFloat(it.p||it.preco||0);
       var k     = nome+'|'+preco;
-      if(!mapa[k]) mapa[k]={nome:nome, preco:preco, qtd:0, total:0};
+      if(!mapa[k]) mapa[k]={nome:nome, qtd:0, total:0};
       var q = parseInt(it.q||it.qtd||1);
       mapa[k].qtd   += q;
       mapa[k].total += q*preco;
@@ -6310,7 +6299,6 @@ function exportCSV(){
   var arts       = Object.values(mapa).sort(function(a,b){return b.total-a.total;});
   var totalGeral = arts.reduce(function(s,a){return s+a.total;},0);
   var qtdGeral   = arts.reduce(function(s,a){return s+a.qtd;},0);
-  var totalMetodos = totDinheiro+totCartao+totMBWay+totOutro;
 
   var now = new Date();
   var horaExport = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
@@ -6318,47 +6306,24 @@ function exportCSV(){
   var rows = [];
 
   // Cabecalho
-  rows.push(['"CRIATIVO POS"']);
-  rows.push(['"Posto: '+(config.postoName||'')+(config.restName?' - '+config.restName:'')+'"']);
+  rows.push(['"'+( config.restName||config.postoName||'Criativo POS')+'"']);
   rows.push(['"Periodo: '+per+'"']);
   rows.push(['"Exportado: '+dFmt(today())+' '+horaExport+'"']);
-  rows.push(['"Vendas: '+sl.length+'"']);
   rows.push([]);
 
   // Artigos
-  rows.push(['"=== ARTIGOS VENDIDOS ==="']);
-  rows.push(['Artigo','Preco Unit','Quantidade','Total (EUR)','% Vendas']);
+  rows.push(['Artigo','Quantidade','Total (EUR)']);
 
   arts.forEach(function(a){
-    var pct = totalGeral>0?(a.total/totalGeral*100).toFixed(1)+'%':'0%';
     rows.push([
       '"'+a.nome.replace(/"/g,"''")+'"',
-      a.preco.toFixed(2).replace('.',','),
       a.qtd,
-      a.total.toFixed(2).replace('.',','),
-      pct
+      a.total.toFixed(2).replace('.',',')
     ]);
   });
 
-  rows.push(['']);
-  rows.push(['"TOTAL ARTIGOS"','',qtdGeral,totalGeral.toFixed(2).replace('.',','),'100%']);
   rows.push([]);
-
-  // Totais por metodo de pagamento
-  rows.push(['"=== TOTAIS POR METODO DE PAGAMENTO ==="']);
-  rows.push(['Metodo','Total (EUR)','% Total']);
-  var metodos = [
-    {nome:'Dinheiro',  val:totDinheiro},
-    {nome:'Cartao',    val:totCartao},
-    {nome:'MB Way',    val:totMBWay},
-    {nome:'Outro',     val:totOutro}
-  ];
-  metodos.forEach(function(m){
-    if(m.val<=0) return;
-    var pct = totalMetodos>0?(m.val/totalMetodos*100).toFixed(1)+'%':'0%';
-    rows.push(['"'+m.nome+'"', m.val.toFixed(2).replace('.',','), pct]);
-  });
-  rows.push(['"TOTAL"', totalMetodos.toFixed(2).replace('.',','), '100%']);
+  rows.push(['"TOTAL"', qtdGeral, totalGeral.toFixed(2).replace('.',',')]);
 
   var csv = rows.map(function(r){return r.join(';');}).join('
 ');
