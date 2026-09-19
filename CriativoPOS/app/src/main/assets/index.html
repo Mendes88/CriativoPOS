@@ -6272,43 +6272,100 @@ function doBackup(auto){
 function exportCSV(){
   if(!CU||CU.role!=="admin"){alert("Apenas o administrador pode exportar dados.");return;}
   var sl = filteredSales();
-  var per = dateMode==='turno'?'Turno':(selDate==='WEEK'?'Semana':dFmt(selDate));
+  if(!sl.length){ showToast("Sem vendas no periodo seleccionado"); return; }
 
-  // Agregar artigos vendidos
+  // Periodo
+  var per = '';
+  if(dateMode==='turno') per='Desde ultimo fecho';
+  else if(selDate==='WEEK') per='Esta semana';
+  else if(selDate==='MONTH') per='Este mes';
+  else if(dateMode==='custom'&&customFrom&&customTo) per=customFrom.substring(0,16)+' a '+customTo.substring(0,16);
+  else per=dFmt(selDate);
+
+  // === ARTIGOS VENDIDOS ===
   var mapa = {};
+  var totDinheiro=0, totCartao=0, totMBWay=0, totOutro=0;
+
   sl.forEach(function(s){
+    // Totais por metodo de pagamento
+    var tot = parseFloat(s.total||0);
+    var m = s.method||s.payMethod||'d';
+    if(m==='d') totDinheiro+=tot;
+    else if(m==='c') totCartao+=tot;
+    else if(m==='m') totMBWay+=tot;
+    else totOutro+=tot;
+
+    // Artigos
     s.items.forEach(function(it){
-      var k = (it.n||it.nome||'?')+'|'+(it.p||it.preco||0);
-      if(!mapa[k]) mapa[k]={nome:it.n||it.nome||'?',preco:parseFloat(it.p||it.preco||0),qtd:0,total:0};
+      var nome  = it.n||it.nome||'?';
+      var preco = parseFloat(it.p||it.preco||0);
+      var k     = nome+'|'+preco;
+      if(!mapa[k]) mapa[k]={nome:nome, preco:preco, qtd:0, total:0};
       var q = parseInt(it.q||it.qtd||1);
-      mapa[k].qtd+=q; mapa[k].total+=q*parseFloat(it.p||it.preco||0);
+      mapa[k].qtd   += q;
+      mapa[k].total += q*preco;
     });
   });
 
-  var arts = Object.values(mapa).sort(function(a,b){return b.total-a.total;});
+  var arts       = Object.values(mapa).sort(function(a,b){return b.total-a.total;});
   var totalGeral = arts.reduce(function(s,a){return s+a.total;},0);
   var qtdGeral   = arts.reduce(function(s,a){return s+a.qtd;},0);
+  var totalMetodos = totDinheiro+totCartao+totMBWay+totOutro;
 
-  var rows = [
-    ['"CRIATIVO POS - Artigos Vendidos"'],
-    ['"Periodo: '+per+'"'],
-    ['"Exportado: '+dFmt(today())+'"'],
-    [],
-    ['Artigo','Preco Unitario','Quantidade','Total','% Vendas']
-  ];
+  var now = new Date();
+  var horaExport = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
+
+  var rows = [];
+
+  // Cabecalho
+  rows.push(['"CRIATIVO POS"']);
+  rows.push(['"Posto: '+(config.postoName||'')+(config.restName?' - '+config.restName:'')+'"']);
+  rows.push(['"Periodo: '+per+'"']);
+  rows.push(['"Exportado: '+dFmt(today())+' '+horaExport+'"']);
+  rows.push(['"Vendas: '+sl.length+'"']);
+  rows.push([]);
+
+  // Artigos
+  rows.push(['"=== ARTIGOS VENDIDOS ==="']);
+  rows.push(['Artigo','Preco Unit','Quantidade','Total (EUR)','% Vendas']);
 
   arts.forEach(function(a){
     var pct = totalGeral>0?(a.total/totalGeral*100).toFixed(1)+'%':'0%';
-    rows.push(['"'+a.nome+'"',a.preco.toFixed(2).replace('.',','),a.qtd,a.total.toFixed(2).replace('.',','),pct]);
+    rows.push([
+      '"'+a.nome.replace(/"/g,"''")+'"',
+      a.preco.toFixed(2).replace('.',','),
+      a.qtd,
+      a.total.toFixed(2).replace('.',','),
+      pct
+    ]);
   });
 
+  rows.push(['']);
+  rows.push(['"TOTAL ARTIGOS"','',qtdGeral,totalGeral.toFixed(2).replace('.',','),'100%']);
   rows.push([]);
-  rows.push(['"TOTAL"','',qtdGeral,totalGeral.toFixed(2).replace('.',','),'100%']);
 
-  var csv = rows.map(function(r){return r.join(';');}).join('\n');
-  var blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  downloadBlob(blob,'CriativoPOS_artigos_'+today()+'.csv');
-  showToast('\u2713 CSV exportado: '+arts.length+' artigos, '+sl.length+' vendas');
+  // Totais por metodo de pagamento
+  rows.push(['"=== TOTAIS POR METODO DE PAGAMENTO ==="']);
+  rows.push(['Metodo','Total (EUR)','% Total']);
+  var metodos = [
+    {nome:'Dinheiro',  val:totDinheiro},
+    {nome:'Cartao',    val:totCartao},
+    {nome:'MB Way',    val:totMBWay},
+    {nome:'Outro',     val:totOutro}
+  ];
+  metodos.forEach(function(m){
+    if(m.val<=0) return;
+    var pct = totalMetodos>0?(m.val/totalMetodos*100).toFixed(1)+'%':'0%';
+    rows.push(['"'+m.nome+'"', m.val.toFixed(2).replace('.',','), pct]);
+  });
+  rows.push(['"TOTAL"', totalMetodos.toFixed(2).replace('.',','), '100%']);
+
+  var csv = rows.map(function(r){return r.join(';');}).join('
+');
+  var blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  var fname = 'CriativoPOS_'+( config.postoName||'relatorio')+'_'+today()+'.csv';
+  downloadBlob(blob, fname.replace(/\s+/g,'_'));
+  showToast('✓ CSV exportado: '+arts.length+' artigos');
 }
 
 
