@@ -10026,5 +10026,23 @@ function drawQR(canvas, text, size){
   </div>
 
   <!-- Modal removido - fluxo vai directo para cobrarMesa() -->
+  <!-- Modal Limpeza Firebase -->
+  <div id="modal-limpar" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:#1e1e1e;border-radius:16px;padding:24px;width:90%;max-width:380px;border:1px solid #444;">
+      <div style="font-size:16px;font-weight:700;color:#f44;margin-bottom:12px;">&#9888;&#65039; Confirmar Limpeza</div>
+      <div id="limpar-msg" style="font-size:13px;color:#aaa;margin-bottom:20px;line-height:1.5;"></div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('modal-limpar').style.display='none'"
+          style="flex:1;padding:12px;background:#222;border:none;border-radius:10px;color:#888;font-size:14px;cursor:pointer;">
+          Cancelar
+        </button>
+        <button id="btn-limpar-conf"
+          style="flex:1;padding:12px;background:#c62828;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
