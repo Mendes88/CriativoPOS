@@ -6326,8 +6326,7 @@ function exportCSV(){
   rows.push([]);
   rows.push(['"TOTAL"', qtdGeral, totalGeral.toFixed(2).replace('.',',')]);
 
-  var csv = rows.map(function(r){return r.join(';');}).join('
-');
+  var csv = rows.map(function(r){return r.join(";");}).join(String.fromCharCode(10));
   var blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
   var fname = 'CriativoPOS_'+( config.postoName||'relatorio')+'_'+today()+'.csv';
   downloadBlob(blob, fname.replace(/\s+/g,'_'));
