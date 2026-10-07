@@ -901,12 +901,11 @@ window.addEventListener('unhandledrejection', function(e){
         <button class="dnav-btn" onclick="shiftDate(-1)">◀</button>
         <span class="dnav-lbl" id="dnav-lbl">Hoje</span>
         <button class="dnav-btn" onclick="shiftDate(1)">▶</button>
-        <button class="dquick on" id="dq-turno"     onclick="setQuick('turno')">&#128197; Turno</button>
-        <button class="dquick"    id="dq-today"     onclick="setQuick('today')">Hoje</button>
-        <button class="dquick"    id="dq-yesterday" onclick="setQuick('yesterday')">Ontem</button>
-        <button class="dquick"    id="dq-week"      onclick="setQuick('week')">Semana</button>
-        <button class="dquick"    id="dq-month"     onclick="setQuick('month')">Mês</button>
-        <button class="dquick"    id="dq-custom"    onclick="toggleCustomRange()">&#128197; Intervalo</button>
+        <button class="dquick on" id="dq-turno"    onclick="setQuick('turno')">&#128197; Turno</button>
+        <button class="dquick"   id="dq-anterior" onclick="setQuick('anterior')">Anterior</button>
+        <button class="dquick"   id="dq-week"     onclick="setQuick('week')">Semana</button>
+        <button class="dquick"   id="dq-month"    onclick="setQuick('month')">Mês</button>
+        <button class="dquick"   id="dq-custom"   onclick="toggleCustomRange()">&#128197; Intervalo</button>
       </div>
       <div style="display:flex;gap:6px;">
         <button onclick="printRelatorio()" style="padding:5px 12px;font-size:11px;border-radius:8px;border:none;background:#BA7517;color:#111111;cursor:pointer;font-weight:500;white-space:nowrap;">🖨️ Relatório</button>
@@ -918,11 +917,11 @@ window.addEventListener('unhandledrejection', function(e){
       <span style="font-size:12px;font-weight:500;color:#854F0B;">📅 Intervalo personalizado:</span>
       <div style="display:flex;align-items:center;gap:6px;">
         <label style="font-size:11px;color:#888888;">De</label>
-        <input type="datetime-local" id="range-from" style="padding:5px 8px;font-size:12px;border:1px solid #ccc;border-radius:6px;background:#fff;" onchange="applyCustomRange()">
+        <input type="date" id="range-from" style="padding:5px 8px;font-size:12px;border:1px solid #ccc;border-radius:6px;background:#fff;" onchange="applyCustomRange()">
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
         <label style="font-size:11px;color:#888888;">Até</label>
-        <input type="datetime-local" id="range-to" style="padding:5px 8px;font-size:12px;border:1px solid #ccc;border-radius:6px;background:#fff;" onchange="applyCustomRange()">
+        <input type="date" id="range-to" style="padding:5px 8px;font-size:12px;border:1px solid #ccc;border-radius:6px;background:#fff;" onchange="applyCustomRange()">
       </div>
       <button onclick="applyCustomRange()" style="padding:5px 14px;font-size:11px;border-radius:7px;border:none;background:#BA7517;color:#111111;cursor:pointer;font-weight:500;">✓ Aplicar</button>
       <span id="custom-range-lbl" style="font-size:11px;color:#854F0B;font-weight:500;"></span>
@@ -1468,7 +1467,8 @@ let modMode=null,modData={},detailItems=true,uidCnt=1,docType='talao',orderNum=1
 (function(){ var d=localStorage.getItem('crpos_detail'); if(d==='0') detailItems=false; })();
 let config={appHeight:0,defaultDocType:'talao',postoName:'',restName:'Restaurante',nif:'123 456 789',phone:'232 123 456',address:'Viseu, Portugal',footerMsg:'Obrigado pela visita!',footerMsg2:'',logo:null,timeout:15,printerType:'bluetooth',printerIP:'192.168.1.100',printerPort:'9100',printerWidth:80,printerCols:46,mbwayPhone:''};
 let btDevice=null,btChar=null;
-let relTab="resumo",artSort="revenue",selDate=today(),dateMode="turno",customFrom="",customTo="";
+let relTab="resumo",artSort="revenue",selDate=today(),dateMode="turno",customFrom="",customTo="",fechoIdx=-1;
+// fechoIdx: -1=turno actual, 0=ultimo fecho, 1=penultimo, etc. (só usado em dateMode="turno-nav")
 let closings=[],curSale=null;
 // Restaurar fundo de maneio persistido
 let fundo = 50;
@@ -3835,13 +3835,13 @@ function showFecho(){
     </div>
     <div class="fecho-sec">
       <div class="fecho-sec-title">Levantamentos de Caixa</div>
-      ${levantamentos.filter(function(l){return l.date===today();}).length?
-        levantamentos.filter(function(l){return l.date===today();}).map(function(l){
+      ${(function(){ var lv=levantamentosSinceFecho(); return lv.length?
+        lv.map(function(l){
           return '<div class="fecho-row"><span class="flbl">'+l.hora+' — '+l.motivo+'</span><span style="color:#c62828;">− '+EUR(l.valor)+'</span></div>';
         }).join('')+
-        '<div class="fecho-row ftot"><span class="flbl">Total Levantado</span><span style="color:#c62828;">− '+EUR(levantamentos.filter(function(l){return l.date===today();}).reduce(function(s,l){return s+l.valor;},0))+'</span></div>'
-        :'<div style="font-size:12px;color:#999;">Sem levantamentos hoje</div>'
-      }
+        '<div class="fecho-row ftot"><span class="flbl">Total Levantado</span><span style="color:#c62828;">− '+EUR(lv.reduce(function(s,l){return s+l.valor;},0))+'</span></div>'
+        :'<div style="font-size:12px;color:#999;">Sem levantamentos neste turno</div>';
+      })()}
     </div>
     <div class="fecho-sec" style="border:none;">
       <div class="fecho-sec-title">Resumo</div>
@@ -3970,21 +3970,15 @@ function toggleCustomRange(){
   var isOpen=(row.style.display==="flex");
   if(isOpen){
     row.style.display="none";
-    // Revert to today if no range applied
-    if(dateMode==="custom"&&(!customFrom||!customTo)) setQuick("today");
+    if(dateMode==="custom"&&(!customFrom||!customTo)) setQuick("turno");
   } else {
     row.style.display="flex";
-    // Pre-fill with current range or last 7 days
     var fromEl=document.getElementById("range-from");
     var toEl  =document.getElementById("range-to");
-    // Para datetime-local precisamos de formato YYYY-MM-DDTHH:MM
-    var agora = new Date();
-    var hojeStr = today(); // YYYY-MM-DD
-    var agoraStr = hojeStr + 'T' + ('0'+agora.getHours()).slice(-2) + ':' + ('0'+agora.getMinutes()).slice(-2);
-    if(fromEl && !fromEl.value) fromEl.value = customFrom || (hojeStr+'T00:00');
-    if(toEl   && !toEl.value)   toEl.value   = customTo   || agoraStr;
-    // Highlight button
-    ["today","yesterday","week","month"].forEach(function(x){
+    var hojeStr=today();
+    if(fromEl && !fromEl.value) fromEl.value = customFrom ? customFrom.substring(0,10) : hojeStr;
+    if(toEl   && !toEl.value)   toEl.value   = customTo   ? customTo.substring(0,10)   : hojeStr;
+    ["turno","anterior","week","month"].forEach(function(x){
       var btn=document.getElementById("dq-"+x);
       if(btn) btn.className="dquick";
     });
@@ -3998,15 +3992,15 @@ function applyCustomRange(){
   var toEl  =document.getElementById("range-to");
   if(!fromEl||!toEl||!fromEl.value||!toEl.value)return;
   if(fromEl.value>toEl.value){
-    // Swap if from > to
     var tmp=fromEl.value; fromEl.value=toEl.value; toEl.value=tmp;
   }
-  customFrom=fromEl.value; // pode ser YYYY-MM-DD ou YYYY-MM-DDTHH:MM
-  customTo  =toEl.value;
+  customFrom=fromEl.value.substring(0,10); // YYYY-MM-DD
+  customTo  =toEl.value.substring(0,10);
   dateMode  ="custom";
+  fechoIdx  =-1;
   var lbl=document.getElementById("custom-range-lbl");
-  var sl=filteredSales();
-  if(lbl) lbl.textContent=sl.length+" venda"+(sl.length!==1?"s":"")+" encontrada"+(sl.length!==1?"s":"");
+  var cfs=closingsEntreDatas(customFrom,customTo);
+  if(lbl) lbl.textContent=cfs.length+" turno"+(cfs.length!==1?"s":"")+" encontrado"+(cfs.length!==1?"s":"");
   updateDNavLbl();
   renderRel();
 }
@@ -4051,23 +4045,8 @@ function printRelatorio(){
   var now = new Date();
   var hora = now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0");
 
-  // Period label
-  var per;
-  if(dateMode==="turno"||dateMode==="today"){ per="Desde ultimo fecho"; }
-  else if(dateMode==="yesterday"){ per="Periodo anterior"; }
-  else if(dateMode==="custom"&&customFrom&&customTo){
-    var _from = customFrom.replace('T',' ').substring(0,16);
-    var _to   = customTo.replace('T',' ').substring(0,16);
-    per=_from+" a "+_to;
-  } else if(selDate==="WEEK"){
-    per=dFmt(weekStart())+" a "+dFmt(today());
-  } else if(selDate==="MONTH"){
-    per=dFmt(monthStart())+" a "+dFmt(today());
-  } else if(selDate===today()){
-    per="Hoje — "+dFmt(today());
-  } else {
-    per=dFmt(selDate);
-  }
+  // Period label — usa o mesmo label do dnav
+  var per = document.getElementById("dnav-lbl") ? document.getElementById("dnav-lbl").textContent : "Turno actual";
 
   var tN=sl.filter(function(s){return s.met==="d";}).reduce(function(a,s){return a+s.total;},0);
   var tC=sl.filter(function(s){return s.met==="c";}).reduce(function(a,s){return a+s.total;},0);
@@ -4086,10 +4065,8 @@ function printRelatorio(){
   var arts=Object.values(imap).sort(function(a,b){return b.rev-a.rev;});
   var tQty=arts.reduce(function(s,a){return s+a.qty;},0);
 
-  // Levantamentos
-  var levFrom=(dateMode==="custom"&&customFrom)?customFrom:(selDate==="WEEK"?weekStart():selDate==="MONTH"?monthStart():selDate);
-  var levTo=(dateMode==="custom"&&customTo)?customTo:(selDate==="WEEK"||selDate==="MONTH"?today():selDate);
-  var levs=levantamentos.filter(function(l){return l.date>=levFrom&&l.date<=levTo;});
+  // Levantamentos — mesma lógica de fechos que filteredSales
+  var levs=filteredLevantamentos();
   var totLev=levs.reduce(function(s,l){return s+l.valor;},0);
 
   // Per-day (multi-day only)
@@ -4201,75 +4178,231 @@ function printRelatorio(){
 
 function setRelTab(t){relTab=t;["resumo","artigos","arquivo","consolidado"].forEach(x=>{var el=document.getElementById("rtab-"+x);if(el)el.className="rel-tab"+(x===t?" on":"");});if(t==="consolidado") renderConsolidado(); else renderRel();}
 function setArtSort(s){artSort=s;renderRel();}
+
+// ── Helpers de navegação por fechos ──────────────────────────────
+// Devolve a data de início de um turno: data/hora do fecho anterior + 1s, ou "primeiro registo"
+function turnoInicioFecho(nIdx){
+  // nIdx: índice em closings[] (0=primeiro, closings.length-1=último)
+  var anterior = nIdx > 0 ? closings[nIdx-1] : null;
+  return anterior ? {date:anterior.date, hora:anterior.hora} : null;
+}
+function turnoFimFecho(nIdx){
+  return closings[nIdx] || null;
+}
+// Vendas do turno correspondente ao fecho em closings[nIdx]
+function salesDoFechoIdx(nIdx){
+  if(nIdx < 0 || nIdx >= closings.length) return salesSinceFecho();
+  return getSalesByFechos(turnoInicioFecho(nIdx), turnoFimFecho(nIdx));
+}
+// Levantamentos do turno correspondente ao fecho em closings[nIdx]
+function levsDoFechoIdx(nIdx){
+  if(nIdx < 0 || nIdx >= closings.length) return levantamentosSinceFecho();
+  var fi = turnoInicioFecho(nIdx);
+  var ff = turnoFimFecho(nIdx);
+  var ini = fi ? (fi.date+'T'+(fi.hora||'00:00')) : '';
+  var fim = ff ? (ff.date+'T'+(ff.hora||'23:59')) : '';
+  return levantamentos.filter(function(l){
+    var lt = l.date + 'T' + (l.hora||'00:00');
+    return (!ini || lt > ini) && (!fim || lt <= fim);
+  });
+}
+// Devolve label de data do turno do fecho em closings[nIdx]
+function turnoLabel(nIdx){
+  if(nIdx < 0 || nIdx >= closings.length) return "Turno actual";
+  var ini = turnoInicioFecho(nIdx);
+  var fim = turnoFimFecho(nIdx);
+  var dIni = ini ? dFmt(ini.date) : "Início";
+  var dFim = fim ? dFmt(fim.date) : dFmt(today());
+  if(dIni === dFim) return dIni;
+  return dIni + " – " + dFim;
+}
+// Fechos cujo turno começa dentro de [dataInicio, dataFim] (YYYY-MM-DD)
+function closingsEntreDatas(dIni, dFim){
+  return closings.filter(function(fc, idx){
+    var ini = turnoInicioFecho(idx);
+    var dStart = ini ? ini.date : (closings[0]?closings[0].date:fc.date);
+    return dStart >= dIni && dStart <= dFim;
+  });
+}
+// Vendas de vários fechos consecutivos (últimos n fechos)
+function salesUltimosNFechosV2(n){
+  if(!closings.length) return sales.slice();
+  var idxInicio = Math.max(0, closings.length - n);
+  var fechoAnterior = idxInicio > 0 ? closings[idxInicio-1] : null;
+  return getSalesByFechos(fechoAnterior, null); // até agora
+}
+// Levantamentos dos últimos N fechos
+function levsUltimosNFechos(n){
+  if(!closings.length) return levantamentos.slice();
+  var idxInicio = Math.max(0, closings.length - n);
+  var fi = idxInicio > 0 ? closings[idxInicio-1] : null;
+  var ini = fi ? (fi.date+'T'+(fi.hora||'00:00')) : '';
+  return levantamentos.filter(function(l){
+    var lt = l.date+'T'+(l.hora||'00:00');
+    return !ini || lt > ini;
+  });
+}
+
 function setQuick(q){
   dateMode=q;
-  if(q==="turno")    selDate=today(); // turno usa salesSinceFecho()
-  else if(q==="today")    selDate=today();
-  else if(q==="yesterday") selDate=dOff(-1);
-  else if(q==="week")  selDate="WEEK";
-  else if(q==="month") selDate="MONTH";
-  // Hide custom range row if not custom
+  fechoIdx=-1;
+  // Esconder intervalo custom
   var cr=document.getElementById("custom-range-row");
   if(cr) cr.style.display="none";
-  // Update quick buttons
-  ["turno","today","yesterday","week","month","custom"].forEach(function(x){
+  // Activar botão correcto
+  ["turno","anterior","week","month","custom"].forEach(function(x){
     var btn=document.getElementById("dq-"+x);
     if(btn) btn.className="dquick"+(x===q?" on":"");
   });
   updateDNavLbl();renderRel();
 }
+
+// Navegar turno a turno com setas ◀▶
 function shiftDate(d){
-  // Disable navigation in custom or month mode
-  if(dateMode==="custom"||dateMode==="month"){setQuick("today");return;}
-  if(dateMode==="week"){setQuick("today");return;}
-  dateMode="day";
-  ["today","yesterday","week","month","custom"].forEach(function(x){
-    var btn=document.getElementById("dq-"+x);
-    if(btn)btn.className="dquick";
-  });
-  var nd=new Date(selDate+"T12:00:00");
-  nd.setDate(nd.getDate()+d);
-  selDate=nd.toISOString().split("T")[0];
-  updateDNavLbl();renderRel();
+  if(dateMode==="custom"||dateMode==="week"||dateMode==="month"){
+    setQuick("turno"); return;
+  }
+  // Comutar para navegação por fecho
+  if(dateMode!=="turno-nav" && dateMode!=="turno" && dateMode!=="anterior"){
+    fechoIdx = closings.length - 1;
+  } else if(fechoIdx===-1){
+    // era turno actual → mover para último fecho
+    fechoIdx = closings.length - 1;
+  }
+  fechoIdx = Math.max(-1, Math.min(closings.length - 1, fechoIdx - d));
+  // -1 = turno actual (ainda não fechado)
+  if(fechoIdx === -1){
+    dateMode = "turno";
+    ["turno","anterior","week","month","custom"].forEach(function(x){
+      var btn=document.getElementById("dq-"+x);
+      if(btn) btn.className="dquick"+(x==="turno"?" on":"");
+    });
+  } else {
+    dateMode = "turno-nav";
+    ["turno","anterior","week","month","custom"].forEach(function(x){
+      var btn=document.getElementById("dq-"+x);
+      if(btn) btn.className="dquick";
+    });
+  }
+  updateDNavLbl(); renderRel();
 }
+
 function updateDNavLbl(){
   var el=document.getElementById("dnav-lbl");
-  if(!el)return;
-  if(dateMode==="custom" && customFrom && customTo){el.textContent=dFmt(customFrom)+" – "+dFmt(customTo);return;}
-  if(selDate==="WEEK") {el.textContent="Últimos 7 dias";return;}
-  if(selDate==="MONTH"){el.textContent="Este mês";return;}
-  if(selDate===today()){el.textContent="Hoje";return;}
-  if(selDate===dOff(-1)){el.textContent="Ontem";return;}
-  el.textContent=dFmt(selDate);
-}
-function filteredSales(){
-  if(dateMode==="turno")     return salesSinceFecho(); // turno actual (desde ultimo fecho)
-  if(dateMode==="yesterday") return salesDiaAnterior(); // entre penultimo e ultimo fecho
-  if(dateMode==="custom" && customFrom && customTo) return salesEntreDatas(customFrom, customTo);
-  if(selDate==="WEEK")  return salesEntreDatas(weekStart(), today());
-  if(selDate==="MONTH") return salesEntreDatas(monthStart(), today());
-  if(dateMode==="today") return salesSinceFecho(); // hoje = desde ultimo fecho (pode passar meia-noite)
-  return salesEntreDatas(selDate, selDate);
-}
-
-
-function filteredClosings(){
-  var from, to;
+  if(!el) return;
   if(dateMode==="turno"){
-    // So o fecho actual (se existir)
-    var lf = lastFecho();
-    return lf ? [lf] : [];
+    var lf=lastFecho();
+    var desde = lf ? (dFmt(lf.date)+(lf.hora?" "+lf.hora:"")) : "Início";
+    el.textContent = "Desde "+desde;
+    return;
+  }
+  if(dateMode==="turno-nav"){
+    el.textContent = turnoLabel(fechoIdx) + " (fecho "+(fechoIdx+1)+"/"+closings.length+")";
+    return;
+  }
+  if(dateMode==="anterior"){
+    var ult=getNthFecho(0), pen=getNthFecho(1);
+    if(!ult){ el.textContent="Sem fecho anterior"; return; }
+    var dIni = pen ? dFmt(pen.date) : "Início";
+    el.textContent = dIni + " – " + dFmt(ult.date);
+    return;
+  }
+  if(dateMode==="week"){
+    // Últimos 7 fechos ou desde há 7 dias
+    var n7 = Math.min(7, closings.length);
+    if(n7 > 0){
+      var ini7 = turnoInicioFecho(closings.length - n7);
+      var d7 = ini7 ? dFmt(ini7.date) : dFmt(closings[closings.length-n7].date);
+      el.textContent = d7 + " – Hoje";
+    } else { el.textContent = "Últimos 7 turnos"; }
+    return;
+  }
+  if(dateMode==="month"){
+    var n30 = Math.min(30, closings.length);
+    if(n30 > 0){
+      var ini30 = turnoInicioFecho(closings.length - n30);
+      var d30 = ini30 ? dFmt(ini30.date) : dFmt(closings[closings.length-n30].date);
+      el.textContent = d30 + " – Hoje";
+    } else { el.textContent = "Últimos 30 turnos"; }
+    return;
   }
   if(dateMode==="custom" && customFrom && customTo){
-    from=customFrom; to=customTo;
-  } else if(selDate==="WEEK"){
-    from=weekStart(); to=today();
-  } else if(selDate==="MONTH"){
-    from=monthStart(); to=today();
-  } else {
-    from=selDate; to=selDate;
+    el.textContent = dFmt(customFrom) + " – " + dFmt(customTo);
+    return;
   }
-  return closings.filter(function(fc){ return fc.date>=from && fc.date<=to; });
+  el.textContent = "Turno actual";
+}
+
+function filteredSales(){
+  if(dateMode==="turno")     return salesSinceFecho();
+  if(dateMode==="turno-nav") return salesDoFechoIdx(fechoIdx);
+  if(dateMode==="anterior")  return salesDiaAnterior();
+  if(dateMode==="week")      return salesUltimosNFechosV2(7);
+  if(dateMode==="month")     return salesUltimosNFechosV2(30);
+  if(dateMode==="custom" && customFrom && customTo){
+    // Vendas dos turnos que começaram entre customFrom e customTo
+    var cfs = closingsEntreDatas(customFrom, customTo);
+    if(!cfs.length) return [];
+    // índices dos fechos seleccionados
+    var idxs = cfs.map(function(fc){ return closings.indexOf(fc); });
+    var minIdx = Math.min.apply(null, idxs);
+    var maxIdx = Math.max.apply(null, idxs);
+    var fi = turnoInicioFecho(minIdx);
+    var ff = closings[maxIdx];
+    // se o último fecho seleccionado é o último de todos, incluir turno actual
+    if(maxIdx === closings.length - 1) ff = null;
+    return getSalesByFechos(fi, ff);
+  }
+  return salesSinceFecho();
+}
+
+function filteredLevantamentos(){
+  if(dateMode==="turno")     return levantamentosSinceFecho();
+  if(dateMode==="turno-nav") return levsDoFechoIdx(fechoIdx);
+  if(dateMode==="anterior"){
+    var ult=getNthFecho(0), pen=getNthFecho(1);
+    if(!ult) return [];
+    var ini = pen ? (pen.date+'T'+(pen.hora||'00:00')) : '';
+    var fim = ult ? (ult.date+'T'+(ult.hora||'23:59')) : '';
+    return levantamentos.filter(function(l){
+      var lt=l.date+'T'+(l.hora||'00:00');
+      return (!ini||lt>ini)&&(!fim||lt<=fim);
+    });
+  }
+  if(dateMode==="week")  return levsUltimosNFechos(7);
+  if(dateMode==="month") return levsUltimosNFechos(30);
+  if(dateMode==="custom" && customFrom && customTo){
+    var cfs = closingsEntreDatas(customFrom, customTo);
+    if(!cfs.length) return [];
+    var idxs = cfs.map(function(fc){ return closings.indexOf(fc); });
+    var minIdx = Math.min.apply(null, idxs);
+    var fi = turnoInicioFecho(minIdx);
+    var ini = fi ? (fi.date+'T'+(fi.hora||'00:00')) : '';
+    var maxIdx = Math.max.apply(null, idxs);
+    var ff = closings[maxIdx];
+    var fim = ff ? (ff.date+'T'+(ff.hora||'23:59')) : '';
+    return levantamentos.filter(function(l){
+      var lt=l.date+'T'+(l.hora||'00:00');
+      return (!ini||lt>ini)&&(!fim||lt<=fim);
+    });
+  }
+  return levantamentosSinceFecho();
+}
+
+function filteredClosings(){
+  if(dateMode==="turno"){
+    var lf=lastFecho(); return lf?[lf]:[];
+  }
+  if(dateMode==="turno-nav"){
+    return fechoIdx>=0&&fechoIdx<closings.length?[closings[fechoIdx]]:[];
+  }
+  if(dateMode==="anterior"){
+    var ult=getNthFecho(0); return ult?[ult]:[];
+  }
+  if(dateMode==="week")  return closings.slice(Math.max(0,closings.length-7));
+  if(dateMode==="month") return closings.slice(Math.max(0,closings.length-30));
+  if(dateMode==="custom"&&customFrom&&customTo) return closingsEntreDatas(customFrom,customTo);
+  return lastFecho()?[lastFecho()]:[];
 }
 
 
@@ -5432,11 +5565,7 @@ function buildFechoESC(){
 function buildRelatorioESC(){
   var sl=filteredSales();
   var now=new Date(),hora=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  var per;
-  if(dateMode==='custom'&&customFrom&&customTo)per=dFmt(customFrom)+' a '+dFmt(customTo);
-  else if(selDate==='WEEK')per=dFmt(weekStart())+' a '+dFmt(today());
-  else if(selDate==='MONTH')per=dFmt(monthStart())+' a '+dFmt(today());
-  else per=dFmt(selDate);
+  var per = document.getElementById("dnav-lbl") ? document.getElementById("dnav-lbl").textContent : "Turno actual";
   var tN=sl.filter(function(s){return s.met==='d';}).reduce(function(a,s){return a+s.total;},0);
   var tC=sl.filter(function(s){return s.met==='c';}).reduce(function(a,s){return a+s.total;},0);
   var tM=sl.filter(function(s){return s.met==='m';}).reduce(function(a,s){return a+s.total;},0);
@@ -6281,12 +6410,7 @@ function exportCSV(){
   if(!sl.length){ showToast("Sem vendas no periodo seleccionado"); return; }
 
   // Periodo
-  var per = '';
-  if(dateMode==='turno') per='Desde ultimo fecho';
-  else if(selDate==='WEEK') per='Esta semana';
-  else if(selDate==='MONTH') per='Este mes';
-  else if(dateMode==='custom'&&customFrom&&customTo) per=customFrom.substring(0,16)+' a '+customTo.substring(0,16);
-  else per=dFmt(selDate);
+  var per = document.getElementById("dnav-lbl") ? document.getElementById("dnav-lbl").textContent : "Turno actual";
 
   // Agregar artigos vendidos
   var mapa = {};
