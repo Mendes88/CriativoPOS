@@ -3858,7 +3858,9 @@ function showFecho(){
 
 function confirmFecho(){
   if(!confirm("Confirmar fecho de caixa? O talao sera impresso automaticamente."))return;
+  // Calcular ANTES de registar o fecho
   var ts=salesSinceFecho();
+  var levHoje=levantamentosSinceFecho();
   var tN=ts.filter(function(s){return s.met==="d";}).reduce(function(a,s){return a+s.total;},0);
   var tC=ts.filter(function(s){return s.met==="c";}).reduce(function(a,s){return a+s.total;},0);
   var tM=ts.filter(function(s){return s.met==="m";}).reduce(function(a,s){return a+s.total;},0);
@@ -3871,21 +3873,24 @@ function confirmFecho(){
   document.getElementById("fecho-overlay").classList.remove("open");
   renderCaixa();
   showToast("✓ Caixa fechada — a imprimir...");
-  // Print automatically
-  setTimeout(function(){ printFecho(); }, 400);
+  // Passar os dados já calculados para impressão (fecho já registado, salesSinceFecho() = 0)
+  setTimeout(function(){ printFecho(ts, levHoje); }, 400);
 }
 
-function printFecho(){
-  const ts=salesSinceFecho();
+function printFecho(tsParam, levParam){
+  // Pode ser chamado com dados pré-calculados (após confirmFecho) ou sem (reimpressão — usa último fecho)
+  const ts = tsParam || salesDoFechoIdx(closings.length - 1);
   const tN=ts.filter(function(s){return s.met==="d";}).reduce(function(a,s){return a+s.total;},0);
   const tC=ts.filter(function(s){return s.met==="c";}).reduce(function(a,s){return a+s.total;},0);
   const tM=ts.filter(function(s){return s.met==="m";}).reduce(function(a,s){return a+s.total;},0);
   const tV=tN+tC+tM;
   const now=new Date(),hora=now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0");
-  const levHoje=levantamentosSinceFecho();
+  const levHoje = levParam || levsDoFechoIdx(closings.length - 1);
   const levH=levHoje;
   const totLev=levHoje.reduce(function(s,l){return s+l.valor;},0);
-  const saldoFinal=calcSaldoCaixa();
+  // fundo: usar o do último fecho registado (já foi guardado antes do reset)
+  const fundoFecho = closings.length ? (closings[closings.length-1].fundo || 0) : fundo;
+  const saldoFinal = fundoFecho + tN - totLev;
 
   // Levantamentos rows
   const levRows=levHoje.length?
@@ -3919,10 +3924,10 @@ function printFecho(){
     '<div class="row"><span>Pedidos</span><span>'+ts.length+'</span></div>'+
     '<div class="sep"></div>'+
     '<div class="section">MOVIMENTO DE CAIXA</div>'+
-    '<div class="row"><span>Fundo de Maneio</span><span>'+EUR(fundo)+'</span></div>'+
+    '<div class="row"><span>Fundo de Maneio</span><span>'+EUR(fundoFecho)+'</span></div>'+
     '<div class="row"><span>Vendas Numerario</span><span>+'+EUR(tN)+'</span></div>'+
     (totLev>0?'<div class="row"><span>Levantamentos</span><span>-'+EUR(totLev)+'</span></div>':'')+
-    '<div class="row b"><span>SALDO FINAL</span><span>'+EUR(fundo+tN-totLev)+'</span></div>'+
+    '<div class="row b"><span>SALDO FINAL</span><span>'+EUR(saldoFinal)+'</span></div>'+
     '<div class="sep"></div>'+
     '<div class="section">VENDAS POR METODO</div>'+
     '<div class="row"><span>Numerario</span><span>'+EUR(tN)+'</span></div>'+
@@ -3954,7 +3959,7 @@ function printFecho(){
     '</body></html>';
 
   if(canPrintDirect()){
-    printDirect(buildFechoESC()).then(function(ok){
+    printDirect(buildFechoESC(ts, levHoje)).then(function(ok){
       if(!ok) printFallback(html, 860, 700, 'Fecho de Turno');
     });
   } else {
@@ -5518,14 +5523,16 @@ function buildLevantamentoESC(lev,saldoAntes){
   return esc;
 }
 
-function buildFechoESC(){
-  var ts=salesSinceFecho();
+function buildFechoESC(tsParam, levParam){
+  // tsParam e levParam passados por printFecho (já calculados antes do fecho ser registado)
+  var ts  = tsParam || salesDoFechoIdx(closings.length - 1);
+  var levH= levParam|| levsDoFechoIdx(closings.length - 1);
   var tN=ts.filter(function(s){return s.met==='d';}).reduce(function(a,s){return a+s.total;},0);
   var tC=ts.filter(function(s){return s.met==='c';}).reduce(function(a,s){return a+s.total;},0);
   var tM=ts.filter(function(s){return s.met==='m';}).reduce(function(a,s){return a+s.total;},0);
   var tV=tN+tC+tM;
-  var levH=levantamentosSinceFecho();
   var totLev=levH.reduce(function(s,l){return s+l.valor;},0);
+  var fundoFecho = closings.length ? (closings[closings.length-1].fundo || 0) : 0;
   var now=new Date(),hora=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
   var esc=new ESCBuilder();esc.init();
   esc.centerBold('FECHO DE CAIXA');
@@ -5538,10 +5545,10 @@ function buildFechoESC(){
   esc.row('Pedidos',String(ts.length));
   esc.sep();
   esc.bold(1).textLine('MOVIMENTO DE CAIXA').bold(0);
-  esc.row('Fundo de Maneio',EURESC(fundo));
+  esc.row('Fundo de Maneio',EURESC(fundoFecho));
   esc.row('Vendas Numerario','+ '+EURESC(tN));
   if(totLev>0)esc.row('Levantamentos','- '+EURESC(totLev));
-  esc.row('SALDO FINAL',EURESC(fundo+tN-totLev),true);
+  esc.row('SALDO FINAL',EURESC(fundoFecho+tN-totLev),true);
   esc.sep();
   esc.bold(1).textLine('VENDAS POR METODO').bold(0);
   esc.row('Numerario',EURESC(tN));
