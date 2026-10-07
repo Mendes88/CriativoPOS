@@ -6600,52 +6600,76 @@ function destinoPorNome(nome){
 
 function saveSales(){
   try{
-    localStorage.setItem("crpos_sales",JSON.stringify(sales));
-    localStorage.setItem("crpos_favs",JSON.stringify(favs));
+    var salesJson    = JSON.stringify(sales);
+    var closingsJson = JSON.stringify(closings);
+    var levantJson   = JSON.stringify(levantamentos);
+    var configJson   = JSON.stringify(config);
+    var menuJson     = JSON.stringify({cats:CATS,items:ITEMS});
+    // localStorage — rápido, usado em runtime
+    localStorage.setItem("crpos_sales",    salesJson);
+    localStorage.setItem("crpos_favs",     JSON.stringify(favs));
     localStorage.setItem("crpos_notechips",JSON.stringify(noteChips));
-    localStorage.setItem("crpos_users",JSON.stringify(users));
-    localStorage.setItem("crpos_menu",JSON.stringify({cats:CATS,items:ITEMS}));
-    localStorage.setItem("crpos_cnt",String(ordCnt));
-    localStorage.setItem("crpos_ordernum",String(orderNum));
-    localStorage.setItem("crpos_levant",JSON.stringify(levantamentos));
-    localStorage.setItem("crpos_config",JSON.stringify(config));
-    localStorage.setItem("crpos_closings",JSON.stringify(closings));
+    localStorage.setItem("crpos_users",    JSON.stringify(users));
+    localStorage.setItem("crpos_menu",     menuJson);
+    localStorage.setItem("crpos_cnt",      String(ordCnt));
+    localStorage.setItem("crpos_ordernum", String(orderNum));
+    localStorage.setItem("crpos_levant",   levantJson);
+    localStorage.setItem("crpos_config",   configJson);
+    localStorage.setItem("crpos_closings", closingsJson);
+    // SharedPreferences Android — persistência garantida (sobrevive a limpeza de cache)
+    if(typeof AndroidFB !== 'undefined'){
+      try{
+        AndroidFB.gravarPreferencia('crpos_closings', closingsJson);
+        AndroidFB.gravarPreferencia('crpos_sales',    salesJson);
+        AndroidFB.gravarPreferencia('crpos_levant',   levantJson);
+        AndroidFB.gravarPreferencia('crpos_config',   configJson);
+        AndroidFB.gravarPreferencia('crpos_menu',     menuJson);
+        AndroidFB.gravarPreferencia('crpos_cnt',      String(ordCnt));
+        AndroidFB.gravarPreferencia('crpos_ordernum', String(orderNum));
+      }catch(ex){}
+    }
   }catch(e){}
 }
+
+function _pref(key){ // lê SharedPreferences; null se não disponível ou vazio
+  try{ if(typeof AndroidFB!=='undefined'){ var v=AndroidFB.lerPreferencia(key); return (v&&v.length)?v:null; } }catch(e){}
+  return null;
+}
+function _ls(key){ return localStorage.getItem(key); }
+function _get(key){ return _pref(key) || _ls(key); } // SharedPreferences primeiro, localStorage como fallback
 
 function loadSales(){
   try{
     // 1. Load archive first
     loadArchive();
 
-    // 2. Load ALL data from localStorage
-    const d=localStorage.getItem("crpos_sales");
-    const n=localStorage.getItem("crpos_cnt");
-    const on=localStorage.getItem("crpos_ordernum");
+    // 2. Load ALL data — SharedPreferences (persistente) → localStorage (fallback)
+    const d  = _get("crpos_sales");
+    const n  = _get("crpos_cnt");
+    const on = _get("crpos_ordernum");
     if(d){
       sales=JSON.parse(d);
-      // Patch old sales without detail flag
       sales.forEach(function(s){ if(s.detail===undefined) s.detail=true; });
     }
-    const fv=localStorage.getItem("crpos_favs");
+    const fv=_ls("crpos_favs");
     if(fv){try{var pf=JSON.parse(fv);favs=Array.isArray(pf)?pf:[];}catch(e){favs=[];}}
-    const nc=localStorage.getItem("crpos_notechips");
+    const nc=_ls("crpos_notechips");
     if(nc){try{noteChips=JSON.parse(nc);}catch(e){}}
     if(n){ordCnt=parseInt(n)||10;}
     if(on){orderNum=parseInt(on)||1;}
-    const lv=localStorage.getItem("crpos_levant");
-    if(lv){levantamentos=JSON.parse(lv);}
-    const cl=localStorage.getItem("crpos_closings");
+    const lv=_get("crpos_levant");
+    if(lv){try{levantamentos=JSON.parse(lv);}catch(e){}}
+    const cl=_get("crpos_closings");
     if(cl){try{closings=JSON.parse(cl);}catch(e){closings=[];}}
-    const cf=localStorage.getItem("crpos_config");
+    const cf=_get("crpos_config");
     if(cf){try{config=Object.assign(config,JSON.parse(cf));}catch(e){}}
     // Se printerType ainda é 'none' (nunca configurado), usar bluetooth por defeito
     if(!config.printerType || config.printerType==='none') config.printerType='bluetooth';
     // Se printerCols ainda é 48 (valor antigo), actualizar para 46
     if(config.printerCols===48) config.printerCols=46;
-    const us=localStorage.getItem("crpos_users");
+    const us=_ls("crpos_users");
     if(us){try{var pu=JSON.parse(us);if(pu&&pu.length){users=pu;nuid=Math.max.apply(null,users.map(function(u){return u.id;}))+1;}}catch(e){}}
-    const mn=localStorage.getItem("crpos_menu");
+    const mn=_get("crpos_menu");
     if(mn){try{var pm=JSON.parse(mn);if(pm&&pm.cats){CATS=pm.cats;ITEMS=pm.items;posCat=CATS[0]||null;gestCat=CATS[0]||null;var allIds=Object.values(ITEMS).flat().map(function(i){return i.id||0;});if(allIds.length)nid=Math.max.apply(null,allIds)+1;}}catch(e){}}
 
     // 3. NOW archive past months (sales must be loaded first)
@@ -7117,6 +7141,13 @@ function saResetTotal(){
     ["crpos_sales","crpos_levant","crpos_cnt","crpos_ordernum",
      "crpos_config","crpos_users","crpos_menu","crpos_closings"].forEach(function(k){ localStorage.removeItem(k); });
     localStorage.setItem("crpos_sa_pin",pin);
+    // Limpar também SharedPreferences
+    if(typeof AndroidFB !== 'undefined'){
+      try{
+        ["crpos_sales","crpos_levant","crpos_cnt","crpos_ordernum",
+         "crpos_config","crpos_menu","crpos_closings"].forEach(function(k){ AndroidFB.gravarPreferencia(k,""); });
+      }catch(ex){}
+    }
   }catch(e){}
   SA.pin=pin;
   showToast("✓ Reset total efectuado");
