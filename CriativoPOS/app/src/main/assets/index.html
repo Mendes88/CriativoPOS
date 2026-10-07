@@ -6609,6 +6609,7 @@ function saveSales(){
     localStorage.setItem("crpos_ordernum",String(orderNum));
     localStorage.setItem("crpos_levant",JSON.stringify(levantamentos));
     localStorage.setItem("crpos_config",JSON.stringify(config));
+    localStorage.setItem("crpos_closings",JSON.stringify(closings));
   }catch(e){}
 }
 
@@ -6634,6 +6635,8 @@ function loadSales(){
     if(on){orderNum=parseInt(on)||1;}
     const lv=localStorage.getItem("crpos_levant");
     if(lv){levantamentos=JSON.parse(lv);}
+    const cl=localStorage.getItem("crpos_closings");
+    if(cl){try{closings=JSON.parse(cl);}catch(e){closings=[];}}
     const cf=localStorage.getItem("crpos_config");
     if(cf){try{config=Object.assign(config,JSON.parse(cf));}catch(e){}}
     // Se printerType ainda é 'none' (nunca configurado), usar bluetooth por defeito
@@ -7112,7 +7115,7 @@ function saResetTotal(){
   orderNum=1; ordCnt=10;
   try{
     ["crpos_sales","crpos_levant","crpos_cnt","crpos_ordernum",
-     "crpos_config","crpos_users","crpos_menu"].forEach(function(k){ localStorage.removeItem(k); });
+     "crpos_config","crpos_users","crpos_menu","crpos_closings"].forEach(function(k){ localStorage.removeItem(k); });
     localStorage.setItem("crpos_sa_pin",pin);
   }catch(e){}
   SA.pin=pin;
@@ -7467,7 +7470,7 @@ function saShowCacheInfo(){
   if(!el) return;
   try{
     var keys = ["crpos_sales","crpos_levant","crpos_cnt","crpos_ordernum",
-                "crpos_config","crpos_users","crpos_menu","crpos_sa_pin"];
+                "crpos_config","crpos_users","crpos_menu","crpos_sa_pin","crpos_closings"];
     var total = 0;
     var details = [];
     keys.forEach(function(k){
@@ -7493,7 +7496,7 @@ function saClearCache(){
     // 1. Save all app data first
     var backup = {};
     var keys = ["crpos_sales","crpos_levant","crpos_cnt","crpos_ordernum",
-                "crpos_config","crpos_users","crpos_menu","crpos_sa_pin"];
+                "crpos_config","crpos_users","crpos_menu","crpos_sa_pin","crpos_closings"];
     keys.forEach(function(k){
       var v = localStorage.getItem(k);
       if(v) backup[k] = v;
