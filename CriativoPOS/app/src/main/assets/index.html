@@ -1655,6 +1655,11 @@ function checkPin(){
 
 function doLogin(u){
   CU=u;
+  // Guardar utilizador para auto-login (restaurar sessão após recarga do Android)
+  try{
+    localStorage.setItem('crpos_last_user', String(u.id));
+    if(typeof AndroidFB!=='undefined') AndroidFB.gravarPreferencia('crpos_last_user', String(u.id));
+  }catch(e){}
   var ls=document.getElementById("login-screen");
   ls.style.display="none";
   ls.style.visibility="hidden";
@@ -1705,6 +1710,11 @@ function doLogin(u){
 
 function logout(){
   CU=null;
+  // Limpar auto-login ao fazer logout manual
+  try{
+    localStorage.removeItem('crpos_last_user');
+    if(typeof AndroidFB!=='undefined') AndroidFB.gravarPreferencia('crpos_last_user', '');
+  }catch(e){}
   clearOrder(); // limpar pedido ao mudar de utilizador
   clearTimeout(timeoutTimer);clearTimeout(warnTimer);clearInterval(warnInterval);
   document.getElementById("timeout-warn").classList.remove("show");
@@ -6899,6 +6909,23 @@ window.addEventListener("DOMContentLoaded",function(){
   try{
     console.log("users count:", users.length);
     console.log("user-grid el:", document.getElementById("user-grid"));
+
+    // Auto-login: restaurar utilizador após recarga forçada pelo Android
+    var _autoUid = null;
+    try{
+      var _au = (typeof AndroidFB!=='undefined' ? AndroidFB.lerPreferencia('crpos_last_user') : null)
+                || localStorage.getItem('crpos_last_user');
+      if(_au && _au.length) _autoUid = parseInt(_au);
+    }catch(e){}
+    if(_autoUid){
+      var _autoU = users.find(function(u){ return u.id===_autoUid; });
+      if(_autoU){
+        console.log("Auto-login:", _autoU.nome);
+        doLogin(_autoU);
+        return; // não chamar renderLogin
+      }
+    }
+
     renderLogin();
     console.log("renderLogin OK - innerHTML length:", document.getElementById("user-grid").innerHTML.length);
   }catch(e){
