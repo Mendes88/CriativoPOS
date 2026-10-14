@@ -926,6 +926,20 @@ window.addEventListener('unhandledrejection', function(e){
       <button onclick="applyCustomRange()" style="padding:5px 14px;font-size:11px;border-radius:7px;border:none;background:#BA7517;color:#111111;cursor:pointer;font-weight:500;">✓ Aplicar</button>
       <span id="custom-range-lbl" style="font-size:11px;color:#854F0B;font-weight:500;"></span>
     </div>
+    <!-- Filtro de horas -->
+    <div id="time-filter-row" style="display:flex;align-items:center;gap:10px;padding:6px 13px;background:#f8f8f8;border-bottom:1px solid #e8e8e8;flex-wrap:wrap;">
+      <span style="font-size:11px;font-weight:500;color:#555;">⏱ Horas:</span>
+      <div style="display:flex;align-items:center;gap:5px;">
+        <label style="font-size:11px;color:#888;">Das</label>
+        <input type="time" id="time-from" style="padding:3px 7px;font-size:12px;border:1px solid #ccc;border-radius:6px;background:#fff;color:#111;" onchange="applyTimeFilter()">
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;">
+        <label style="font-size:11px;color:#888;">às</label>
+        <input type="time" id="time-to" style="padding:3px 7px;font-size:12px;border:1px solid #ccc;border-radius:6px;background:#fff;color:#111;" onchange="applyTimeFilter()">
+      </div>
+      <button onclick="clearTimeFilter()" id="time-clear-btn" style="display:none;padding:3px 10px;font-size:11px;border-radius:6px;border:none;background:#e0e0e0;color:#555;cursor:pointer;">✕ Limpar</button>
+      <span id="time-filter-lbl" style="font-size:11px;color:#854F0B;font-weight:500;"></span>
+    </div>
     <div id="rel-body"></div>
   </div>
 
@@ -1469,6 +1483,7 @@ let config={appHeight:0,defaultDocType:'talao',postoName:'',restName:'Restaurant
 let btDevice=null,btChar=null;
 let relTab="resumo",artSort="revenue",selDate=today(),dateMode="turno",customFrom="",customTo="",fechoIdx=-1;
 // fechoIdx: -1=turno actual, 0=ultimo fecho, 1=penultimo, etc. (só usado em dateMode="turno-nav")
+let timeFrom="",timeTo=""; // filtro de horas (ex: "08:00", "16:00"); vazio = sem filtro
 let closings=[],curSale=null;
 // Restaurar fundo de maneio persistido
 let fundo = 50;
@@ -4020,7 +4035,47 @@ function applyCustomRange(){
   renderRel();
 }
 
+// ── FILTRO DE HORAS ───────────────────────────────────
+function applyTimeFilter(){
+  var fromEl=document.getElementById("time-from");
+  var toEl  =document.getElementById("time-to");
+  timeFrom = fromEl ? fromEl.value : "";
+  timeTo   = toEl   ? toEl.value   : "";
+  // Validar: se só um preenchido, ignorar
+  if(timeFrom && !timeTo){ timeTo="23:59"; if(toEl) toEl.value="23:59"; }
+  if(!timeFrom && timeTo){ timeFrom="00:00"; if(fromEl) fromEl.value="00:00"; }
+  var lbl=document.getElementById("time-filter-lbl");
+  var clearBtn=document.getElementById("time-clear-btn");
+  if(timeFrom && timeTo){
+    if(lbl) lbl.textContent="Das "+timeFrom+" às "+timeTo;
+    if(clearBtn) clearBtn.style.display="inline-block";
+  } else {
+    if(lbl) lbl.textContent="";
+    if(clearBtn) clearBtn.style.display="none";
+  }
+  renderRel();
+}
 
+function clearTimeFilter(){
+  timeFrom=""; timeTo="";
+  var fromEl=document.getElementById("time-from");
+  var toEl  =document.getElementById("time-to");
+  if(fromEl) fromEl.value="";
+  if(toEl)   toEl.value="";
+  var lbl=document.getElementById("time-filter-lbl");
+  var clearBtn=document.getElementById("time-clear-btn");
+  if(lbl) lbl.textContent="";
+  if(clearBtn) clearBtn.style.display="none";
+  renderRel();
+}
+
+function applyHourFilter(salesArr){
+  if(!timeFrom || !timeTo) return salesArr;
+  return salesArr.filter(function(s){
+    var t = s.time || "00:00"; // s.time é "HH:MM"
+    return t >= timeFrom && t <= timeTo;
+  });
+}
 
 // ── PRINTER WIDTH HELPERS ─────────────────────────────
 function printCols(){ return config.printerWidth===58 ? 32 : (config.printerCols||48); }
@@ -4056,7 +4111,7 @@ function printCSS(){
 
 // ═══ RELATÓRIO COMPLETO — formato talão térmico 80mm ════
 function printRelatorio(){
-  var sl  = filteredSales();
+  var sl  = applyHourFilter(filteredSales());
   var now = new Date();
   var hora = now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0");
 
@@ -4590,7 +4645,7 @@ function relPosto(){
 function renderRel(){
   if(relTab==="arquivo"){ renderArquivo(); return; }
   updateDNavLbl();
-  const sl=filteredSales();
+  const sl=applyHourFilter(filteredSales());
   const el=document.getElementById("rel-body");
   if(relTab==="resumo"){
     const tot=sl.reduce((s,x)=>s+x.total,0),cnt=sl.length,avg=cnt?tot/cnt:0;
@@ -4754,7 +4809,7 @@ function renderRel(){
 }
 
 function printArtigos(){
-  const sl=filteredSales(),map={};
+  const sl=applyHourFilter(filteredSales()),map={};
   sl.forEach(s=>s.items.forEach(it=>{if(!map[it.n])map[it.n]={n:it.n,qty:0,rev:0,p:it.p};map[it.n].qty+=it.q;map[it.n].rev+=it.q*it.p;}));
   const arts=Object.values(map).sort((a,b)=>b.rev-a.rev);
   const tot=sl.reduce((s,x)=>s+x.total,0),tqty=arts.reduce((s,a)=>s+a.qty,0),maxR=arts.length?Math.max(...arts.map(a=>a.rev)):1;
@@ -6423,7 +6478,7 @@ function doBackup(auto){
 // ═══ EXPORT CSV (admin only) ═════════════════════════════
 function exportCSV(){
   if(!CU||CU.role!=="admin"){alert("Apenas o administrador pode exportar dados.");return;}
-  var sl = filteredSales();
+  var sl = applyHourFilter(filteredSales());
   if(!sl.length){ showToast("Sem vendas no periodo seleccionado"); return; }
 
   // Periodo
